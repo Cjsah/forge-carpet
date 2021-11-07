@@ -9,6 +9,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.cjsah.mod.mixit.fake.ServerPlayerEntityInterface;
 import net.cjsah.mod.mixit.patch.EntityPlayerMPFake;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.arguments.DimensionArgument;
@@ -19,7 +20,10 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -193,7 +197,7 @@ public class PlayerCommand {
         String playerName = StringArgumentType.getString(context, "player");
         MinecraftServer server = context.getSource().getServer();
         PlayerList manager = server.getPlayerList();
-        PlayerEntity player = manager.getPlayer(playerName);
+        PlayerEntity player = manager.getPlayerByUsername(playerName);
         if (player != null)
         {
             sendFeedback(context.getSource(), new StringTextComponent("Player ").mergeStyle(TextFormatting.RED)
@@ -202,19 +206,12 @@ public class PlayerCommand {
             );
             return true;
         }
-        GameProfile profile = server.getUserCache().findByName(playerName).orElse(null);
+        GameProfile profile = server.getPlayerProfileCache().getGameProfileForUsername(playerName);
         if (profile == null)
         {
-            if (!CarpetSettings.allowSpawningOfflinePlayers)
-            {
-                sendFeedback(context.getSource(), new StringTextComponent("Player "+playerName+" is either banned by Mojang, or auth servers are down. " +
-                        "Banned players can only be summoned in Singleplayer and in servers in off-line mode.").mergeStyle(TextFormatting.RED));
-                return true;
-            } else {
-                profile = new GameProfile(PlayerEntity.getOfflinePlayerUuid(playerName), playerName);
-            }
+            profile = new GameProfile(PlayerEntity.getOfflineUUID(playerName), playerName);
         }
-        if (manager.getUserBanList().contains(profile))
+        if (manager.getBannedPlayers().isBanned(profile))
         {
             sendFeedback(context.getSource(), new StringTextComponent("Player ").mergeStyle(TextFormatting.RED)
                             .appendSibling(new StringTextComponent(playerName).mergeStyle(TextFormatting.RED))
@@ -222,7 +219,7 @@ public class PlayerCommand {
             );
             return true;
         }
-        if (manager.isWhitelistEnabled() && manager.isWhitelisted(profile) && !context.getSource().hasPermissionLevel(2))
+        if (manager.isWhiteListEnabled() && manager.canJoin(profile) && !context.getSource().hasPermissionLevel(2))
         {
             sendFeedback(context.getSource(), new StringTextComponent("Whitelisted players can only be spawned by operators").mergeStyle(TextFormatting.RED));
             return true;
@@ -233,16 +230,16 @@ public class PlayerCommand {
     private static int kill(CommandContext<CommandSource> context)
     {
         if (cantReMove(context)) return 0;
-        getPlayer(context).kill();
+        getPlayer(context).onKillCommand();
         return 1;
     }
 
     private static int lookAt(CommandContext<CommandSource> context)
     {
         return manipulate(context, ap -> {
-            //try {
-            ap.lookAt(Vec3ArgumentType.getVec3(context, "position"));
-            //} catch (CommandSyntaxException ignored) {}
+            try {
+                ap.lookAt(Vec3Argument.getVec3(context, "position"));
+            } catch (CommandSyntaxException ignore) {}
         });
     }
 
@@ -268,37 +265,28 @@ public class PlayerCommand {
     {
         if (cantSpawn(context)) return 0;
         CommandSource source = context.getSource();
-        Vec3d pos = tryGetArg(
-                () -> Vec3ArgumentType.getVec3(context, "position"),
-                source::getPosition
-        );
-        Vec2f facing = tryGetArg(
-                () -> RotationArgumentType.getRotation(context, "direction").toAbsoluteRotation(context.getSource()),
-                source::getRotation
-        );
-        RegistryKey<World> dimType = tryGetArg(
-                () -> DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey(),
-                () -> source.getWorld().getRegistryKey() // dimension.getType()
-        );
-        GameMode mode = GameMode.CREATIVE;
+        Vector3d pos = tryGetArg(() -> Vec3Argument.getVec3(context, "position"), source::getPos);
+        Vector2f facing = tryGetArg(() -> RotationArgument.getRotation(context, "direction").getRotation(context.getSource()), source::getRotation);
+        RegistryKey<World> dimType = tryGetArg(() -> DimensionArgument.getDimensionArgument(context, "dimension").getDimensionKey(), () -> source.getWorld().getDimensionKey());
+        GameType mode = GameType.CREATIVE;
         boolean flying = false;
         try
         {
-            ServerPlayerEntity player = context.getSource().getPlayer();
-            mode = player.interactionManager.getGameMode();
-            flying = player.getAbilities().flying;
+            ServerPlayerEntity player = context.getSource().asPlayer();
+            mode = player.interactionManager.getGameType();
+            flying = player.abilities.isFlying;
         }
         catch (CommandSyntaxException ignored) {}
         try {
             String opGameMode = StringArgumentType.getString(context, "gamemode");
-            mode = GameMode.byName(opGameMode, null);
+            mode = GameType.parseGameTypeWithDefault(opGameMode, null);
             if(mode == null)
             {
-                Messenger.m(context.getSource(), "rb Invalid game mode: "+opGameMode+".");
+                sendFeedback(context.getSource(), new StringTextComponent("Invalid game mode: "+opGameMode+".").mergeStyle(TextFormatting.RED).mergeStyle(TextFormatting.BOLD));
                 return 0;
             }
         } catch (IllegalArgumentException ignored) {}
-        if(mode == GameMode.SPECTATOR)
+        if(mode == GameType.SPECTATOR)
         {
             // Force override flying to true for spectator players, or they will fell out of the world.
             flying = true;
@@ -306,21 +294,21 @@ public class PlayerCommand {
         String playerName = StringArgumentType.getString(context, "player");
         if (playerName.length()>maxPlayerLength(source.getServer()))
         {
-            Messenger.m(context.getSource(), "rb Player name: "+playerName+" is too long");
+            sendFeedback(context.getSource(), new StringTextComponent("Player name: "+playerName+" is too long").mergeStyle(TextFormatting.RED).mergeStyle(TextFormatting.BOLD));
             return 0;
         }
 
         MinecraftServer server = source.getServer();
         if (!World.isValid(new BlockPos(pos.x, pos.y, pos.z)))
         {
-            Messenger.m(context.getSource(), "rb Player "+playerName+" cannot be placed outside of the world");
+            sendFeedback(context.getSource(), new StringTextComponent("Player "+playerName+" cannot be placed outside of the world").mergeStyle(TextFormatting.RED).mergeStyle(TextFormatting.BOLD));
             return 0;
         }
         PlayerEntity player = EntityPlayerMPFake.createFake(playerName, server, pos.x, pos.y, pos.z, facing.y, facing.x, dimType, mode, flying);
         if (player == null)
         {
-            Messenger.m(context.getSource(), "rb Player " + StringArgumentType.getString(context, "player") + " doesn't exist " +
-                    "and cannot spawn in online mode. Turn the server offline to spawn non-existing players");
+            sendFeedback(context.getSource(), new StringTextComponent("Player " + StringArgumentType.getString(context, "player") + " doesn't exist " +
+                    "and cannot spawn in online mode. Turn the server offline to spawn non-existing players").mergeStyle(TextFormatting.RED).mergeStyle(TextFormatting.BOLD));
             return 0;
         }
         return 1;
@@ -368,7 +356,7 @@ public class PlayerCommand {
         ServerPlayerEntity sendingPlayer = null;
         try
         {
-            sendingPlayer = context.getSource().getPlayer();
+            sendingPlayer = context.getSource().asPlayer();
         }
         catch (CommandSyntaxException ignored) { }
 

@@ -5,6 +5,12 @@
     "compatibilityLevel": "JAVA_8",
     "refmap": "mixins.refmap.json",
     "mixins": [
+        "EntityMixin",
+        "PlayerEntity_fakePlayersMixin",
+        "PlayerList_fakePlayersMixin",
+        "ServerPlayerEntityMixin",
+        "ServerWorld_fakePlayersMixin",
+        "ThrownEnderpearlEntity_fakePlayersMixin"
     ],
     "client": [
     ],
