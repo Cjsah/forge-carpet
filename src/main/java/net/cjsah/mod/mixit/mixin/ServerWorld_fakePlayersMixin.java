@@ -9,7 +9,9 @@ import net.minecraft.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorld_fakePlayersMixin
@@ -18,20 +20,23 @@ public abstract class ServerWorld_fakePlayersMixin
 
     @Shadow boolean tickingEntities;
 
-    @Redirect( method = "removePlayer(Lnet/minecraft/entity/player/ServerPlayerEntity;Z)V", at  = @At(
+    @Redirect( method = "removePlayer*", at  = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/server/ServerWorld;removeEntity(Lnet/minecraft/entity/Entity;Z)V"
+            target = "Lnet/minecraft/world/server/ServerWorld;removeEntity(Lnet/minecraft/entity/Entity;Z)V",
+            args = {"log=true"}
     ))
-    private void crashRemovePlayer(ServerWorld world, Entity entity, boolean keepData, ServerPlayerEntity player)
+    private void crashRemovePlayer(ServerWorld world, Entity entity, boolean keepData)
     {
-        if ( !(tickingEntities && player instanceof EntityPlayerMPFake) )
+        if ( !(tickingEntities && entity instanceof EntityPlayerMPFake) )
             world.removeEntity(entity);
         else
             getServer().enqueue(new TickDelayedTask(getServer().getTickCounter(), () ->
             {
-                world.removeEntity(player);
-                player.clearInvulnerableDimensionChange();
+                world.removeEntity(entity);
+                ((ServerPlayerEntity)entity).clearInvulnerableDimensionChange();
             }));
 
     }
+
+
 }
