@@ -3,10 +3,16 @@ package net.cjsah.mod.mixit.player;
 import carpet.fakes.ServerPlayerEntityInterface;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.command.arguments.EntityAnchorArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.entity.item.BoatEntity;
+import net.minecraft.entity.item.minecart.MinecartEntity;
 import net.minecraft.entity.passive.HorseBaseEntity;
+import net.minecraft.entity.passive.horse.AbstractHorseEntity;
+import net.minecraft.entity.passive.horse.HorseEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.MinecartEntity;
 import net.minecraft.item.ItemStack;
@@ -16,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Direction;
+import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -119,8 +126,8 @@ public class EntityPlayerActionPack
             case SOUTH: return look(0, 0);
             case EAST: return look(-90, 0);
             case WEST: return look(90, 0);
-            case UP: return look(player.getYaw(), -90);
-            case DOWN: return look(player.getYaw(), 90);
+            case UP: return look(player.getYaw(1.0F), -90);
+            case DOWN: return look(player.getYaw(1.0F), 90);
         }
         return this;
     }
@@ -131,24 +138,22 @@ public class EntityPlayerActionPack
 
     public EntityPlayerActionPack look(float yaw, float pitch)
     {
-        player.setYaw(yaw % 360); //setYaw
-        player.setPitch(MathHelper.clamp(pitch, -90, 90)); // setPitch
-        // maybe player.setPositionAndAngles(player.x, player.y, player.z, yaw, MathHelper.clamp(pitch,-90.0F, 90.0F));
+        player.setPositionAndRotation(player.getPosX(), player.getPosY(), player.getPosZ(), yaw % 360, MathHelper.clamp(pitch, -90, 90));
         return this;
     }
 
     public EntityPlayerActionPack lookAt(Vector3d position)
     {
-        player.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, position);
+        player.lookAt(EntityAnchorArgument.Type.EYES, position);
         return this;
     }
 
     public EntityPlayerActionPack turn(float yaw, float pitch)
     {
-        return look(player.getYaw() + yaw, player.getPitch() + pitch);
+        return look(player.getYaw(1.0F) + yaw, player.getPitch(1.0F) + pitch);
     }
 
-    public EntityPlayerActionPack turn(Vec2f rotation)
+    public EntityPlayerActionPack turn(Vector2f rotation)
     {
         return turn(rotation.x, rotation.y);
     }
@@ -176,23 +181,23 @@ public class EntityPlayerActionPack
         List<Entity> entities;
         if (onlyRideables)
         {
-            entities = player.world.getOtherEntities(player, player.getBoundingBox().expand(3.0D, 1.0D, 3.0D),
-                    e -> e instanceof MinecartEntity || e instanceof BoatEntity || e instanceof HorseBaseEntity);
+            entities = player.world.getEntitiesInAABBexcluding(player, player.getBoundingBox().expand(3.0D, 1.0D, 3.0D),
+                    e -> e instanceof MinecartEntity || e instanceof BoatEntity || e instanceof HorseEntity);
         }
             else
         {
-            entities = player.world.getOtherEntities(player, player.getBoundingBox().expand(3.0D, 1.0D, 3.0D));
+            entities = player.world.getEntitiesInAABBexcluding(player, player.getBoundingBox().expand(3.0D, 1.0D, 3.0D), EntityPredicates.NOT_SPECTATING);
         }
         if (entities.size()==0)
             return this;
         Entity closest = null;
         double distance = Double.POSITIVE_INFINITY;
-        Entity currentVehicle = player.getVehicle();
+        Entity currentVehicle = player.getRidingEntity();
         for (Entity e: entities)
         {
             if (e == player || (currentVehicle == e))
                 continue;
-            double dd = player.squaredDistanceTo(e);
+            double dd = player.getDistanceSq(e);
             if (dd<distance)
             {
                 distance = dd;
@@ -200,8 +205,8 @@ public class EntityPlayerActionPack
             }
         }
         if (closest == null) return this;
-        if (closest instanceof HorseBaseEntity && onlyRideables)
-            ((HorseBaseEntity) closest).interactMob(player, Hand.MAIN_HAND);
+        if (closest instanceof AbstractHorseEntity && onlyRideables)
+            ((AbstractHorseEntity) closest).interactMob(player, Hand.MAIN_HAND);
         else
             player.startRiding(closest,true);
         return this;
