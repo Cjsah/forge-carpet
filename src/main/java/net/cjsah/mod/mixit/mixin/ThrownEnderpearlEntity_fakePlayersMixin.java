@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(value = EnderPearlEntity.class, remap = false)
+@Mixin(EnderPearlEntity.class)
 public abstract class ThrownEnderpearlEntity_fakePlayersMixin extends ProjectileItemEntity
 {
     public ThrownEnderpearlEntity_fakePlayersMixin(EntityType<? extends ProjectileItemEntity> entityType_1, World world_1)

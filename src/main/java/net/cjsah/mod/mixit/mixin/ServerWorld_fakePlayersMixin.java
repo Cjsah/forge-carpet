@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(value = ServerWorld.class, remap = false)
+@Mixin(ServerWorld.class)
 public abstract class ServerWorld_fakePlayersMixin
 {
     @Shadow /*@Nonnull*/ public abstract MinecraftServer getServer();

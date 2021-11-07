@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(value = PlayerEntity.class, remap = false)
+@Mixin(PlayerEntity.class)
 public abstract class PlayerEntity_fakePlayersMixin
 {
     /**

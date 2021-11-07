@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
 
-@Mixin(value = Entity.class, remap = false)
+@Mixin(Entity.class)
 public abstract class EntityMixin
 {
     @Shadow public World world;
