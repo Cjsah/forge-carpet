@@ -22,8 +22,7 @@ public abstract class ServerWorld_fakePlayersMixin
 
     @Redirect( method = "removePlayer*", at  = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/server/ServerWorld;removeEntity(Lnet/minecraft/entity/Entity;Z)V",
-            args = {"log=true"}
+            target = "Lnet/minecraft/world/server/ServerWorld;removeEntity(Lnet/minecraft/entity/Entity;Z)V"
     ))
     private void crashRemovePlayer(ServerWorld world, Entity entity, boolean keepData)
     {
