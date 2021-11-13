@@ -41,10 +41,7 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.FMLMCRegisterPacketHandler;
-import net.minecraftforge.fml.network.FMLNetworkConstants;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.SocketAddress;
 
 public class EntityPlayerMPFake extends ServerPlayerEntity
@@ -604,7 +601,7 @@ public class EntityPlayerMPFake extends ServerPlayerEntity
     public void kill(ITextComponent reason)
     {
         shakeOff();
-        this.server.enqueue(new TickDelayedTask(this.server.getTickCounter(), () -> this.connection.disconnect(reason)));
+        this.server.enqueue(new TickDelayedTask(this.server.getTickCounter(), () -> this.connection.onDisconnect(reason)));
     }
 
     @Override
