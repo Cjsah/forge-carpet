@@ -1,4 +1,4 @@
-package net.cjsah.mod.mixit.patch;
+package net.cjsah.mod.carpet.patch;
 
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketDirection;

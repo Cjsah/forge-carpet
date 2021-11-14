@@ -1,7 +1,7 @@
-package net.cjsah.mod.mixit.player;
+package net.cjsah.mod.carpet.player;
 
-import net.cjsah.mod.mixit.fake.ServerPlayerEntityInterface;
-import net.cjsah.mod.mixit.helper.Tracer;
+import net.cjsah.mod.carpet.fake.ServerPlayerEntityInterface;
+import net.cjsah.mod.carpet.helper.Tracer;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.arguments.EntityAnchorArgument;
 import net.minecraft.entity.Entity;

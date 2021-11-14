@@ -1,7 +1,7 @@
-package net.cjsah.mod.mixit.fake;
+package net.cjsah.mod.carpet.fake;
 
 
-import net.cjsah.mod.mixit.player.EntityPlayerActionPack;
+import net.cjsah.mod.carpet.player.EntityPlayerActionPack;
 
 public interface ServerPlayerEntityInterface
 {

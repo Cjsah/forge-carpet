@@ -1,4 +1,4 @@
-package net.cjsah.mod.mixit.helper;
+package net.cjsah.mod.carpet.helper;
 
 import net.minecraft.entity.Entity;
 

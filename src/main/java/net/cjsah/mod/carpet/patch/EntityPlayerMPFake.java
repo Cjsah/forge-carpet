@@ -1,4 +1,4 @@
-package net.cjsah.mod.mixit.patch;
+package net.cjsah.mod.carpet.patch;
 
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.ByteBufAllocator;
@@ -17,7 +17,7 @@ import io.netty.channel.EventLoop;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.EventExecutor;
-import net.cjsah.mod.mixit.fake.ServerPlayerEntityInterface;
+import net.cjsah.mod.carpet.fake.ServerPlayerEntityInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;

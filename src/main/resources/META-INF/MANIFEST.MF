@@ -1,1 +1,1 @@
-MixinConfigs: mixins.json
+MixinConfigs: carpet.mixins.json

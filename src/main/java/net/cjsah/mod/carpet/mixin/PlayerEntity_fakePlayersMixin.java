@@ -1,6 +1,6 @@
-package net.cjsah.mod.mixit.mixin;
+package net.cjsah.mod.carpet.mixin;
 
-import net.cjsah.mod.mixit.patch.EntityPlayerMPFake;
+import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

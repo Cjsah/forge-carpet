@@ -1,8 +1,8 @@
-package net.cjsah.mod.mixit.mixin;
+package net.cjsah.mod.carpet.mixin;
 
 import com.mojang.authlib.GameProfile;
-import net.cjsah.mod.mixit.patch.EntityPlayerMPFake;
-import net.cjsah.mod.mixit.patch.NetHandlerPlayServerFake;
+import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
+import net.cjsah.mod.carpet.patch.NetHandlerPlayServerFake;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;

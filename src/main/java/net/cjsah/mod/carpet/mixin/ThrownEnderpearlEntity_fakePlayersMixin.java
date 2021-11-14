@@ -1,6 +1,6 @@
-package net.cjsah.mod.mixit.mixin;
+package net.cjsah.mod.carpet.mixin;
 
-import net.cjsah.mod.mixit.patch.EntityPlayerMPFake;
+import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.item.EnderPearlEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;

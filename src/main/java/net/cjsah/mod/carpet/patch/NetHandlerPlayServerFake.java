@@ -1,4 +1,4 @@
-package net.cjsah.mod.mixit.patch;
+package net.cjsah.mod.carpet.patch;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;

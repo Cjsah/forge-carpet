@@ -61,7 +61,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                mixit {
+                carpet {
                     source sourceSets.main
                 }
             }
@@ -83,7 +83,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                mixit {
+                carpet {
                     source sourceSets.main
                 }
             }
@@ -105,10 +105,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            args '--mod', 'mixit', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'carpet', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                mixit {
+                carpet {
                     source sourceSets.main
                 }
             }
@@ -133,7 +133,7 @@ dependencies {
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
     // compile "some.group:artifact:version"
-    implementation fg.deobf("curse.maven:create-328085:3499718")
+
     // Real examples
     // compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     // compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
@@ -154,14 +154,14 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "mixit",
+            "Specification-Title": "carpet",
             "Specification-Vendor": "Cjsah",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
             "Implementation-Version": project.version,
             "Implementation-Vendor" :"Cjsah",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "mixins.json"
+            "MixinConfigs": "carpet.mixins.json"
         ])
     }
 }

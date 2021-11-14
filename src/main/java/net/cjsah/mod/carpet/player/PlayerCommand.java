@@ -1,4 +1,4 @@
-package net.cjsah.mod.mixit.player;
+package net.cjsah.mod.carpet.player;
 
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
@@ -9,8 +9,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.cjsah.mod.mixit.fake.ServerPlayerEntityInterface;
-import net.cjsah.mod.mixit.patch.EntityPlayerMPFake;
+import net.cjsah.mod.carpet.fake.ServerPlayerEntityInterface;
+import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.arguments.DimensionArgument;
 import net.minecraft.command.arguments.RotationArgument;
@@ -19,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;

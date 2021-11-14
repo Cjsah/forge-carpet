@@ -1,7 +1,7 @@
-package net.cjsah.mod.mixit;
+package net.cjsah.mod.carpet;
 
 import net.minecraftforge.fml.common.Mod;
 
-@Mod("mixit")
+@Mod("carpet")
 public class Initializer {
 }
