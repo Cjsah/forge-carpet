@@ -1,14 +1,18 @@
+//file:noinspection GroovyAssignabilityCheck
 buildscript {
     repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url 'https://maven.minecraftforge.net' }
+        maven { url 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url 'https://plugins.gradle.org/m2/' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.4.0"
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
+apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'maven-publish'
@@ -17,9 +21,7 @@ group = project.maven_group
 archivesBaseName = project.mod_name
 version = 'mc' + project.mc_version + '-' + project.mod_version
 def SemVer_version = project.mod_version
-if (project.build_number != "undefined") {
-    version += "+build.${project.build_number}"
-}
+def ENV = System.getenv()
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -179,6 +181,27 @@ publishing {
     repositories {
         maven {
             url "file:///${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+curseforge {
+    if (ENV.CURSEFORGE_TOKEN) {
+        apiKey = ENV.CURSEFORGE_TOKEN
+    } else {
+        println "No CURSEFORGE_TOKEN"
+    }
+    project {
+        id = project.curse_id
+        releaseType = project.curse_type
+        changelog = project.curse_changelog
+        project.curse_versions.split(", ").each {
+            String gameVersion -> addGameVersion gameVersion
+        }
+//        mainArtifact(file("${project.buildDir}/libs/${archivesBaseName}-${version}.jar"))
+//        mainArtifact.displayName = "$project.mod_name v$version for $project.mc_version"
+        mainArtifact(jar) {
+            displayName = "$project.name v$SemVer_version for $project.mc_version"
         }
     }
 }
