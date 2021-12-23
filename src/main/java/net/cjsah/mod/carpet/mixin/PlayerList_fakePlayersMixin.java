@@ -3,13 +3,13 @@ package net.cjsah.mod.carpet.mixin;
 import com.mojang.authlib.GameProfile;
 import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
 import net.cjsah.mod.carpet.patch.NetHandlerPlayServerFake;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.ServerPlayNetHandler;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("rawtypes")
 @Mixin(PlayerList.class)
 public abstract class PlayerList_fakePlayersMixin
 {
@@ -30,8 +31,8 @@ public abstract class PlayerList_fakePlayersMixin
     @Final
     private MinecraftServer server;
 
-    @Inject(method = "readPlayerDataFromFile", at = @At(value = "RETURN", shift = At.Shift.BEFORE))
-    private void fixStartingPos(ServerPlayerEntity serverPlayerEntity_1, CallbackInfoReturnable<CompoundNBT> cir)
+    @Inject(method = "load", at = @At(value = "RETURN", shift = At.Shift.BEFORE))
+    private void fixStartingPos(ServerPlayer serverPlayerEntity_1, CallbackInfoReturnable<CompoundTag> cir)
     {
         if (serverPlayerEntity_1 instanceof EntityPlayerMPFake)
         {
@@ -39,8 +40,8 @@ public abstract class PlayerList_fakePlayersMixin
         }
     }
 
-    @Redirect(method = "initializeConnectionToPlayer", at = @At(value = "NEW", target = "net/minecraft/network/play/ServerPlayNetHandler"))
-    private ServerPlayNetHandler replaceNetworkHandler(MinecraftServer server, NetworkManager networkManager, ServerPlayerEntity playerIn)
+    @Redirect(method = "placeNewPlayer", at = @At(value = "NEW", target = "net/minecraft/server/network/ServerGamePacketListenerImpl"))
+    private ServerGamePacketListenerImpl replaceNetworkHandler(MinecraftServer server, Connection networkManager, ServerPlayer playerIn)
     {
         boolean isServerPlayerEntity = playerIn instanceof EntityPlayerMPFake;
         if (isServerPlayerEntity)
@@ -49,30 +50,30 @@ public abstract class PlayerList_fakePlayersMixin
         }
         else
         {
-            return new ServerPlayNetHandler(this.server, networkManager, playerIn);
+            return new ServerGamePacketListenerImpl(this.server, networkManager, playerIn);
         }
     }
 
-    @Redirect(method = "createPlayerForUser", at = @At(value = "INVOKE", target = "Ljava/util/Iterator;hasNext()Z"))
+    @Redirect(method = "getPlayerForLogin", at = @At(value = "INVOKE", target = "Ljava/util/Iterator;hasNext()Z"))
     private boolean cancelWhileLoop(Iterator iterator)
     {
         return false;
     }
 
-    @Inject(method = "createPlayerForUser", at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
+    @Inject(method = "getPlayerForLogin", at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
             target = "Ljava/util/Iterator;hasNext()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void newWhileLoop(GameProfile gameProfile_1, CallbackInfoReturnable<ServerPlayerEntity> cir, UUID uUID_1,
-                              List list_1, ServerPlayerEntity serverPlayerEntity, Iterator var5)
+    private void newWhileLoop(GameProfile gameProfile_1, CallbackInfoReturnable<ServerPlayer> cir, UUID uUID_1,
+                              List list_1, ServerPlayer serverPlayerEntity, Iterator var5)
     {
         while (var5.hasNext())
         {
-            ServerPlayerEntity serverPlayerEntity_3 = (ServerPlayerEntity) var5.next();
+            ServerPlayer serverPlayerEntity_3 = (ServerPlayer) var5.next();
             if(serverPlayerEntity_3 instanceof EntityPlayerMPFake)
             {
-                ((EntityPlayerMPFake)serverPlayerEntity_3).kill(new TranslationTextComponent("multiplayer.disconnect.duplicate_login"));
+                ((EntityPlayerMPFake)serverPlayerEntity_3).kill(new TranslatableComponent("multiplayer.disconnect.duplicate_login"));
                 continue;
             }
-            serverPlayerEntity_3.connection.disconnect(new TranslationTextComponent("multiplayer.disconnect.duplicate_login"));
+            serverPlayerEntity_3.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.duplicate_login"));
         }
     }
 

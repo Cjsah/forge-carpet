@@ -1,22 +1,18 @@
 package net.cjsah.mod.carpet.patch;
 
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.PacketDirection;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 
-public class NetworkManagerFake extends NetworkManager
-{
-    public NetworkManagerFake(PacketDirection p)
-    {
+public class NetworkManagerFake extends Connection {
+    public NetworkManagerFake(PacketFlow p) {
         super(p);
     }
 
     @Override
-    public void disableAutoRead()
-    {
+    public void setReadOnly() {
     }
 
     @Override
-    public void handleDisconnection()
-    {
+    public void handleDisconnection() {
     }
 }

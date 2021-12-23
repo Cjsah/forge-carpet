@@ -1,31 +1,32 @@
 package net.cjsah.mod.carpet.patch;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.ServerPlayNetHandler;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-public class NetHandlerPlayServerFake extends ServerPlayNetHandler
+@SuppressWarnings("NullableProblems")
+public class NetHandlerPlayServerFake extends ServerGamePacketListenerImpl
 {
-    public NetHandlerPlayServerFake(MinecraftServer server, NetworkManager cc, ServerPlayerEntity playerIn)
+    public NetHandlerPlayServerFake(MinecraftServer server, Connection cc, ServerPlayer playerIn)
     {
         super(server, cc, playerIn);
     }
 
     @Override
-    public void sendPacket(final IPacket<?> packet)
+    public void send(final Packet<?> packet)
     {
     }
 
     @Override
-    public void disconnect(ITextComponent message)
+    public void disconnect(Component message)
     {
-        if (player instanceof EntityPlayerMPFake && message instanceof TranslationTextComponent && ((TranslationTextComponent) message).getKey().equals("multiplayer.disconnect.idling"))
+        if (player instanceof EntityPlayerMPFake && message instanceof TranslatableComponent && ((TranslatableComponent) message).getKey().equals("multiplayer.disconnect.idling"))
         {
-            ((EntityPlayerMPFake) player).kill(new TranslationTextComponent(((TranslationTextComponent) message).getKey()));
+            ((EntityPlayerMPFake) player).kill(new TranslatableComponent(((TranslatableComponent) message).getKey()));
         }
     }
 }

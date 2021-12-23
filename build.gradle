@@ -19,7 +19,6 @@ version = 'mc' + project.mc_version + '-' + project.mod_version
 def SemVer_version = project.mod_version
 if (project.build_number != "undefined") {
     version += "+build.${project.build_number}"
-    SemVer_version += "+build.${project.build_number}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)

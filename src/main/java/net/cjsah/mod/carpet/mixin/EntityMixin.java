@@ -1,8 +1,8 @@
 package net.cjsah.mod.carpet.mixin;
 
 import net.cjsah.mod.carpet.patch.EntityPlayerMPFake;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,13 +14,13 @@ import javax.annotation.Nullable;
 @Mixin(Entity.class)
 public abstract class EntityMixin
 {
-    @Shadow public World world;
+    @Shadow public Level level;
 
     @Shadow @Nullable public abstract Entity getControllingPassenger();
 
-    @Inject(method = "canPassengerSteer", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "isControlledByLocalInstance", at = @At("HEAD"), cancellable = true)
     private void isFakePlayer(CallbackInfoReturnable<Boolean> cir)
     {
-        if (getControllingPassenger() instanceof EntityPlayerMPFake) cir.setReturnValue(!world.isRemote);
+        if (getControllingPassenger() instanceof EntityPlayerMPFake) cir.setReturnValue(!level.isClientSide);
     }
 }
