@@ -9,7 +9,6 @@
         "PlayerEntity_fakePlayersMixin",
         "PlayerList_fakePlayersMixin",
         "ServerPlayerEntityMixin",
-        "ServerWorld_fakePlayersMixin",
         "ThrownEnderpearlEntity_fakePlayersMixin"
     ],
     "client": [
