@@ -1,0 +1,21 @@
+package net.cjsah.mod.carpet.mixins;
+
+import net.cjsah.mod.carpet.fakes.InventoryBearerInterface;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+@Mixin(AbstractHorse.class)
+public class HorseBaseEntity_scarpetMixin implements InventoryBearerInterface
+{
+
+    @Shadow protected SimpleContainer items;
+
+    @Override
+    public Container getCMInventory()
+    {
+        return items;
+    }
+}
