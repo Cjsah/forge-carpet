@@ -1,0 +1,21 @@
+package net.cjsah.mod.carpet.mixins;
+
+import net.cjsah.mod.carpet.fakes.PistonBlockInterface;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+@Mixin(PistonBaseBlock.class)
+public abstract class PistonBlock_rotatorBlockMixin implements PistonBlockInterface
+{
+    @Shadow protected abstract boolean shouldExtend(Level world_1, BlockPos blockPos_1, Direction direction_1);
+
+    @Override
+    public boolean publicShouldExtend(Level world_1, BlockPos blockPos_1, Direction direction_1)
+    {
+        return shouldExtend(world_1, blockPos_1,direction_1);
+    }
+}
