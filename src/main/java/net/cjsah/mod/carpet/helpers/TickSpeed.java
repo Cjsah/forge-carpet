@@ -93,7 +93,7 @@ public class TickSpeed
         deepFreeze = false;
         is_paused = false;
         is_superHot = false;
-        notifyTickrateListeners("net/cjsah/mod/carpet");
+        notifyTickrateListeners("carpet");
     }
 
     public static void add_ticks_to_run_in_pause(int ticks)
@@ -230,7 +230,7 @@ public class TickSpeed
         
         TickSpeed.mspt = (float)mspt;
         
-        if (update) notifyTickrateListeners("net/cjsah/mod/carpet");
+        if (update) notifyTickrateListeners("carpet");
     }
     
     private static void tickrateChanged(String modId, float rate)

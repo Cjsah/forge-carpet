@@ -903,7 +903,7 @@ public class CarpetEventServer
             {
                 String identifier = rule.settingsManager.getIdentifier();
                 final String namespace;
-                if (!identifier.equals("net/cjsah/mod/carpet"))
+                if (!identifier.equals("carpet"))
                 {
                     namespace = identifier+":";
                 } else { namespace = "";}

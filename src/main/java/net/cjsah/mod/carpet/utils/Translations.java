@@ -1,7 +1,7 @@
 package net.cjsah.mod.carpet.utils;
 
+import net.cjsah.mod.carpet.Carpet;
 import net.cjsah.mod.carpet.CarpetExtension;
-import net.cjsah.mod.carpet.CarpetServer;
 import net.cjsah.mod.carpet.CarpetSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -66,7 +66,7 @@ public class Translations
         Map<String, String> trans = getTranslationFromResourcePath(String.format("assets/carpet/lang/%s.json", CarpetSettings.language));
         if (trans != null) trans.forEach(translations::put);
 
-        for (CarpetExtension ext : CarpetServer.extensions)
+        for (CarpetExtension ext : Carpet.extensions)
         {
             Map<String, String> extMappings = ext.canHasTranslations(CarpetSettings.language);
             if (extMappings != null)

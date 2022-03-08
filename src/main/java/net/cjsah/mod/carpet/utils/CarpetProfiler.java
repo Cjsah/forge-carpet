@@ -50,9 +50,9 @@ public class CarpetProfiler
         TILEENTITY
     }
 
-    public static record ProfilerToken(TYPE type, Object section, long start, World world)
+    public static record ProfilerToken(TYPE type, Object section, long start, Level world)
     {
-        public ProfilerToken(TYPE type, Object section, World world)
+        public ProfilerToken(TYPE type, Object section, Level world)
         {
             this(type, section, System.nanoTime(), world);
         }

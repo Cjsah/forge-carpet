@@ -424,7 +424,7 @@ public class SpawnReporter
 
     // yeeted from SpawnHelper - temporary fix
     private static List<MobSpawnSettings.SpawnerData> method_29950(ServerLevel serverWorld, StructureFeatureManager structureAccessor, ChunkGenerator chunkGenerator, MobCategory spawnGroup, BlockPos blockPos, /*@Nullable*/ Biome biome) {
-        return spawnGroup == MobCategory.MONSTER && serverWorld.getBlockState(blockPos.below()).getBlock() == Blocks.NETHER_BRICKS && structureAccessor.getStructureAt(blockPos, false, StructureFeature.NETHER_BRIDGE).hasChildren() ? StructureFeature.NETHER_BRIDGE.getMonsterSpawns().getEntries() : chunkGenerator.getMobsAt(biome != null ? biome : serverWorld.getBiome(blockPos), structureAccessor, spawnGroup, blockPos).unwrap();
+        return spawnGroup == MobCategory.MONSTER && serverWorld.getBlockState(blockPos.below()).getBlock() == Blocks.NETHER_BRICKS && structureAccessor.getStructureAt(blockPos, StructureFeature.NETHER_BRIDGE).isValid() ? StructureFeature.NETHER_BRIDGE.getMonsterSpawns().getEntries() : chunkGenerator.getMobsAt(biome != null ? biome : serverWorld.getBiome(blockPos), structureAccessor, spawnGroup, blockPos).unwrap();
     }
 
     public static List<BaseComponent> report(BlockPos pos, ServerLevel worldIn)

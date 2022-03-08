@@ -45,7 +45,7 @@ public interface CarpetExtension
      * Register your own commands right after vanilla commands are added
      * If that matters for you
      * 
-     * @param dispatcher The current {@link CommandSource<ServerCommandSource>} dispatcher 
+     * @param dispatcher The current {@link CommandDispatcher<CommandSourceStack>} dispatcher
      *                   where you should register your commands
      * 
      */

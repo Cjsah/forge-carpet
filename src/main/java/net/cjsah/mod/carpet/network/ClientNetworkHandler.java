@@ -36,7 +36,7 @@ public class ClientNetworkHandler
                 {
                     ruleName = ruleNBT.getString("Rule");
                     String managerName = ruleNBT.getString("Manager");
-                    if (managerName.equals("net/cjsah/mod/carpet"))
+                    if (managerName.equals("carpet"))
                     {
                         manager = CarpetServer.settingsManager;
                     }

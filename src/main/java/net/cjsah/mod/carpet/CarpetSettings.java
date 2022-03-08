@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.Blocks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -33,7 +32,7 @@ import java.util.Optional;
 public class CarpetSettings
 {
     public static final String carpetVersion = "1.4.56+v211130";
-    public static final Logger LOG = LogManager.getLogger("net/cjsah/mod/carpet");
+    public static final Logger LOG = LogManager.getLogger("carpet");
     public static ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
@@ -442,7 +441,7 @@ public class CarpetSettings
             if (source != null && !source.hasPermission(permissionLevel))
                 return null;
             CarpetSettings.runPermissionLevel = permissionLevel;
-            CarpetServer.settingsManager.notifyPlayersCommandsChanged();
+            Carpet.settingsManager.notifyPlayersCommandsChanged();
             return newValue;
         }
         @Override
@@ -674,7 +673,7 @@ public class CarpetSettings
     public static class ChangeSpawnChunksValidator extends Validator<Integer> {
         public static void changeSpawnSize(int size)
         {
-            ServerLevel overworld = CarpetServer.minecraft_server.getLevel(Level.OVERWORLD); // OW
+            ServerLevel overworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
             if (overworld != null) {
                 ChunkPos centerChunk = new ChunkPos(new BlockPos(
                         overworld.getLevelData().getXSpawn(),
@@ -696,8 +695,8 @@ public class CarpetSettings
                 //must been some startup thing
                 return newValue;
             }
-            if (CarpetServer.minecraft_server == null) return newValue;
-            ServerLevel currentOverworld = CarpetServer.minecraft_server.getLevel(Level.OVERWORLD); // OW
+            if (Carpet.minecraft_server == null) return newValue;
+            ServerLevel currentOverworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
             if (currentOverworld != null)
             {
                 changeSpawnSize(newValue);
@@ -718,11 +717,7 @@ public class CarpetSettings
     public static class LightBatchValidator extends Validator<Integer> {
         public static void applyLightBatchSizes()
         {
-            Iterator<ServerLevel> iterator = CarpetServer.minecraft_server.getAllLevels().iterator();
-            
-            while (iterator.hasNext()) 
-            {
-                ServerLevel serverWorld = iterator.next();
+            for (ServerLevel serverWorld : Carpet.minecraft_server.getAllLevels()) {
                 serverWorld.getChunkSource().getLightEngine().setTaskPerBatch(lightEngineMaxBatchSize);
             }
         }
@@ -738,12 +733,12 @@ public class CarpetSettings
                 //must been some startup thing
                 return newValue;
             }
-            if (CarpetServer.minecraft_server == null) return newValue;
+            if (Carpet.minecraft_server == null) return newValue;
           
             // Set the field before we apply.
             try
             {
-                currentRule.field.set(null, newValue.intValue());
+                currentRule.field.set(null, newValue);
             }
             catch (IllegalAccessException e)
             {
@@ -923,7 +918,7 @@ public class CarpetSettings
         @Override
         public String validate(CommandSourceStack source, ParsedRule<String> currentRule, String newValue, String string) {
             Optional<Block> ignoredBlock = Registry.BLOCK.getOptional(ResourceLocation.tryParse(newValue));
-            if (!ignoredBlock.isPresent()) {
+            if (ignoredBlock.isEmpty()) {
                 Messenger.m(source, "r Unknown block '" + newValue + "'.");
                 return null;
             }

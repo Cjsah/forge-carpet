@@ -1,6 +1,6 @@
 package net.cjsah.mod.carpet.utils;
 
-import net.cjsah.mod.carpet.CarpetServer;
+import net.cjsah.mod.carpet.Carpet;
 import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +38,7 @@ public class MobAI
     public static void clearTracking(EntityType<? extends Entity> etype)
     {
         aiTrackers.remove(etype);
-        for(ServerLevel world : CarpetServer.minecraft_server.getAllLevels() )
+        for(ServerLevel world : Carpet.minecraft_server.getAllLevels() )
         {
             for (Entity e: world.getEntities(etype, Entity::hasCustomName))
             {
