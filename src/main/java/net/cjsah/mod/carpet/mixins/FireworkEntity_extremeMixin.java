@@ -9,14 +9,12 @@ import java.util.Random;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 
 @Mixin(FireworkRocketEntity.class)
-public class FireworkEntity_extremeMixin
-{
+public class FireworkEntity_extremeMixin {
     @Redirect(method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/item/ItemStack;)V", expect = 2, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

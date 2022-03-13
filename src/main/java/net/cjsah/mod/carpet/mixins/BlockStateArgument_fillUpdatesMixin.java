@@ -12,16 +12,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(BlockInput.class)
-public class BlockStateArgument_fillUpdatesMixin
-{
+public class BlockStateArgument_fillUpdatesMixin {
     @Redirect(method = "setBlockState", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/block/Block;postProcessState(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"
     ))
-    private BlockState postProcessStateProxy(BlockState state, LevelAccessor serverWorld, BlockPos blockPos)
-    {
-        if (CarpetSettings.impendingFillSkipUpdates.get())
-        {
+    private BlockState postProcessStateProxy(BlockState state, LevelAccessor serverWorld, BlockPos blockPos) {
+        if (CarpetSettings.impendingFillSkipUpdates.get()) {
             return state;
         }
         

@@ -20,28 +20,23 @@ import net.cjsah.mod.carpet.script.value.Value;
  *
  * @param <T> The type of the element that will be inside the list
  */
-final class ListConverter<T> implements ValueConverter<List<T>>
-{
+final class ListConverter<T> implements ValueConverter<List<T>> {
     private final ValueConverter<T> itemConverter;
     private final boolean allowSingletonCreation;
 
     @Override
-    public String getTypeName()
-    {
+    public String getTypeName() {
         return (allowSingletonCreation ? itemConverter.getTypeName() + " or " : "") + "list of " + itemConverter.getTypeName() + "s";
     }
 
     @Override
-    public List<T> convert(Value value)
-    {
+    public List<T> convert(Value value) {
         return value instanceof ListValue ? convertListValue((ListValue) value) : allowSingletonCreation ? convertSingleton(value) : null;
     }
 
-    private List<T> convertListValue(ListValue values)
-    {
+    private List<T> convertListValue(ListValue values) {
         List<T> list = new ArrayList<>(values.getItems().size());
-        for (Value value : values)
-        {
+        for (Value value : values) {
             T converted = itemConverter.convert(value);
             if (converted == null)
                 return null;
@@ -50,8 +45,7 @@ final class ListConverter<T> implements ValueConverter<List<T>>
         return list;
     }
 
-    private List<T> convertSingleton(Value val)
-    {
+    private List<T> convertSingleton(Value val) {
         T converted = itemConverter.convert(val);
         if (converted == null)
             return null;
@@ -59,8 +53,7 @@ final class ListConverter<T> implements ValueConverter<List<T>>
 
     }
 
-    private ListConverter(AnnotatedType itemType, boolean allowSingletonCreation)
-    {
+    private ListConverter(AnnotatedType itemType, boolean allowSingletonCreation) {
         itemConverter = ValueConverter.fromAnnotatedType(itemType);
         this.allowSingletonCreation = allowSingletonCreation;
     }
@@ -79,8 +72,7 @@ final class ListConverter<T> implements ValueConverter<List<T>>
      * @param annotatedType The type to get generics information from
      * @return A new {@link ListConverter} for the data specified in the {@link AnnotatedType}
      */
-    static ListConverter<?> fromAnnotatedType(AnnotatedType annotatedType)
-    {
+    static ListConverter<?> fromAnnotatedType(AnnotatedType annotatedType) {
         AnnotatedParameterizedType paramType = (AnnotatedParameterizedType) annotatedType;
         AnnotatedType itemType = paramType.getAnnotatedActualTypeArguments()[0];
         boolean allowSingletonCreation = annotatedType.isAnnotationPresent(Param.AllowSingleton.class);

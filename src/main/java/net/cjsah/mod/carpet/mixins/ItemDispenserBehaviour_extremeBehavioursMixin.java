@@ -9,14 +9,12 @@ import java.util.Random;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 
 @Mixin(DefaultDispenseItemBehavior.class)
-public class ItemDispenserBehaviour_extremeBehavioursMixin
-{
+public class ItemDispenserBehaviour_extremeBehavioursMixin {
     @Redirect(method = "spawnItem", expect = 3, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private static double nextGauBian(Random random)
-    {
+    private static double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 

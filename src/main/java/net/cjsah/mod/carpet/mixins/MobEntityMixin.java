@@ -12,28 +12,24 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 
 @Mixin(Mob.class)
-public abstract class MobEntityMixin implements MobEntityInterface
-{
+public abstract class MobEntityMixin implements MobEntityInterface {
     @Shadow @Final protected GoalSelector targetSelector;
     @Shadow @Final protected GoalSelector goalSelector;
     @Shadow private boolean persistent;
     public final Map<String, Goal> temporaryTasks = new HashMap<>();
 
     @Override
-    public GoalSelector getAI(boolean target)
-    {
+    public GoalSelector getAI(boolean target) {
         return target?targetSelector:goalSelector;
     }
 
     @Override
-    public Map<String, Goal> getTemporaryTasks()
-    {
+    public Map<String, Goal> getTemporaryTasks() {
         return temporaryTasks;
     }
 
     @Override
-    public void setPersistence(boolean what)
-    {
+    public void setPersistence(boolean what) {
         persistent = what;
     }
 }

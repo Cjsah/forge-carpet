@@ -14,13 +14,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerList.class)
-public class PlayerManager_coreMixin
-{
+public class PlayerManager_coreMixin {
     @Shadow @Final private MinecraftServer server;
 
     @Inject(method = "onPlayerConnect", at = @At("RETURN"))
-    private void onPlayerConnected(Connection connection, ServerPlayer player, CallbackInfo ci)
-    {
+    private void onPlayerConnected(Connection connection, ServerPlayer player, CallbackInfo ci) {
         CarpetServer.onPlayerLoggedIn(player);
         CarpetEventServer.Event.PLAYER_CONNECTS.onPlayerEvent(player);
     }

@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public abstract class ServerPlayNetworkHandler_antiCheatDisabledMixin
-{
+public abstract class ServerPlayNetworkHandler_antiCheatDisabledMixin {
     @Shadow private int floatingTicks;
 
     @Shadow private int vehicleFloatingTicks;
@@ -20,10 +19,8 @@ public abstract class ServerPlayNetworkHandler_antiCheatDisabledMixin
     @Shadow protected abstract boolean isHost();
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void restrictFloatingBits(CallbackInfo ci)
-    {
-        if (CarpetSettings.antiCheatDisabled)
-        {
+    private void restrictFloatingBits(CallbackInfo ci) {
+        if (CarpetSettings.antiCheatDisabled) {
             if (floatingTicks > 70) floatingTicks--;
             if (vehicleFloatingTicks > 70) vehicleFloatingTicks--;
         }
@@ -34,8 +31,7 @@ public abstract class ServerPlayNetworkHandler_antiCheatDisabledMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;isHost()Z"
     ))
-    private boolean isServerTrusting(ServerGamePacketListenerImpl serverPlayNetworkHandler)
-    {
+    private boolean isServerTrusting(ServerGamePacketListenerImpl serverPlayNetworkHandler) {
         return isHost() || CarpetSettings.antiCheatDisabled;
     }
 
@@ -43,8 +39,7 @@ public abstract class ServerPlayNetworkHandler_antiCheatDisabledMixin
              at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;isInTeleportationState()Z"))
-    private boolean relaxMoveRestrictions(ServerPlayer serverPlayerEntity)
-    {
+    private boolean relaxMoveRestrictions(ServerPlayer serverPlayerEntity) {
         return CarpetSettings.antiCheatDisabled || serverPlayerEntity.isChangingDimension();
     }
 }

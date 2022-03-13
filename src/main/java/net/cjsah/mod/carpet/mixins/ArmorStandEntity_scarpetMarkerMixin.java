@@ -15,10 +15,8 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.Level;
 
 @Mixin(ArmorStand.class)
-public abstract class ArmorStandEntity_scarpetMarkerMixin extends LivingEntity
-{
-    protected ArmorStandEntity_scarpetMarkerMixin(EntityType<? extends LivingEntity> entityType_1, Level world_1)
-    {
+public abstract class ArmorStandEntity_scarpetMarkerMixin extends LivingEntity {
+    protected ArmorStandEntity_scarpetMarkerMixin(EntityType<? extends LivingEntity> entityType_1, Level world_1) {
         super(entityType_1, world_1);
     }
 
@@ -27,25 +25,19 @@ public abstract class ArmorStandEntity_scarpetMarkerMixin extends LivingEntity
      * @param ci
      */
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    private void checkScarpetMarkerUnloaded(CallbackInfo ci)
-    {
-        if (!level.isClientSide)
-        {
-            if (getTags().contains(Auxiliary.MARKER_STRING))
-            {
+    private void checkScarpetMarkerUnloaded(CallbackInfo ci) {
+        if (!level.isClientSide) {
+            if (getTags().contains(Auxiliary.MARKER_STRING)) {
                 String prefix = Auxiliary.MARKER_STRING+"_";
                 Optional<String> owner = getTags().stream().filter(s -> s.startsWith(prefix)).findFirst();
-                if (owner.isPresent())
-                {
+                if (owner.isPresent()) {
                     String hostName = StringUtils.removeStart(owner.get(),prefix);
-                    if (!hostName.isEmpty() && CarpetServer.scriptServer.getAppHostByName(hostName) == null)
-                    {
+                    if (!hostName.isEmpty() && CarpetServer.scriptServer.getAppHostByName(hostName) == null) {
                         discard();  //discard
                     }
 
                 }
-                else
-                {
+                else {
                     discard(); // discard
                 }
             }

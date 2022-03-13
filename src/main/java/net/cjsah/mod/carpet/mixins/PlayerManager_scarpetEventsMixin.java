@@ -12,11 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerList.class)
-public class PlayerManager_scarpetEventsMixin
-{
+public class PlayerManager_scarpetEventsMixin {
     @Inject(method = "respawnPlayer", at = @At("HEAD"))
-    private void onRespawn(ServerPlayer player, boolean olive, CallbackInfoReturnable<ServerPlayer> cir)
-    {
+    private void onRespawn(ServerPlayer player, boolean olive, CallbackInfoReturnable<ServerPlayer> cir) {
         CarpetEventServer.Event.PLAYER_RESPAWNS.onPlayerEvent(player);
     }
 
@@ -25,14 +23,12 @@ public class PlayerManager_scarpetEventsMixin
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V"
             //target = "Lnet/minecraft/server/network/ServerPlayerEntity;method_34225()V"
     ))
-    private void invalidatePreviousInstance(ServerPlayer player, boolean alive, CallbackInfoReturnable<ServerPlayer> cir)
-    {
+    private void invalidatePreviousInstance(ServerPlayer player, boolean alive, CallbackInfoReturnable<ServerPlayer> cir) {
         ((ServerPlayerEntityInterface)player).invalidateEntityObjectReference();
     }
 
     @Inject(method = "onDataPacksReloaded", at = @At("HEAD"))
-    private void reloadCommands(CallbackInfo ci)
-    {
+    private void reloadCommands(CallbackInfo ci) {
         CarpetServer.scriptServer.reAddCommands();
     }
 }

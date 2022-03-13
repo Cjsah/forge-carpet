@@ -14,8 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(StandingAndWallBlockItem.class)
-public class WallStandingBlockItem_creativeNoClipMixin
-{
+public class WallStandingBlockItem_creativeNoClipMixin {
     @Redirect(method = "getPlacementState", at = @At(
                 value = "INVOKE",
                 target = "Lnet/minecraft/world/WorldView;canPlace(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Z"
@@ -23,11 +22,9 @@ public class WallStandingBlockItem_creativeNoClipMixin
     private boolean canCreativePlayerPlace(
             LevelReader worldView, BlockState state, BlockPos pos, CollisionContext context,
             BlockPlaceContext itemcontext
-    )
-    {
+    ) {
         Player player = itemcontext.getPlayer();
-        if (CarpetSettings.creativeNoClip && player != null && player.isCreative() && player.getAbilities().flying)
-        {
+        if (CarpetSettings.creativeNoClip && player != null && player.isCreative() && player.getAbilities().flying) {
             // copy from canPlace
             VoxelShape voxelShape = state.getCollisionShape(worldView, pos, context);
             return voxelShape.isEmpty() || worldView.isUnobstructed(player, voxelShape.move(pos.getX(), pos.getY(), pos.getZ()));

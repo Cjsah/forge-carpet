@@ -14,13 +14,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
-public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityInterface
-{
+public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityInterface {
     @Unique
     public EntityPlayerActionPack actionPack;
     @Override
-    public EntityPlayerActionPack getActionPack()
-    {
+    public EntityPlayerActionPack getActionPack() {
         return actionPack;
     }
 
@@ -29,24 +27,17 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityInter
             MinecraftServer minecraftServer_1,
             ServerLevel serverWorld_1,
             GameProfile gameProfile_1,
-            CallbackInfo ci)
-    {
+            CallbackInfo ci) {
         this.actionPack = new EntityPlayerActionPack((ServerPlayer) (Object) this);
     }
 
     @Inject(method = "tick", at = @At(value = "HEAD"))
-    private void onTick(CallbackInfo ci)
-    {
-        try
-        {
+    private void onTick(CallbackInfo ci) {
+        try {
             actionPack.onUpdate();
-        }
-        catch (StackOverflowError soe)
-        {
+        } catch (StackOverflowError soe) {
             CarpetSettings.LOG.fatal("Caused stack overflow when performing player action", soe);
-        }
-        catch (Throwable exc)
-        {
+        } catch (Throwable exc) {
             CarpetSettings.LOG.fatal("Error executing player tasks", exc);
         }
     }

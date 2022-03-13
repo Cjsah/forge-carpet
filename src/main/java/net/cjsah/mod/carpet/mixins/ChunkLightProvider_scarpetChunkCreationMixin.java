@@ -12,21 +12,18 @@ import net.minecraft.world.level.lighting.LayerLightEngine;
 import net.minecraft.world.level.lighting.LayerLightSectionStorage;
 
 @Mixin(LayerLightEngine.class)
-public abstract class ChunkLightProvider_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface, ChunkLightProviderInterface
-{
+public abstract class ChunkLightProvider_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface, ChunkLightProviderInterface {
     @Shadow
     @Final
     protected LayerLightSectionStorage<?> lightStorage;
 
     @Override
-    public void removeLightData(final long pos)
-    {
+    public void removeLightData(final long pos) {
         ((Lighting_scarpetChunkCreationInterface) this.lightStorage).removeLightData(pos);
     }
 
     @Override
-    public void relight(final long pos)
-    {
+    public void relight(final long pos) {
         ((Lighting_scarpetChunkCreationInterface) this.lightStorage).relight(pos);
     }
 

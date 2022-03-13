@@ -9,15 +9,13 @@ import java.util.Random;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 
 @Mixin(AbstractArrow.class)
-public class ProjectileEntity_extremeMixin
-{
+public class ProjectileEntity_extremeMixin {
     // calculates damage
     @Redirect(method = "applyEnchantmentEffects", expect = 1, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian2(Random random)
-    {
+    private double nextGauBian2(Random random) {
         return RandomTools.nextGauBian(random);
     }
 

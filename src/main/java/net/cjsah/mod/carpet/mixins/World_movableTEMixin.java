@@ -18,8 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Level.class)
-public abstract class World_movableTEMixin implements WorldInterface, LevelAccessor
-{
+public abstract class World_movableTEMixin implements WorldInterface, LevelAccessor {
     @Shadow
     @Final
     public boolean isClient;
@@ -56,8 +55,7 @@ public abstract class World_movableTEMixin implements WorldInterface, LevelAcces
     /**
      * @author 2No2Name
      */
-    public boolean setBlockStateWithBlockEntity(BlockPos blockPos_1, BlockState blockState_1, BlockEntity newBlockEntity, int int_1)
-    {
+    public boolean setBlockStateWithBlockEntity(BlockPos blockPos_1, BlockState blockState_1, BlockEntity newBlockEntity, int int_1) {
         if (isOutsideBuildHeight(blockPos_1) || !this.isClient && isDebugWorld()) return false;
         LevelChunk worldChunk_1 = this.getWorldChunk(blockPos_1);
         Block block_1 = blockState_1.getBlock();
@@ -68,45 +66,36 @@ public abstract class World_movableTEMixin implements WorldInterface, LevelAcces
         else
             blockState_2 = worldChunk_1.setBlockState(blockPos_1, blockState_1, (int_1 & 64) != 0);
 
-        if (blockState_2 == null)
-        {
+        if (blockState_2 == null) {
             return false;
         }
-        else
-        {
+        else {
             BlockState blockState_3 = this.getBlockState(blockPos_1);
 
-            if (blockState_3 != blockState_2 && (blockState_3.getLightBlock((BlockGetter) this, blockPos_1) != blockState_2.getLightBlock((BlockGetter) this, blockPos_1) || blockState_3.getLightEmission() != blockState_2.getLightEmission() || blockState_3.useShapeForLightOcclusion() || blockState_2.useShapeForLightOcclusion()))
-            {
+            if (blockState_3 != blockState_2 && (blockState_3.getLightBlock((BlockGetter) this, blockPos_1) != blockState_2.getLightBlock((BlockGetter) this, blockPos_1) || blockState_3.getLightEmission() != blockState_2.getLightEmission() || blockState_3.useShapeForLightOcclusion() || blockState_2.useShapeForLightOcclusion())) {
                 ProfilerFiller profiler = getProfiler();
                 profiler.push("queueCheckLight");
                 this.getChunkSource().getLightEngine().checkBlock(blockPos_1);
                 profiler.pop();
             }
 
-            if (blockState_3 == blockState_1)
-            {
-                if (blockState_2 != blockState_3)
-                {
+            if (blockState_3 == blockState_1) {
+                if (blockState_2 != blockState_3) {
                     this.scheduleBlockRerenderIfNeeded(blockPos_1, blockState_2, blockState_3);
                 }
 
-                if ((int_1 & 2) != 0 && (!this.isClient || (int_1 & 4) == 0) && (this.isClient || worldChunk_1.getFullStatus() != null && worldChunk_1.getFullStatus().isOrAfter(ChunkHolder.FullChunkStatus.TICKING)))
-                {
+                if ((int_1 & 2) != 0 && (!this.isClient || (int_1 & 4) == 0) && (this.isClient || worldChunk_1.getFullStatus() != null && worldChunk_1.getFullStatus().isOrAfter(ChunkHolder.FullChunkStatus.TICKING))) {
                     this.updateListeners(blockPos_1, blockState_2, blockState_1, int_1);
                 }
 
-                if (!this.isClient && (int_1 & 1) != 0)
-                {
+                if (!this.isClient && (int_1 & 1) != 0) {
                     this.updateNeighborsAlways(blockPos_1, blockState_2.getBlock());
-                    if (blockState_1.hasAnalogOutputSignal())
-                    {
+                    if (blockState_1.hasAnalogOutputSignal()) {
                         updateComparators(blockPos_1, block_1);
                     }
                 }
 
-                if ((int_1 & 16) == 0)
-                {
+                if ((int_1 & 16) == 0) {
                     int int_2 = int_1 & -34;
                     blockState_2.updateIndirectNeighbourShapes(this, blockPos_1, int_2); // prepare
                     blockState_1.updateNeighbourShapes(this, blockPos_1, int_2); // updateNeighbours

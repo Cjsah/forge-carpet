@@ -9,15 +9,13 @@ import java.util.Random;
 import net.minecraft.world.entity.monster.Blaze;
 
 @Mixin(Blaze.class)
-public class BlazeEntity_extremeMixin
-{
+public class BlazeEntity_extremeMixin {
     // unused actually
     @Redirect(method = "mobTick", expect = 1, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

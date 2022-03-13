@@ -2,35 +2,29 @@ package net.cjsah.mod.carpet.script.value;
 
 import net.minecraft.nbt.Tag;
 
-public abstract class FrameworkValue extends Value
-{
+public abstract class FrameworkValue extends Value {
     @Override
-    public String getString()
-    {
+    public String getString() {
         throw new UnsupportedOperationException("Scarpet language component cannot be used");
     }
 
     @Override
-    public boolean getBoolean()
-    {
+    public boolean getBoolean() {
         throw new UnsupportedOperationException("Scarpet language component cannot be used");
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         throw new UnsupportedOperationException("Scarpet language component cannot be used");
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         throw new UnsupportedOperationException("Scarpet language component cannot be used as map key");
     }
 
     @Override
-    public Tag toTag(boolean force)
-    {
+    public Tag toTag(boolean force) {
         throw new UnsupportedOperationException("Scarpet language component cannot be serialized to the tag");
     }
 }

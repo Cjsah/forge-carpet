@@ -9,13 +9,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(BlockInput.class)
-public class BlockStateArgument_scarpetMixin implements BlockStateArgumentInterface
-{
+public class BlockStateArgument_scarpetMixin implements BlockStateArgumentInterface {
     @Shadow @Final private @Nullable CompoundTag data;
 
     @Override
-    public CompoundTag getCMTag()
-    {
+    public CompoundTag getCMTag() {
         return data;
     }
 }

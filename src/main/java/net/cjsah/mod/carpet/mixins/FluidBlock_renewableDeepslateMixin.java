@@ -19,10 +19,8 @@ public abstract class FluidBlock_renewableDeepslateMixin {
     @Shadow protected abstract void playExtinguishSound(LevelAccessor world, BlockPos pos);
 
     @Inject(method = "receiveNeighborFluids", at = @At(value = "INVOKE",target = "Lnet/minecraft/fluid/FluidState;isStill()Z"), cancellable = true)
-    private void receiveFluidToDeepslate(Level world, BlockPos pos, BlockState state, CallbackInfoReturnable<Boolean> cir)
-    {
-        if(CarpetSettings.renewableDeepslate && !world.getFluidState(pos).isSource() && world.dimension() == Level.OVERWORLD && pos.getY() < 16)
-        {
+    private void receiveFluidToDeepslate(Level world, BlockPos pos, BlockState state, CallbackInfoReturnable<Boolean> cir) {
+        if(CarpetSettings.renewableDeepslate && !world.getFluidState(pos).isSource() && world.dimension() == Level.OVERWORLD && pos.getY() < 16) {
             world.setBlockAndUpdate(pos, Blocks.COBBLED_DEEPSLATE.defaultBlockState());
             this.playExtinguishSound(world, pos);
             cir.setReturnValue(false);

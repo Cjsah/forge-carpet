@@ -13,16 +13,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ExperienceOrb.class)
-public abstract class ExperienceOrbEntityMixin extends Entity
-{
+public abstract class ExperienceOrbEntityMixin extends Entity {
     @Shadow
     private int pickingCount;
 
     @Shadow
     private int amount;
 
-    public ExperienceOrbEntityMixin(EntityType<?> type, Level world)
-    {
+    public ExperienceOrbEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 

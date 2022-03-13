@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(Player.class)
-public abstract class PlayerEntityMixin_portalDelayMixin
-{
+public abstract class PlayerEntityMixin_portalDelayMixin {
     @Final @Shadow public Abilities abilities;
 
     @Inject(method = "getMaxNetherPortalTime()I", at = @At("HEAD"), cancellable = true)

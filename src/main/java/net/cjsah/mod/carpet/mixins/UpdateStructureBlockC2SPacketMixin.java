@@ -39,8 +39,7 @@ public class UpdateStructureBlockC2SPacketMixin {
     )
     private void structureBlockLimitsWrite(FriendlyByteBuf buf, CallbackInfo ci) {
         //client method, only applicable if with carpet is on the server, or running locally
-        if (CarpetSettings.structureBlockLimit != CarpetSettings.vanillaStructureBlockLimit)
-        {
+        if (CarpetSettings.structureBlockLimit != CarpetSettings.vanillaStructureBlockLimit) {
             buf.writeInt(this.offset.getX());
             buf.writeInt(this.offset.getY());
             buf.writeInt(this.offset.getZ());

@@ -8,23 +8,19 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-public class NetHandlerPlayServerFake extends ServerGamePacketListenerImpl
-{
-    public NetHandlerPlayServerFake(MinecraftServer server, Connection cc, ServerPlayer playerIn)
-    {
+@SuppressWarnings("NullableProblems")
+public class NetHandlerPlayServerFake extends ServerGamePacketListenerImpl {
+    public NetHandlerPlayServerFake(MinecraftServer server, Connection cc, ServerPlayer playerIn) {
         super(server, cc, playerIn);
     }
 
     @Override
-    public void send(final Packet<?> packetIn)
-    {
+    public void send(final Packet<?> packetIn) {
     }
 
     @Override
-    public void disconnect(Component message)
-    {
-        if (player instanceof EntityPlayerMPFake && message instanceof TranslatableComponent && ((TranslatableComponent) message).getKey().equals("multiplayer.disconnect.idling"))
-        {
+    public void disconnect(Component message) {
+        if (player instanceof EntityPlayerMPFake && message instanceof TranslatableComponent && ((TranslatableComponent) message).getKey().equals("multiplayer.disconnect.idling")) {
             ((EntityPlayerMPFake) player).kill(new TranslatableComponent(((TranslatableComponent) message).getKey()));
         }
     }

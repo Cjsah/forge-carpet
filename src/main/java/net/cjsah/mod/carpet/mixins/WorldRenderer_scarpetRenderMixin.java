@@ -16,11 +16,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public class WorldRenderer_scarpetRenderMixin
-{
+public class WorldRenderer_scarpetRenderMixin {
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void addRenderers(Minecraft client, RenderBuffers bufferBuilders, CallbackInfo ci)
-    {
+    private void addRenderers(Minecraft client, RenderBuffers bufferBuilders, CallbackInfo ci) {
         CarpetClient.shapes = new ShapesRenderer(client);
     }
 
@@ -34,13 +32,11 @@ public class WorldRenderer_scarpetRenderMixin
             //target = "Lnet/minecraft/client/render/BufferBuilderStorage;getEntityVertexConsumers()Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;", shift = At.Shift.AFTER
             //target = "Lnet/minecraft/client/render/WorldRenderer;renderChunkDebugInfo(Lnet/minecraft/client/render/Camera;)V", shift = At.Shift.AFTER // before return
     ))
-    private void renderScarpetThings(PoseStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci)
-    {
+    private void renderScarpetThings(PoseStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
         // in normal circumstances we want to render shapes at the very end so it appears correctly behind stuff.
         // we might actually not need to play with render hooks here.
         //if (!FabricAPIHooks.WORLD_RENDER_EVENTS && CarpetClient.shapes != null )
-        if (CarpetClient.shapes != null)
-        {
+        if (CarpetClient.shapes != null) {
             CarpetClient.shapes.render(matrices, camera, tickDelta);
         }
     }

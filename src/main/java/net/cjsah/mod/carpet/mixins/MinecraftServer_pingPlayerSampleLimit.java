@@ -8,12 +8,10 @@ import net.cjsah.mod.carpet.CarpetSettings;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServer_pingPlayerSampleLimit
-{
+public abstract class MinecraftServer_pingPlayerSampleLimit {
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 12), require = 0, allow = 1)
-	private int modifyPlayerSampleLimit(int value)
-	{
+	private int modifyPlayerSampleLimit(int value) {
 		return CarpetSettings.pingPlayerListLimit;
 	}
 }

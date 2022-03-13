@@ -11,11 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Husk.class)
-public class HuskEntityMixin
-{
+public class HuskEntityMixin {
     @Redirect(method = "canSpawn", at = @At(value = "INVOKE", target="Lnet/minecraft/world/ServerWorldAccess;isSkyVisible(Lnet/minecraft/util/math/BlockPos;)Z"))
-    private static boolean isSkylightOrTempleVisible(ServerLevelAccessor serverWorldAccess, BlockPos pos)
-    {
+    private static boolean isSkylightOrTempleVisible(ServerLevelAccessor serverWorldAccess, BlockPos pos) {
         return serverWorldAccess.canSeeSky(pos) ||
                 (CarpetSettings.huskSpawningInTemples && (((ServerLevel)serverWorldAccess).structureFeatureManager().getStructureAt(pos, false, StructureFeature.DESERT_PYRAMID).hasChildren()));
     }

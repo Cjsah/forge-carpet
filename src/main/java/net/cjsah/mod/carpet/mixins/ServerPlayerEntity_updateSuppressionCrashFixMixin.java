@@ -30,7 +30,7 @@ public abstract class ServerPlayerEntity_updateSuppressionCrashFixMixin extends 
             ),
             require = 0
     )
-    private void fixUpdateSuppressionCrashPlayerTick(Player playerEntity){
+    private void fixUpdateSuppressionCrashPlayerTick(Player playerEntity) {
         if (!CarpetSettings.updateSuppressionCrashFix) {
             super.tick();
             return;

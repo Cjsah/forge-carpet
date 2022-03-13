@@ -17,8 +17,7 @@ import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
 @Mixin(PathNavigation.class)
-public abstract class EntityNavigation_pathfindingMixin
-{
+public abstract class EntityNavigation_pathfindingMixin {
 
     @Shadow @Final protected Mob entity;
 
@@ -29,8 +28,7 @@ public abstract class EntityNavigation_pathfindingMixin
             value = "INVOKE",
             target = "Lnet/minecraft/entity/ai/pathing/EntityNavigation;findPathTo(Ljava/util/Set;IZI)Lnet/minecraft/entity/ai/pathing/Path;"
     ))
-    private Path pathToBlock(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2)
-    {
+    private Path pathToBlock(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2) {
         if (!LoggerRegistry.__pathfinding)
             return findPathTo(set_1, int_1, boolean_1, int_2);
         long start = System.nanoTime();
@@ -45,8 +43,7 @@ public abstract class EntityNavigation_pathfindingMixin
             value = "INVOKE",
             target = "Lnet/minecraft/entity/ai/pathing/EntityNavigation;findPathTo(Ljava/util/Set;IZI)Lnet/minecraft/entity/ai/pathing/Path;"
     ))
-    private Path pathToEntity(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2)
-    {
+    private Path pathToEntity(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2) {
         if (!LoggerRegistry.__pathfinding)
             return findPathTo(set_1, int_1, boolean_1, int_2);
         long start = System.nanoTime();

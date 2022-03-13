@@ -19,10 +19,8 @@ import net.minecraft.world.level.lighting.LayerLightSectionStorage;
 import net.minecraft.world.level.lighting.SkyLightSectionStorage;
 
 @Mixin(SkyLightSectionStorage.class)
-public abstract class SkyLightStorage_scarpetChunkCreationMixin extends LayerLightSectionStorage<BlockDataLayerStorageMap> implements LightStorageInterface
-{
-    protected SkyLightStorage_scarpetChunkCreationMixin(final LightLayer lightType, final LightChunkGetter chunkProvider, final BlockDataLayerStorageMap lightData)
-    {
+public abstract class SkyLightStorage_scarpetChunkCreationMixin extends LayerLightSectionStorage<BlockDataLayerStorageMap> implements LightStorageInterface {
+    protected SkyLightStorage_scarpetChunkCreationMixin(final LightLayer lightType, final LightChunkGetter chunkProvider, final BlockDataLayerStorageMap lightData) {
         super(lightType, chunkProvider, lightData);
     }
 
@@ -43,10 +41,8 @@ public abstract class SkyLightStorage_scarpetChunkCreationMixin extends LayerLig
     @Shadow protected abstract boolean isSectionEnabled(final long sectionPos);
 
     @Override
-    public void processRemoveLightData(final long cPos)
-    {
-        for (int y = -1; y < 17; ++y)
-        {
+    public void processRemoveLightData(final long cPos) {
+        for (int y = -1; y < 17; ++y) {
             final long sectionPos = SectionPos.asLong(SectionPos.x(cPos), y, SectionPos.z(cPos));
 
             this.sectionsToUpdate.remove(sectionPos);
@@ -57,27 +53,23 @@ public abstract class SkyLightStorage_scarpetChunkCreationMixin extends LayerLig
     }
 
     @Override
-    public void processRelight(final LayerLightEngine<?, ?> lightProvider, final long cPos)
-    {
+    public void processRelight(final LayerLightEngine<?, ?> lightProvider, final long cPos) {
         final LevelPropagator_resetChunkInterface levelPropagator = (LevelPropagator_resetChunkInterface) lightProvider;
 
-        for (int y = -1; y < 17; ++y)
-        {
+        for (int y = -1; y < 17; ++y) {
             final long sectionPos = SectionPos.asLong(SectionPos.x(cPos), y, SectionPos.z(cPos));
             final long pos = BlockPos.asLong(SectionPos.sectionToBlockCoord(SectionPos.x(sectionPos)), SectionPos.sectionToBlockCoord(y), SectionPos.sectionToBlockCoord(SectionPos.z(sectionPos)));
 
             if (!this.storingLightForSection(sectionPos))
                 continue;
 
-            for (final Direction dir : Direction.Plane.HORIZONTAL)
-            {
+            for (final Direction dir : Direction.Plane.HORIZONTAL) {
                 long neighborCeilingSectionPos = SectionPos.offset(sectionPos, dir);
                 final DataLayer neighborLightArray = this.getDataLayerData(neighborCeilingSectionPos);
 
                 DataLayer neighborCeilingLightArray = neighborLightArray;
 
-                while (neighborCeilingLightArray == null && !this.isAtOrAboveTopmostSection(neighborCeilingSectionPos))
-                {
+                while (neighborCeilingLightArray == null && !this.isAtOrAboveTopmostSection(neighborCeilingSectionPos)) {
                     neighborCeilingSectionPos = SectionPos.offset(neighborCeilingSectionPos, Direction.UP);
                     neighborCeilingLightArray = this.getDataLayerData(neighborCeilingSectionPos);
                 }
@@ -96,8 +88,7 @@ public abstract class SkyLightStorage_scarpetChunkCreationMixin extends LayerLig
                     : 0;
 
                 for (int t = 0; t < 16; ++t)
-                    for (int dy = 0; dy < 16; ++dy)
-                    {
+                    for (int dy = 0; dy < 16; ++dy) {
                         final long dst = BlockPos.offset(pos, ox + t * dx, dy, oz + t * dz);
                         long src = BlockPos.offset(dst, dir);
 

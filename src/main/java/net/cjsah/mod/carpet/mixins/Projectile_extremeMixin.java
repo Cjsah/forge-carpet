@@ -9,14 +9,12 @@ import java.util.Random;
 import net.minecraft.world.entity.projectile.Projectile;
 
 @Mixin(Projectile.class)
-public class Projectile_extremeMixin
-{
+public class Projectile_extremeMixin {
     @Redirect(method = "setVelocity", expect = 3, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

@@ -14,16 +14,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class ServerPlayNetworkHandlerMixin
-{
+public class ServerPlayNetworkHandlerMixin {
     @Shadow public ServerPlayer player;
 
     @Inject(method = "onCustomPayload", at = @At("HEAD"), cancellable = true)
-    private void onCustomCarpetPayload(ServerboundCustomPayloadPacket packet, CallbackInfo ci)
-    {
+    private void onCustomCarpetPayload(ServerboundCustomPayloadPacket packet, CallbackInfo ci) {
         ResourceLocation channel = packet.getIdentifier();
-        if (CarpetClient.CARPET_CHANNEL.equals(channel))
-        {
+        if (CarpetClient.CARPET_CHANNEL.equals(channel)) {
             ServerNetworkHandler.handleData(new FriendlyByteBuf(packet.getData().copy()), player);
             ci.cancel();
         }

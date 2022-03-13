@@ -6,13 +6,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ChunkGenerator.class)
-public abstract class ChunkGenerator_scarpetMixin implements ChunkGeneratorInterface
-{
+public abstract class ChunkGenerator_scarpetMixin implements ChunkGeneratorInterface {
     @Shadow protected abstract void generateStrongholdPositions();
 
     @Override
-    public void initStrongholds()
-    {
+    public void initStrongholds() {
         generateStrongholdPositions();
     }
 }

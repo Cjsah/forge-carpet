@@ -15,8 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Iterator;
 
 @Mixin(DistanceManager.class)
-public abstract class ChunkTicketManager_spawnChunksMixin implements ChunkTicketManagerInterface
-{
+public abstract class ChunkTicketManager_spawnChunksMixin implements ChunkTicketManagerInterface {
     @Shadow @Final private Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> ticketsByPosition;
 
     @Shadow protected abstract void removeTicket(long pos, Ticket<?> ticket);
@@ -24,19 +23,15 @@ public abstract class ChunkTicketManager_spawnChunksMixin implements ChunkTicket
     @Shadow public abstract <T> void addTicket(TicketType<T> type, ChunkPos pos, int radius, T argument);
 
     @Override
-    public void changeSpawnChunks(ChunkPos chunkPos,  int distance)
-    {
+    public void changeSpawnChunks(ChunkPos chunkPos,  int distance) {
         long pos = chunkPos.toLong();
         SortedArraySet<Ticket<?>> set = ticketsByPosition.get(pos);
         Ticket existingTicket = null;
-        if (set != null)
-        {
+        if (set != null) {
             Iterator<Ticket<?>> iter = set.iterator();
-            while(iter.hasNext())
-            {
+            while(iter.hasNext()) {
                 Ticket ticket = iter.next();
-                if (ticket.getType() == TicketType.START)
-                {
+                if (ticket.getType() == TicketType.START) {
                     existingTicket = ticket;
                     iter.remove();
                 }
@@ -44,8 +39,7 @@ public abstract class ChunkTicketManager_spawnChunksMixin implements ChunkTicket
             set.add(existingTicket);
         }
         // the reason we are removing the ticket this way is that there are sideeffects of removal
-        if (existingTicket != null)
-        {
+        if (existingTicket != null) {
             removeTicket(pos, existingTicket);
         }
         // set optionally new spawn ticket

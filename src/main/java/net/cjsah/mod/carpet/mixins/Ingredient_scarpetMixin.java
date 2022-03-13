@@ -13,13 +13,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 @Mixin(Ingredient.class)
-public class Ingredient_scarpetMixin implements IngredientInterface
-{
+public class Ingredient_scarpetMixin implements IngredientInterface {
     @Shadow @Final private Ingredient.Value[] entries;
 
     @Override
-    public List<Collection<ItemStack>> getRecipeStacks()
-    {
+    public List<Collection<ItemStack>> getRecipeStacks() {
         List<Collection<ItemStack>> res = Arrays.stream(entries).map(Ingredient.Value::getItems).collect(Collectors.toList());
         return res;
     }

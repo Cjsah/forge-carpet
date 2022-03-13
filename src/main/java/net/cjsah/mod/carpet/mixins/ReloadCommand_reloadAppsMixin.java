@@ -15,8 +15,7 @@ public class ReloadCommand_reloadAppsMixin {
     // internal of register.
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "method_13530", at = @At("TAIL"))
-    private static void onReload(CommandContext<CommandSourceStack> context, CallbackInfoReturnable<Integer> cir)
-    {
+    private static void onReload(CommandContext<CommandSourceStack> context, CallbackInfoReturnable<Integer> cir) {
         // can't fetch here the reference to the server
         CarpetServer.onReload(context.getSource().getServer());
     }

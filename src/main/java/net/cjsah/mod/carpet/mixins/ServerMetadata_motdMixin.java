@@ -10,13 +10,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerStatus.class)
-public class ServerMetadata_motdMixin
-{
+public class ServerMetadata_motdMixin {
     @Inject(method = "getDescription", at = @At("HEAD"), cancellable = true)
-    private void getDescriptionAlternative(CallbackInfoReturnable<Component> cir)
-    {
-        if (!CarpetSettings.customMOTD.equals("_"))
-        {
+    private void getDescriptionAlternative(CallbackInfoReturnable<Component> cir) {
+        if (!CarpetSettings.customMOTD.equals("_")) {
             cir.setReturnValue(new TextComponent(CarpetSettings.customMOTD));
             cir.cancel();
         }

@@ -10,14 +10,12 @@ import java.util.Random;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 
 @Mixin(WitherBoss.class)
-public class WitherEntity_extremeMixin
-{
+public class WitherEntity_extremeMixin {
     @Redirect(method = "shootSkullAt(ILnet/minecraft/entity/LivingEntity;)V", at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextFloat()F")
     )
-    private float nextFloatAmplfied(Random random)
-    {
+    private float nextFloatAmplfied(Random random) {
         if (CarpetSettings.extremeBehaviours) return random.nextFloat()/100;
         return random.nextFloat();
     }

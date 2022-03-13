@@ -8,14 +8,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(targets = "net.minecraft.entity.mob.BlazeEntity$ShootFireballGoal")
-public class BlazeEntityShootFireballGoal_extremeMixin
-{
+public class BlazeEntityShootFireballGoal_extremeMixin {
     @Redirect(method = "tick()V", expect = 2, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

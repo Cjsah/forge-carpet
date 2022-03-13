@@ -9,14 +9,12 @@ import java.util.Random;
 import net.minecraft.world.entity.Mob;
 
 @Mixin(Mob.class)
-public class MobEntity_extremeMixin
-{
+public class MobEntity_extremeMixin {
     @Redirect(method = "initialize", expect = 1, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

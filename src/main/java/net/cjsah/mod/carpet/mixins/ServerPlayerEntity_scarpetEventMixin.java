@@ -27,15 +27,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
-public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implements ServerPlayerEntityInterface
-{
+public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implements ServerPlayerEntityInterface {
     // to denote if the player reference is valid
 
     @Unique
     private boolean isInvalidReference = false;
 
-    public ServerPlayerEntity_scarpetEventMixin(Level world, BlockPos blockPos, float f, GameProfile gameProfile)
-    {
+    public ServerPlayerEntity_scarpetEventMixin(Level world, BlockPos blockPos, float f, GameProfile gameProfile) {
         super(world, blockPos, f, gameProfile);
     }
 
@@ -47,34 +45,28 @@ public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implem
             value = "INVOKE",
             target = "Lnet/minecraft/entity/player/PlayerEntity;consumeItem()V"
     ))
-    private void finishedUsingItem(Player playerEntity)
-    {
-        if (CarpetEventServer.Event.PLAYER_FINISHED_USING_ITEM.isNeeded())
-        {
+    private void finishedUsingItem(Player playerEntity) {
+        if (CarpetEventServer.Event.PLAYER_FINISHED_USING_ITEM.isNeeded()) {
             InteractionHand hand = getUsedItemHand();
             CarpetEventServer.Event.PLAYER_FINISHED_USING_ITEM.onItemAction((ServerPlayer) (Object)this, hand, getUseItem());
             // do vanilla
             super.completeUsingItem();
         }
-        else
-        {
+        else {
             // do vanilla
             super.completeUsingItem();
         }
     }
 
     @Inject(method = "increaseStat", at = @At("HEAD"))
-    private void grabStat(Stat<?> stat, int amount, CallbackInfo ci)
-    {
+    private void grabStat(Stat<?> stat, int amount, CallbackInfo ci) {
         CarpetEventServer.Event.STATISTICS.onPlayerStatistic((ServerPlayer) (Object)this, stat, amount);
     }
 
     @Inject(method = "onDeath", at = @At("HEAD"))
-    private void onDeathEvent(DamageSource source, CallbackInfo ci)
-    {
+    private void onDeathEvent(DamageSource source, CallbackInfo ci) {
         ((EntityInterface)this).getEventContainer().onEvent(EntityEventsGroup.Event.ON_DEATH, source.msgId);
-        if (CarpetEventServer.Event.PLAYER_DIES.isNeeded())
-        {
+        if (CarpetEventServer.Event.PLAYER_DIES.isNeeded()) {
             CarpetEventServer.Event.PLAYER_DIES.onPlayerEvent((ServerPlayer) (Object)this);
         }
     }
@@ -83,8 +75,7 @@ public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implem
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;setSneaking(Z)V"
     ))
-    private void setSneakingConditionally(ServerPlayer serverPlayerEntity, boolean sneaking)
-    {
+    private void setSneakingConditionally(ServerPlayer serverPlayerEntity, boolean sneaking) {
         if (!((EntityInterface)serverPlayerEntity.getVehicle()).isPermanentVehicle()) // won't since that method makes sure its not null
             serverPlayerEntity.setShiftKeyDown(sneaking);
     }
@@ -93,21 +84,17 @@ public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implem
     private ResourceKey<Level> previousDimension;
 
     @Inject(method = "moveToWorld", at = @At("HEAD"))
-    private void logPreviousCoordinates(ServerLevel serverWorld, CallbackInfoReturnable<Entity> cir)
-    {
+    private void logPreviousCoordinates(ServerLevel serverWorld, CallbackInfoReturnable<Entity> cir) {
         previousLocation = position();
         previousDimension = level.dimension();  //dimension type
     }
 
     @Inject(method = "moveToWorld", at = @At("RETURN"))
-    private void atChangeDimension(ServerLevel destination, CallbackInfoReturnable<Entity> cir)
-    {
-        if (CarpetEventServer.Event.PLAYER_CHANGES_DIMENSION.isNeeded())
-        {
+    private void atChangeDimension(ServerLevel destination, CallbackInfoReturnable<Entity> cir) {
+        if (CarpetEventServer.Event.PLAYER_CHANGES_DIMENSION.isNeeded()) {
             ServerPlayer player = (ServerPlayer) (Object)this;
             Vec3 to = null;
-            if (!notInAnyWorld || previousDimension != Level.END || destination.dimension() != Level.OVERWORLD) // end ow
-            {
+            if (!notInAnyWorld || previousDimension != Level.END || destination.dimension() != Level.OVERWORLD) // end ow {
                 to = position();
             }
             CarpetEventServer.Event.PLAYER_CHANGES_DIMENSION.onDimensionChange(player, previousLocation, to, previousDimension, destination.dimension());
@@ -115,14 +102,12 @@ public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implem
     };
 
     @Override
-    public void invalidateEntityObjectReference()
-    {
+    public void invalidateEntityObjectReference() {
         isInvalidReference = true;
     }
 
     @Override
-    public boolean isInvalidEntityObject()
-    {
+    public boolean isInvalidEntityObject() {
         return isInvalidReference;
     }
 
@@ -131,14 +116,12 @@ public abstract class ServerPlayerEntity_scarpetEventMixin extends Player implem
     private String language;
 
     @Override
-    public String getLanguage()
-    {
+    public String getLanguage() {
         return this.language;
     }
 
     @Inject(method = "setClientSettings", at = @At("HEAD"))
-    public void setLanguage(ServerboundClientInformationPacket packet, CallbackInfo ci)
-    {
+    public void setLanguage(ServerboundClientInformationPacket packet, CallbackInfo ci) {
         this.language = packet.getLanguage();
     }
 }

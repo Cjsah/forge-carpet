@@ -274,8 +274,7 @@ public class PlayerCommand {
         return 1;
     }
 
-    private static int maxPlayerLength(MinecraftServer server)
-    {
+    private static int maxPlayerLength(MinecraftServer server) {
         return server.getPort() >= 0 ? 16 : 40;
     }
 

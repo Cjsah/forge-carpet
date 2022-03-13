@@ -65,8 +65,7 @@ public class Carpet {
         // for extensions that come late to the party, after server is created / loaded
         // we will handle them now.
         // that would handle all extensions, even these that add themselves really late to the party
-        if (currentCommandDispatcher != null)
-        {
+        if (currentCommandDispatcher != null) {
             extension.registerCommands(currentCommandDispatcher);
         }
     }
@@ -152,8 +151,7 @@ public class Carpet {
     public static void onServerClosed(MinecraftServer server) {
         // this for whatever reason gets called multiple times even when joining on SP
         // so we allow to pass multiple times gating it only on existing server ref
-        if (minecraft_server != null)
-        {
+        if (minecraft_server != null) {
             if (scriptServer != null) scriptServer.onClose();
             scriptServer = null;
             ServerNetworkHandler.close();
@@ -168,13 +166,11 @@ public class Carpet {
         // this for whatever reason gets called multiple times even when joining;
         TickSpeed.reset();
     }
-    public static void onServerDoneClosing(MinecraftServer server)
-    {
+    public static void onServerDoneClosing(MinecraftServer server) {
         settingsManager.detachServer();
     }
 
-    public static void registerExtensionLoggers()
-    {
+    public static void registerExtensionLoggers() {
         extensions.forEach(CarpetExtension::registerLoggers);
     }
 

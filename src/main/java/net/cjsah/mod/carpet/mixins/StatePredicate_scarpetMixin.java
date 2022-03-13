@@ -18,8 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 @Mixin(targets = "net.minecraft.command.argument.BlockPredicateArgumentType$StatePredicate")
-public class StatePredicate_scarpetMixin implements BlockPredicateInterface
-{
+public class StatePredicate_scarpetMixin implements BlockPredicateInterface {
 
     @Shadow @Final private BlockState state;
 
@@ -28,20 +27,17 @@ public class StatePredicate_scarpetMixin implements BlockPredicateInterface
     @Shadow @Final private Set<Property<?>> properties;
 
     @Override
-    public BlockState getCMBlockState()
-    {
+    public BlockState getCMBlockState() {
         return state;
     }
 
     @Override
-    public Tag<Block> getCMBlockTag()
-    {
+    public Tag<Block> getCMBlockTag() {
         return null;
     }
 
     @Override
-    public Map<Value, Value> getCMProperties()
-    {
+    public Map<Value, Value> getCMProperties() {
         return properties.stream().collect(Collectors.toMap(
                 p -> StringValue.of(p.getName()),
                 p -> ValueConversions.fromProperty(state, p),
@@ -50,8 +46,7 @@ public class StatePredicate_scarpetMixin implements BlockPredicateInterface
     }
 
     @Override
-    public CompoundTag getCMDataTag()
-    {
+    public CompoundTag getCMDataTag() {
         return nbt;
     }
 }

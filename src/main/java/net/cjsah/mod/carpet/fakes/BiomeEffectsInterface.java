@@ -2,8 +2,7 @@ package net.cjsah.mod.carpet.fakes;
 
 import java.util.Optional;
 
-public interface BiomeEffectsInterface
-{
+public interface BiomeEffectsInterface {
     int getCMFogColor();
     Optional<Integer> getCMFoliageColor();
     int getCMSkyColor();

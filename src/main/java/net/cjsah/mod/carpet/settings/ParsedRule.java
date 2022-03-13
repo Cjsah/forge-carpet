@@ -38,8 +38,7 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
     public final String defaultAsString;
     public final SettingsManager settingsManager;
 
-    ParsedRule(Field field, Rule rule, SettingsManager settingsManager)
-    {
+    ParsedRule(Field field, Rule rule, SettingsManager settingsManager) {
         this.field = field;
         this.name = rule.name().isEmpty() ? field.getName() : rule.name();
         this.type = (Class<T>) field.getType();
@@ -52,115 +51,89 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
         this.validators = new ArrayList<>();
         for (Class v : rule.validate())
             this.validators.add((Validator<T>) callConstructor(v));
-        if (categories.contains(RuleCategory.COMMAND))
-        {
+        if (categories.contains(RuleCategory.COMMAND)) {
             this.validators.add(callConstructor(Validator._COMMAND.class));
-            if (this.type == String.class)
-            {
+            if (this.type == String.class) {
                 this.isStrict = false;
                 this.validators.add((Validator<T>) callConstructor(Validator._COMMAND_LEVEL_VALIDATOR.class));
             }
         }
-        if (!scarpetApp.isEmpty())
-        {
+        if (!scarpetApp.isEmpty()) {
             this.validators.add((Validator<T>) callConstructor(Validator._SCARPET.class));
         }
         this.isClient = categories.contains(RuleCategory.CLIENT);
-        if (this.isClient)
-        {
+        if (this.isClient) {
             this.validators.add(callConstructor(Validator._CLIENT.class));
         }
         this.defaultValue = get();
         this.defaultAsString = convertToString(this.defaultValue);
-        if (rule.options().length > 0)
-        {
+        if (rule.options().length > 0) {
             this.options = List.of(rule.options());
         }
         else if (this.type == boolean.class){
             this.options = List.of("true","false");
         }
-        else if(this.type == String.class && categories.contains(RuleCategory.COMMAND))
-        {
+        else if(this.type == String.class && categories.contains(RuleCategory.COMMAND)) {
             this.options = List.of("true", "false", "ops");
         }
-        else if (this.type.isEnum())
-        {
+        else if (this.type.isEnum()) {
             this.options = Arrays.stream(this.type.getEnumConstants()).map(e -> ((Enum) e).name().toLowerCase(Locale.ROOT)).collect(Collectors.toUnmodifiableList());
         }
-        else
-        {
+        else {
             this.options = List.of();
         }
-        if (isStrict && !this.options.isEmpty())
-        {
-            if (this.type == boolean.class || this.type == int.class || this.type == double.class || this.type == float.class)
-            {
+        if (isStrict && !this.options.isEmpty()) {
+            if (this.type == boolean.class || this.type == int.class || this.type == double.class || this.type == float.class) {
                 this.validators.add(callConstructor(Validator._STRICT_IGNORECASE.class));
             }
-            else
-            {
+            else {
                 this.validators.add(callConstructor(Validator._STRICT.class));
             }
         }
     }
 
-    private <T> T callConstructor(Class<T> cls)
-    {
-        try
-        {
+    private <T> T callConstructor(Class<T> cls) {
+        try {
             Constructor<T> constr = cls.getDeclaredConstructor();
             constr.setAccessible(true);
             return constr.newInstance();
         }
-        catch (ReflectiveOperationException e)
-        {
+        catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ParsedRule<T> set(CommandSourceStack source, String value)
-    {
+    public ParsedRule<T> set(CommandSourceStack source, String value) {
         if (settingsManager != null && settingsManager.locked)
             return null;
-        if (type == String.class)
-        {
+        if (type == String.class) {
             return set(source, (T) value, value);
         }
-        else if (type == boolean.class)
-        {
+        else if (type == boolean.class) {
             return set(source, (T) (Object) Boolean.parseBoolean(value), value);
         }
-        else if (type == int.class)
-        {
+        else if (type == int.class) {
             return set(source, (T) (Object) Integer.parseInt(value), value);
         }
-        else if (type == double.class)
-        {
+        else if (type == double.class) {
             return set(source, (T) (Object) Double.parseDouble(value), value);
         }
-        else if (type.isEnum())
-        {
+        else if (type.isEnum()) {
             String ucValue = value.toUpperCase(Locale.ROOT);
             return set(source, (T) (Object) Enum.valueOf((Class<? extends Enum>) type, ucValue), value);
         }
-        else
-        {
+        else {
             Messenger.m(source, "r Unknown type " + type.getSimpleName());
             return null;
         }
     }
 
-    ParsedRule<T> set(CommandSourceStack source, T value, String stringValue)
-    {
-        try
-        {
-            for (Validator<T> validator : this.validators)
-            {
+    ParsedRule<T> set(CommandSourceStack source, T value, String stringValue) {
+        try {
+            for (Validator<T> validator : this.validators) {
                 value = validator.validate(source, this, value, stringValue);
-                if (value == null)
-                {
-                    if (source != null)
-                    {
+                if (value == null) {
+                    if (source != null) {
                         validator.notifyFailure(source, this, stringValue);
                         if (validator.description() != null)
                             Messenger.m(source, "r " + validator.description());
@@ -168,14 +141,12 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
                     return null;
                 }
             }
-            if (!value.equals(get()) || source == null)
-            {
+            if (!value.equals(get()) || source == null) {
                 this.field.set(null, value);
                 if (source != null) settingsManager.notifyRuleChanged(source, this, stringValue);
             }
         }
-        catch (IllegalAccessException e)
-        {
+        catch (IllegalAccessException e) {
             Messenger.m(source, "r Unable to access setting for  "+name);
             return null;
         }
@@ -185,14 +156,11 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
     /**
      * @return The value of this {@link ParsedRule}, in its type
      */
-    public T get()
-    {
-        try
-        {
+    public T get() {
+        try {
             return (T) this.field.get(null);
         }
-        catch (IllegalAccessException e)
-        {
+        catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -200,8 +168,7 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
     /**
      * @return The value of this {@link ParsedRule}, as a {@link String}
      */
-    public String getAsString()
-    {
+    public String getAsString() {
         return convertToString(get());
     }
 
@@ -210,8 +177,7 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
      *         It will only return {@link true} if it's a true {@link boolean} or
      *         a number greater than zero.
      */
-    public boolean getBoolValue()
-    {
+    public boolean getBoolValue() {
         if (type == boolean.class) return (Boolean) get();
         if (ClassUtils.primitiveToWrapper(type).isAssignableFrom(Number.class)) return ((Number) get()).doubleValue() > 0;
         return false;
@@ -220,52 +186,44 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
     /**
      * @return Wether or not this {@link ParsedRule} is in its default value
      */
-    public boolean isDefault()
-    {
+    public boolean isDefault() {
         return defaultValue.equals(get());
     }
 
     /**
      * Resets this rule to its default value
      */
-    public void resetToDefault(CommandSourceStack source)
-    {
+    public void resetToDefault(CommandSourceStack source) {
         set(source, defaultValue, defaultAsString);
     }
 
 
-    private static String convertToString(Object value)
-    {
+    private static String convertToString(Object value) {
         if (value instanceof Enum) return ((Enum) value).name().toLowerCase(Locale.ROOT);
         return value.toString();
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         return obj.getClass() == ParsedRule.class && ((ParsedRule) obj).name.equals(this.name);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return this.name.hashCode();
     }
 
     @Override
-    public int compareTo(ParsedRule o)
-    {
+    public int compareTo(ParsedRule o) {
         return this.name.compareTo(o.name);
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return this.name + ": " + getAsString();
     }
 
-    private String translationKey()
-    {
+    private String translationKey() {
         return String.format("rule.%s.name", name);
     }
 
@@ -282,8 +240,7 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
      * @return A {@link String} being the translated {@link ParsedRule#description} of this rule,
      *                          in Carpet's configured language.
      */
-    public String translatedDescription()
-    {
+    public String translatedDescription() {
         return tr(String.format("rule.%s.desc", (name)), description);
     }
 
@@ -291,14 +248,12 @@ public final class ParsedRule<T> implements Comparable<ParsedRule> {
      * @return A {@link String} being the translated {@link ParsedRule#extraInfo} of this 
      * 	                        {@link ParsedRule}, in Carpet's configured language.
      */
-    public List<String> translatedExtras()
-    {
+    public List<String> translatedExtras() {
         if (!Translations.hasTranslations()) return extraInfo;
         String keyBase = String.format("rule.%s.extra.", name);
         List<String> extras = new ArrayList<>();
         int i = 0;
-        while (Translations.hasTranslation(keyBase+i))
-        {
+        while (Translations.hasTranslation(keyBase+i)) {
             extras.add(Translations.tr(keyBase+i));
             i++;
         }

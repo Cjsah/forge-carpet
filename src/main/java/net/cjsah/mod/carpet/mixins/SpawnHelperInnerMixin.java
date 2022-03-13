@@ -14,8 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(NaturalSpawner.SpawnState.class)
-public class SpawnHelperInnerMixin implements SpawnHelperInnerInterface
-{
+public class SpawnHelperInnerMixin implements SpawnHelperInnerInterface {
     @Shadow @Final private int spawningChunkCount;
 
     @Shadow @Final private PotentialCalculator densityField;
@@ -23,8 +22,7 @@ public class SpawnHelperInnerMixin implements SpawnHelperInnerInterface
     @Shadow @Final private Object2IntOpenHashMap<MobCategory> groupToCount;
 
     @Inject(method = "isBelowCap", at = @At("HEAD"), cancellable = true)
-    private void changeMobCaps(MobCategory entityCategory, CallbackInfoReturnable<Boolean> cir)
-    {
+    private void changeMobCaps(MobCategory entityCategory, CallbackInfoReturnable<Boolean> cir) {
         int newCap = (int) ((double)entityCategory.getMaxInstancesPerChunk()*(Math.pow(2.0,(SpawnReporter.mobcap_exponent/4))));
         int i = newCap * spawningChunkCount / SpawnReporter.MAGIC_NUMBER;
         cir.setReturnValue(groupToCount.getInt(entityCategory) < i);
@@ -33,8 +31,7 @@ public class SpawnHelperInnerMixin implements SpawnHelperInnerInterface
 
 
     @Override
-    public PotentialCalculator getPotentialCalculator()
-    {
+    public PotentialCalculator getPotentialCalculator() {
         return densityField;
     }
 

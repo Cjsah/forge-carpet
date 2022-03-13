@@ -14,23 +14,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ThreadedLevelLightEngine.class)
-public abstract class ServerLightingProvider_scarpetMixin extends LevelLightEngine implements ServerLightingProviderInterface
-{
+public abstract class ServerLightingProvider_scarpetMixin extends LevelLightEngine implements ServerLightingProviderInterface {
     @Shadow public abstract void checkBlock(BlockPos pos);
 
-    public ServerLightingProvider_scarpetMixin(LightChunkGetter chunkProvider, boolean hasBlockLight, boolean hasSkyLight)
-    {
+    public ServerLightingProvider_scarpetMixin(LightChunkGetter chunkProvider, boolean hasBlockLight, boolean hasSkyLight) {
         super(chunkProvider, hasBlockLight, hasSkyLight);
     }
 
     @Override
-    public void resetLight(ChunkAccess chunk, ChunkPos pos)
-    {
+    public void resetLight(ChunkAccess chunk, ChunkPos pos) {
         //super.setRetainData(pos, false);
         //super.setLightEnabled(pos, false);
         //for (int x = chpos.x-1; x <= chpos.x+1; x++ )
-        //    for (int z = chpos.z-1; z <= chpos.z+1; z++ )
-            {
+        //    for (int z = chpos.z-1; z <= chpos.z+1; z++ ) {
                 //ChunkPos pos = new ChunkPos(x, z);
                 int j;
                 for(j = -1; j < 17; ++j) {                                                                 // skip some recomp

@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Level.class)
-public abstract class World_fillUpdatesMixin
-{
+public abstract class World_fillUpdatesMixin {
     @ModifyConstant(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", //setBlockState main
             constant = @Constant(intValue = 16))
     private int addFillUpdatesInt(int original) {
@@ -25,8 +24,7 @@ public abstract class World_fillUpdatesMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/World;updateNeighbors(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;)V"
     ))
-    private void updateNeighborsMaybe(Level world, BlockPos blockPos, Block block)
-    {
+    private void updateNeighborsMaybe(Level world, BlockPos blockPos, Block block) {
         if (!CarpetSettings.impendingFillSkipUpdates.get()) world.blockUpdated(blockPos, block);
     }
 

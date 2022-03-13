@@ -20,27 +20,20 @@ import net.minecraft.world.level.levelgen.feature.StructureFeature;
 
 @Mixin(NoiseBasedChunkGenerator.class)
 // todo rename mixin after 1.15 is gone
-public abstract class NoiseChunkGenerator_husksSpawnMixin extends ChunkGenerator
-{
-    public NoiseChunkGenerator_husksSpawnMixin(BiomeSource biomeSource, StructureSettings structuresConfig)
-    {
+public abstract class NoiseChunkGenerator_husksSpawnMixin extends ChunkGenerator {
+    public NoiseChunkGenerator_husksSpawnMixin(BiomeSource biomeSource, StructureSettings structuresConfig) {
         super(biomeSource, structuresConfig);
     }
 
     @Inject(method = "getEntitySpawnList", at = @At("HEAD"), cancellable = true)
-    private void isInsidePyramid(Biome biome, StructureFeatureManager accessor, MobCategory group, BlockPos pos, CallbackInfoReturnable<WeightedRandomList<MobSpawnSettings.SpawnerData>> cir)
-    {
-        if (CarpetSettings.huskSpawningInTemples && group == MobCategory.MONSTER)
-        {
-            if (accessor.getStructureAt(pos, true, StructureFeature.DESERT_PYRAMID).hasChildren())
-            {
+    private void isInsidePyramid(Biome biome, StructureFeatureManager accessor, MobCategory group, BlockPos pos, CallbackInfoReturnable<WeightedRandomList<MobSpawnSettings.SpawnerData>> cir) {
+        if (CarpetSettings.huskSpawningInTemples && group == MobCategory.MONSTER) {
+            if (accessor.getStructureAt(pos, true, StructureFeature.DESERT_PYRAMID).hasChildren()) {
                 cir.setReturnValue(StructureFeature.DESERT_PYRAMID.getMonsterSpawns());
             }
         }
-        if (CarpetSettings.shulkerSpawningInEndCities && MobCategory.MONSTER == group)
-        {
-            if (accessor.getStructureAt(pos, true, StructureFeature.END_CITY).hasChildren())
-            {
+        if (CarpetSettings.shulkerSpawningInEndCities && MobCategory.MONSTER == group) {
+            if (accessor.getStructureAt(pos, true, StructureFeature.END_CITY).hasChildren()) {
                 cir.setReturnValue(StructureFeature.END_CITY.getMonsterSpawns());
             }
         }

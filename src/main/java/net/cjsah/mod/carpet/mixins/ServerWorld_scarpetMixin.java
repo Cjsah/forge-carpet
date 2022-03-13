@@ -25,8 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(ServerLevel.class)
-public class ServerWorld_scarpetMixin implements ServerWorldInterface
-{
+public class ServerWorld_scarpetMixin implements ServerWorldInterface {
     @Inject(method = "tickChunk", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z",
@@ -35,8 +34,7 @@ public class ServerWorld_scarpetMixin implements ServerWorldInterface
     ))
     private void onNaturalLightinig(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci,
                                     //ChunkPos chunkPos, boolean bl, int i, int j, Profiler profiler, BlockPos blockPos, boolean bl2)
-                                    ChunkPos chunkPos, boolean bl, int i, int j, ProfilerFiller profiler, BlockPos blockPos, boolean bl2, LightningBolt lightningEntity)
-    {
+                                    ChunkPos chunkPos, boolean bl, int i, int j, ProfilerFiller profiler, BlockPos blockPos, boolean bl2, LightningBolt lightningEntity) {
         if (CarpetEventServer.Event.LIGHTNING.isNeeded()) CarpetEventServer.Event.LIGHTNING.onWorldEventFlag((ServerLevel) (Object)this, blockPos, bl2?1:0);
     }
 
@@ -46,8 +44,7 @@ public class ServerWorld_scarpetMixin implements ServerWorldInterface
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerEntityManager;addEntity(Lnet/minecraft/world/entity/EntityLike;)Z"
     ))
-    private boolean onEntityAddedToWorld(ServerEntityManager serverEntityManager, EntityLike entityLike)
-    {
+    private boolean onEntityAddedToWorld(ServerEntityManager serverEntityManager, EntityLike entityLike) {
         Entity entity = (Entity)entityLike;
         boolean success = serverEntityManager.addEntity(entity);
         if (success) {
@@ -65,8 +62,7 @@ public class ServerWorld_scarpetMixin implements ServerWorldInterface
     */
 
     @Inject(method = "createExplosion", at = @At("HEAD"))
-    private void handleExplosion(/*@Nullable*/ Entity entity, /*@Nullable*/ DamageSource damageSource, /*@Nullable*/ ExplosionDamageCalculator explosionBehavior, double d, double e, double f, float g, boolean bl, Explosion.BlockInteraction destructionType, CallbackInfoReturnable<Explosion> cir)
-    {
+    private void handleExplosion(/*@Nullable*/ Entity entity, /*@Nullable*/ DamageSource damageSource, /*@Nullable*/ ExplosionDamageCalculator explosionBehavior, double d, double e, double f, float g, boolean bl, Explosion.BlockInteraction destructionType, CallbackInfoReturnable<Explosion> cir) {
         if (CarpetEventServer.Event.EXPLOSION.isNeeded())
             CarpetEventServer.Event.EXPLOSION.onExplosion((ServerLevel) (Object)this, entity, null, d, e, f, g, bl, null, null, destructionType);
     }

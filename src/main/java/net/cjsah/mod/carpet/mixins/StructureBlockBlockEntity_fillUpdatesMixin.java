@@ -13,22 +13,18 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 @Mixin(StructureBlockEntity.class)
-public abstract class StructureBlockBlockEntity_fillUpdatesMixin
-{
+public abstract class StructureBlockBlockEntity_fillUpdatesMixin {
     @Redirect(method = "place", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/structure/Structure;place(Lnet/minecraft/world/ServerWorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/structure/StructurePlacementData;Ljava/util/Random;I)Z"
     ))
-    private boolean onStructurePlacen(StructureTemplate structure, ServerLevelAccessor serverWorldAccess, BlockPos pos, BlockPos blockPos, StructurePlaceSettings placementData, Random random, int i)
-    {
+    private boolean onStructurePlacen(StructureTemplate structure, ServerLevelAccessor serverWorldAccess, BlockPos pos, BlockPos blockPos, StructurePlaceSettings placementData, Random random, int i) {
         if(!CarpetSettings.fillUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(true);
-        try
-        {
+        try {
             return structure.placeInWorld(serverWorldAccess, pos, blockPos, placementData, random, i); // serverWorldAccess, pos, placementData, random);
         }
-        finally
-        {
+        finally {
             CarpetSettings.impendingFillSkipUpdates.set(false);
         }
     }

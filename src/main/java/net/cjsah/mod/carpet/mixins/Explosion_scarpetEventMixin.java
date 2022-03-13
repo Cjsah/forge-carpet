@@ -24,8 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 @Mixin(value = Explosion.class, priority = 990)
-public abstract class Explosion_scarpetEventMixin
-{
+public abstract class Explosion_scarpetEventMixin {
     @Shadow @Final private Level world;
     @Shadow @Final private double x;
     @Shadow @Final private double y;
@@ -44,10 +43,8 @@ public abstract class Explosion_scarpetEventMixin
 
     @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;Lnet/minecraft/world/explosion/ExplosionBehavior;DDDFZLnet/minecraft/world/explosion/Explosion$DestructionType;)V",
             at = @At(value = "RETURN"))
-    private void onExplosionCreated(Level world, Entity entity, DamageSource damageSource, ExplosionDamageCalculator explosionBehavior, double x, double y, double z, float power, boolean createFire, Explosion.BlockInteraction destructionType, CallbackInfo ci)
-    {
-        if (CarpetEventServer.Event.EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide())
-        {
+    private void onExplosionCreated(Level world, Entity entity, DamageSource damageSource, ExplosionDamageCalculator explosionBehavior, double x, double y, double z, float power, boolean createFire, Explosion.BlockInteraction destructionType, CallbackInfo ci) {
+        if (CarpetEventServer.Event.EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide()) {
             affectedEntities = new ArrayList<>();
         }
     }
@@ -56,20 +53,16 @@ public abstract class Explosion_scarpetEventMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/explosion/Explosion;getExposure(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/entity/Entity;)F")
     )
-    private float onExplosion(Vec3 source, Entity entity)
-    {
-        if (affectedEntities != null)
-        {
+    private float onExplosion(Vec3 source, Entity entity) {
+        if (affectedEntities != null) {
             affectedEntities.add(entity);
         }
         return getExposure(source, entity);
     }
 
     @Inject(method = "affectWorld", at = @At("HEAD"))
-    private void onExplosion(boolean spawnParticles, CallbackInfo ci)
-    {
-        if (CarpetEventServer.Event.EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide())
-        {
+    private void onExplosion(boolean spawnParticles, CallbackInfo ci) {
+        if (CarpetEventServer.Event.EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide()) {
             CarpetEventServer.Event.EXPLOSION_OUTCOME.onExplosion((ServerLevel) world, entity, this::getCausingEntity, x, y, z, power, createFire, affectedBlocks, affectedEntities, destructionType);
         }
     }

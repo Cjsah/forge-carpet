@@ -7,8 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ServerboundPlayerActionPacket.class)
-public interface PlayerActionC2SPacketMixin
-{
+public interface PlayerActionC2SPacketMixin {
     @Accessor("pos")
     void setPos(BlockPos pos);
 

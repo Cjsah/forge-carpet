@@ -25,8 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableEventLoop<TickTask>
-{
+public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableEventLoop<TickTask> {
     @Shadow private volatile boolean running;
 
     @Shadow private long timeReference;
@@ -35,8 +34,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
 
     @Shadow private ProfilerFiller profiler;
 
-    public MinecraftServer_tickspeedMixin(String name)
-    {
+    public MinecraftServer_tickspeedMixin(String name) {
         super(name);
     }
 
@@ -73,8 +71,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
 
     // Cancel a while statement
     @Redirect(method = "runServer", at = @At(value = "FIELD", target = "Lnet/minecraft/server/MinecraftServer;running:Z"))
-    private boolean cancelRunLoop(MinecraftServer server)
-    {
+    private boolean cancelRunLoop(MinecraftServer server) {
         return false;
     } // target run()
 
@@ -83,28 +80,22 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
     // replace 50L will be a hassle
     @Inject(method = "runServer", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
             target = "Lnet/minecraft/server/MinecraftServer;setFavicon(Lnet/minecraft/server/ServerMetadata;)V"))
-    private void modifiedRunLoop(CallbackInfo ci)
-    {
-        while (this.running)
-        {
+    private void modifiedRunLoop(CallbackInfo ci) {
+        while (this.running) {
             //long long_1 = Util.getMeasuringTimeMs() - this.timeReference;
             //CM deciding on tick speed
-            if (CarpetProfiler.tick_health_requested != 0L)
-            {
+            if (CarpetProfiler.tick_health_requested != 0L) {
                 CarpetProfiler.start_tick_profiling();
             }
             long msThisTick = 0L;
             long long_1 = 0L;
-            if (TickSpeed.time_warp_start_time != 0 && TickSpeed.continueWarp())
-            {
+            if (TickSpeed.time_warp_start_time != 0 && TickSpeed.continueWarp()) {
                 //making sure server won't flop after the warp or if the warp is interrupted
                 this.timeReference = this.lastTimeReference = Util.getMillis();
                 carpetMsptAccum = TickSpeed.mspt;
             }
-            else
-            {
-                if (Math.abs(carpetMsptAccum - TickSpeed.mspt) > 1.0f)
-                {
+            else {
+                if (Math.abs(carpetMsptAccum - TickSpeed.mspt) > 1.0f) {
                 	// Tickrate changed. Ensure that we use the correct value.
                 	carpetMsptAccum = TickSpeed.mspt;
                 }
@@ -116,8 +107,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             }
             //end tick deciding
             //smoothed out delay to include mcpt component. With 50L gives defaults.
-            if (long_1 > /*2000L*/1000L+20*TickSpeed.mspt && this.timeReference - this.lastTimeReference >= /*15000L*/10000L+100*TickSpeed.mspt)
-            {
+            if (long_1 > /*2000L*/1000L+20*TickSpeed.mspt && this.timeReference - this.lastTimeReference >= /*15000L*/10000L+100*TickSpeed.mspt) {
                 long long_2 = (long)(long_1 / TickSpeed.mspt);//50L;
                 LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", long_1, long_2);
                 this.timeReference += (long)(long_2 * TickSpeed.mspt);//50L;
@@ -136,8 +126,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             this.profiler.push("tick");
             this.tick(TickSpeed.time_warp_start_time != 0 ? ()->true : this::shouldKeepTicking);
             this.profiler.popPush("nextTickWait");
-            if (TickSpeed.time_warp_start_time != 0) // clearing all hanging tasks no matter what when warping
-            {
+            if (TickSpeed.time_warp_start_time != 0) // clearing all hanging tasks no matter what when warping {
                 while(this.runEveryTask()) {Thread.yield();}
             }
             this.waitingForNextTick = true;
@@ -155,13 +144,11 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
     Pair<Long,Integer> profilerTimings = null;
     /// overworld around profiler timings
     @Inject(method = "isDebugRunning", at = @At("HEAD"), cancellable = true)
-    public void isCMDebugRunning(CallbackInfoReturnable<Boolean> cir)
-    {
+    public void isCMDebugRunning(CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(needsDebugSetup || profilerTimings != null);
     }
     @Inject(method = "stopDebug", at = @At("HEAD"), cancellable = true)
-    public void stopCMDebug(CallbackInfoReturnable<ProfileResults> cir)
-    {
+    public void stopCMDebug(CallbackInfoReturnable<ProfileResults> cir) {
         if (this.profilerTimings == null) {
             cir.setReturnValue(EmptyProfileResults.EMPTY);
         } else {
@@ -196,8 +183,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             target = "Lnet/minecraft/server/PlayerManager;saveAllPlayerData()V",
             shift = At.Shift.BEFORE
     ))
-    private void startAutosave(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    private void startAutosave(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         currentSection = CarpetProfiler.start_section(null, "Autosave", CarpetProfiler.TYPE.GENERAL);
     }
 
@@ -206,8 +192,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z",
             shift = At.Shift.AFTER
     ))
-    private void finishAutosave(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    private void finishAutosave(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         CarpetProfiler.end_current_section(currentSection);
     }
 
@@ -216,8 +201,7 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             target = "Lnet/minecraft/server/MinecraftServer;getNetworkIo()Lnet/minecraft/server/ServerNetworkIo;",
             shift = At.Shift.BEFORE
     ))
-    private void startNetwork(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    private void startNetwork(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         currentSection = CarpetProfiler.start_section(null, "Network", CarpetProfiler.TYPE.GENERAL);
     }
 
@@ -226,14 +210,12 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             target = "Lnet/minecraft/server/PlayerManager;updatePlayerLatency()V",
             shift = At.Shift.AFTER
     ))
-    private void finishNetwork(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    private void finishNetwork(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         CarpetProfiler.end_current_section(currentSection);
     }
 
     @Inject(method = "runTasksTillTickEnd", at = @At("HEAD"))
-    private void startAsync(CallbackInfo ci)
-    {
+    private void startAsync(CallbackInfo ci) {
         currentSection = CarpetProfiler.start_section(null, "Async Tasks", CarpetProfiler.TYPE.GENERAL);
     }
     @Inject(method = "runTasksTillTickEnd", at = @At(
@@ -241,10 +223,8 @@ public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableE
             target = "Lnet/minecraft/server/MinecraftServer;runTasks(Ljava/util/function/BooleanSupplier;)V",
             shift = At.Shift.BEFORE
     ))
-    private void stopAsync(CallbackInfo ci)
-    {
-        if (CarpetProfiler.tick_health_requested != 0L)
-        {
+    private void stopAsync(CallbackInfo ci) {
+        if (CarpetProfiler.tick_health_requested != 0L) {
             CarpetProfiler.end_current_section(currentSection);
             CarpetProfiler.end_tick_profiling((MinecraftServer) (Object)this);
         }

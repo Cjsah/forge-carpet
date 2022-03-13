@@ -11,15 +11,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class ServerPlayNetworkHandler_interactionUpdatesMixin
-{
+public class ServerPlayNetworkHandler_interactionUpdatesMixin {
     @Inject(method = "onPlayerInteractBlock", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactBlock(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;",
             shift = At.Shift.BEFORE
     ))
-    private void beforeBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci)
-    {
+    private void beforeBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(true);
     }
@@ -29,8 +27,7 @@ public class ServerPlayNetworkHandler_interactionUpdatesMixin
             target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactBlock(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;",
             shift = At.Shift.AFTER
     ))
-    private void afterBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci)
-    {
+    private void afterBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(false);
     }
@@ -40,8 +37,7 @@ public class ServerPlayNetworkHandler_interactionUpdatesMixin
             target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactItem(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;",
             shift = At.Shift.BEFORE
     ))
-    private void beforeItemInteracted(ServerboundUseItemPacket packet, CallbackInfo ci)
-    {
+    private void beforeItemInteracted(ServerboundUseItemPacket packet, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(true);
     }
@@ -51,8 +47,7 @@ public class ServerPlayNetworkHandler_interactionUpdatesMixin
             target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactItem(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;",
             shift = At.Shift.AFTER
     ))
-    private void afterItemInteracted(ServerboundUseItemPacket packet, CallbackInfo ci)
-    {
+    private void afterItemInteracted(ServerboundUseItemPacket packet, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(false);
     }
@@ -61,8 +56,7 @@ public class ServerPlayNetworkHandler_interactionUpdatesMixin
             target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;I)V",
             shift = At.Shift.BEFORE
     ))
-    private void beforeBlockBroken(ServerboundPlayerActionPacket packet, CallbackInfo ci)
-    {
+    private void beforeBlockBroken(ServerboundPlayerActionPacket packet, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(true);
     }
@@ -72,8 +66,7 @@ public class ServerPlayNetworkHandler_interactionUpdatesMixin
             target ="Lnet/minecraft/server/network/ServerPlayerInteractionManager;processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;I)V",
             shift = At.Shift.AFTER
     ))
-    private void afterBlockBroken(ServerboundPlayerActionPacket packet, CallbackInfo ci)
-    {
+    private void afterBlockBroken(ServerboundPlayerActionPacket packet, CallbackInfo ci) {
         if (!CarpetSettings.interactionUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(false);
     }

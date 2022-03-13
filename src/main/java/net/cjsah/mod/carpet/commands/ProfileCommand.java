@@ -11,10 +11,8 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-public class ProfileCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class ProfileCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = literal("profile").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandProfile)).
                 executes( (c) -> TickCommand.healthReport(c.getSource(), 100)).

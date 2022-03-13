@@ -6,13 +6,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Minecraft.class)
-public class MinecraftClient_pausedShakeMixin implements MinecraftClientInferface
-{
+public class MinecraftClient_pausedShakeMixin implements MinecraftClientInferface {
     @Shadow private float pausedTickDelta;
 
     @Override
-    public float getPausedTickDelta()
-    {
+    public float getPausedTickDelta() {
         return pausedTickDelta;
     }
 }

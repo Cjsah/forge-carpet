@@ -8,8 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
-public interface MinecraftServerInterface
-{
+public interface MinecraftServerInterface {
     void forceTick(BooleanSupplier sup);
     LevelStorageSource.LevelStorageAccess getCMSession();
     Map<ResourceKey<Level>, ServerLevel> getCMWorlds();

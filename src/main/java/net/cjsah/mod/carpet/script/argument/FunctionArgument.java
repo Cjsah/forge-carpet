@@ -14,13 +14,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FunctionArgument extends Argument
-{
+public class FunctionArgument extends Argument {
     public FunctionValue function;
     public List<Value> args;
 
-    private FunctionArgument(FunctionValue function, int offset, List<Value> args)
-    {
+    private FunctionArgument(FunctionValue function, int offset, List<Value> args) {
         super(offset);
         this.function = function;
         this.args = args;
@@ -43,23 +41,19 @@ public class FunctionArgument extends Argument
             List<Value> params,
             int offset,
             boolean allowNone,
-            boolean checkArgs)
-    {
+            boolean checkArgs) {
         Value functionValue = params.get(offset);
-        if (functionValue.isNull())
-        {
+        if (functionValue.isNull()) {
             if (allowNone) return new FunctionArgument(null, offset+1, Collections.emptyList());
             throw new InternalExpressionException("function argument cannot be null");
         }
-        if (!(functionValue instanceof FunctionValue))
-        {
+        if (!(functionValue instanceof FunctionValue)) {
             String name = functionValue.getString();
             functionValue = c.host.getAssertFunction(module, name);
         }
         FunctionValue fun = (FunctionValue)functionValue;
         int argsize = fun.getArguments().size();
-        if (checkArgs)
-        {
+        if (checkArgs) {
             int extraargs = params.size() - argsize - offset - 1;
             if (extraargs < 0)
                 throw new InternalExpressionException("Function " + fun.getPrettyString() + " requires at least " + fun.getArguments().size() + " arguments");
@@ -79,12 +73,10 @@ public class FunctionArgument extends Argument
         List<Value> params = ((ListValue) funSpec).getItems();
         if (params.isEmpty()) throw CommandArgument.error("Function has empty spec");
         Value first = params.get(0);
-        if (first instanceof FunctionValue)
-        {
+        if (first instanceof FunctionValue) {
             function = (FunctionValue)first;
         }
-        else
-        {
+        else {
             String name = first.getString();
             function = host.getFunction(name);
             if (function == null) throw CommandArgument.error("Function "+name+" is not defined yet");

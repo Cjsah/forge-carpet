@@ -23,10 +23,8 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerInterface
-{
-    public MinecraftServer_scarpetMixin(String string_1)
-    {
+public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerInterface {
+    public MinecraftServer_scarpetMixin(String string_1) {
         super(string_1);
     }
 
@@ -45,16 +43,14 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     @Shadow private ServerResources serverResourceManager;
 
     @Override
-    public void forceTick(BooleanSupplier isAhead)
-    {
+    public void forceTick(BooleanSupplier isAhead) {
         timeReference = lastTimeReference = Util.getMillis();
         tick(isAhead);
         while(pollTask()) {Thread.yield();}
     }
 
     @Override
-    public LevelStorageSource.LevelStorageAccess getCMSession()
-    {
+    public LevelStorageSource.LevelStorageAccess getCMSession() {
         return session;
     }
 
@@ -64,8 +60,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     }
 
     @Override
-    public Map<ResourceKey<Level>, ServerLevel> getCMWorlds()
-    {
+    public Map<ResourceKey<Level>, ServerLevel> getCMWorlds() {
         return worlds;
     }
 
@@ -73,8 +68,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
             value = "CONSTANT",
             args = "stringValue=tallying"
     ))
-    public void tickTasks(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    public void tickTasks(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         if (!TickSpeed.process_entities)
             return;
         CarpetEventServer.Event.TICK.onTick();

@@ -12,14 +12,12 @@ import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 @Mixin(Brain.class)
-public class Brain_Mixin implements BrainInterface
-{
+public class Brain_Mixin implements BrainInterface {
 
     @Shadow @Final private Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories;
 
     @Override
-    public Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> getMobMemories()
-    {
+    public Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> getMobMemories() {
         return memories;
     }
 }

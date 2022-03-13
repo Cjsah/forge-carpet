@@ -29,8 +29,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @SuppressWarnings("CanBeFinal")
-public class CarpetSettings
-{
+public class CarpetSettings {
     public static final String carpetVersion = "1.4.56+v211130";
     public static final Logger LOG = LogManager.getLogger("carpet");
     public static ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
@@ -44,12 +43,10 @@ public class CarpetSettings
 
     private static class LanguageValidator extends Validator<String> {
         @Override public String validate(CommandSourceStack source, ParsedRule<String> currentRule, String newValue, String string) {
-            if (currentRule.get().equals(newValue) || source == null)
-            {
+            if (currentRule.get().equals(newValue) || source == null) {
                 return newValue;
             }
-            if (!Translations.isValidLanguage(newValue))
-            {
+            if (!Translations.isValidLanguage(newValue)) {
                 Messenger.m(source, "r "+newValue+" is not a valid language");
                 return null;
             }
@@ -123,8 +120,7 @@ public class CarpetSettings
         }
 
         @Override
-        public String description()
-        {
+        public String description() {
             return "This setting can only be set by admins with op level 4";
         }
     }
@@ -210,8 +206,7 @@ public class CarpetSettings
     @Rule( desc = "TNT causes less lag when exploding in the same spot and in liquids", category = RuleCategory.TNT)
     public static boolean optimizedTNT = false;
 
-    private static class CheckOptimizedTntEnabledValidator<T> extends Validator<T>
-    {
+    private static class CheckOptimizedTntEnabledValidator<T> extends Validator<T> {
         @Override
         public T validate(CommandSourceStack source, ParsedRule<T> currentRule, T newValue, String string) {
             return optimizedTNT || currentRule.defaultValue.equals(newValue) ? newValue : null;
@@ -629,30 +624,24 @@ public class CarpetSettings
     )
     public static boolean rotatorBlock = false;
 
-    private static class ViewDistanceValidator extends Validator<Integer>
-    {
-        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string)
-        {
-            if (currentRule.get().equals(newValue) || source == null)
-            {
+    private static class ViewDistanceValidator extends Validator<Integer> {
+        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
+            if (currentRule.get().equals(newValue) || source == null) {
                 return newValue;
             }
-            if (newValue < 0 || newValue > 32)
-            {
+            if (newValue < 0 || newValue > 32) {
                 Messenger.m(source, "r view distance has to be between 0 and 32");
                 return null;
             }
             MinecraftServer server = source.getServer();
 
-            if (server.isDedicatedServer())
-            {
+            if (server.isDedicatedServer()) {
                 int vd = (newValue >= 2)?newValue:((ServerInterface) server).getProperties().viewDistance;
                 if (vd != server.getPlayerList().getViewDistance())
                     server.getPlayerList().setViewDistance(vd);
                 return newValue;
             }
-            else
-            {
+            else {
                 Messenger.m(source, "r view distance can only be changed on a server");
                 return 0;
             }
@@ -671,8 +660,7 @@ public class CarpetSettings
     public static int viewDistance = 0;
 
     public static class ChangeSpawnChunksValidator extends Validator<Integer> {
-        public static void changeSpawnSize(int size)
-        {
+        public static void changeSpawnSize(int size) {
             ServerLevel overworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
             if (overworld != null) {
                 ChunkPos centerChunk = new ChunkPos(new BlockPos(
@@ -685,20 +673,17 @@ public class CarpetSettings
         }
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
             if (source == null) return newValue;
-            if (newValue < 0 || newValue > 32)
-            {
+            if (newValue < 0 || newValue > 32) {
                 Messenger.m(source, "r spawn chunk size has to be between 0 and 32");
                 return null;
             }
-            if (currentRule.get().intValue() == newValue.intValue())
-            {
+            if (currentRule.get().intValue() == newValue.intValue()) {
                 //must been some startup thing
                 return newValue;
             }
             if (Carpet.minecraft_server == null) return newValue;
             ServerLevel currentOverworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
-            if (currentOverworld != null)
-            {
+            if (currentOverworld != null) {
                 changeSpawnSize(newValue);
             }
             return newValue;
@@ -715,33 +700,28 @@ public class CarpetSettings
     public static int spawnChunksSize = 11;
 
     public static class LightBatchValidator extends Validator<Integer> {
-        public static void applyLightBatchSizes()
-        {
+        public static void applyLightBatchSizes() {
             for (ServerLevel serverWorld : Carpet.minecraft_server.getAllLevels()) {
                 serverWorld.getChunkSource().getLightEngine().setTaskPerBatch(lightEngineMaxBatchSize);
             }
         }
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
             if (source == null) return newValue;
-            if (newValue < 0)
-            {
+            if (newValue < 0) {
                 Messenger.m(source, "r light batch size has to be at least 0");
                 return null;
             }
-            if (currentRule.get().intValue() == newValue.intValue())
-            {
+            if (currentRule.get().intValue() == newValue.intValue()) {
                 //must been some startup thing
                 return newValue;
             }
             if (Carpet.minecraft_server == null) return newValue;
           
             // Set the field before we apply.
-            try
-            {
+            try {
                 currentRule.field.set(null, newValue);
             }
-            catch (IllegalAccessException e)
-            {
+            catch (IllegalAccessException e) {
                 Messenger.m(source, "r Unable to access setting for  "+currentRule.name);
                 return null;
             }
@@ -841,8 +821,7 @@ public class CarpetSettings
             category = {RuleCategory.CREATIVE, RuleCategory.CLIENT}
     )
     public static boolean creativeNoClip = false;
-    public static boolean isCreativeFlying(Entity entity)
-    {
+    public static boolean isCreativeFlying(Entity entity) {
         // #todo replace after merger to 1.17
         return CarpetSettings.creativeNoClip && entity instanceof Player && (((Player) entity).isCreative()) && ((Player) entity).getAbilities().flying;
     }

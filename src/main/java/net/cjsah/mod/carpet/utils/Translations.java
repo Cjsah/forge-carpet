@@ -15,35 +15,28 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 
-public class Translations
-{
+public class Translations {
     private static Map<String, String> translationMap;
 
-    public static String tr(String key)
-    {
+    public static String tr(String key) {
         return translationMap == null ? key : translationMap.getOrDefault(key, key);
     }
 
-    public static String tr(String key, String str)
-    {
+    public static String tr(String key, String str) {
         return translationMap == null ? str : translationMap.getOrDefault(key, str);
     }
 
-    public static boolean hasTranslations()
-    {
+    public static boolean hasTranslations() {
         return translationMap != null;
     }
 
-    public static boolean hasTranslation(String key)
-    {
+    public static boolean hasTranslation(String key) {
         return translationMap != null && translationMap.containsKey(key);
     }
 
-    public static Map<String, String> getTranslationFromResourcePath(String path)
-    {
+    public static Map<String, String> getTranslationFromResourcePath(String path) {
         String dataJSON;
-        try
-        {
+        try {
             dataJSON = IOUtils.toString(
                     Objects.requireNonNull(Translations.class.getClassLoader().getResourceAsStream(String.format("assets/carpet/lang/%s.json", CarpetSettings.language))),
                     StandardCharsets.UTF_8);
@@ -55,10 +48,8 @@ public class Translations
     }
 
 
-    public static void updateLanguage(CommandSourceStack source)
-    {
-        if (CarpetSettings.language.equalsIgnoreCase("none"))
-        {
+    public static void updateLanguage(CommandSourceStack source) {
+        if (CarpetSettings.language.equalsIgnoreCase("none")) {
             translationMap = null;
             return;
         }
@@ -66,28 +57,23 @@ public class Translations
         Map<String, String> trans = getTranslationFromResourcePath(String.format("assets/carpet/lang/%s.json", CarpetSettings.language));
         if (trans != null) trans.forEach(translations::put);
 
-        for (CarpetExtension ext : Carpet.extensions)
-        {
+        for (CarpetExtension ext : Carpet.extensions) {
             Map<String, String> extMappings = ext.canHasTranslations(CarpetSettings.language);
-            if (extMappings != null)
-            {
-                extMappings.forEach((key, value) ->
-                {
+            if (extMappings != null) {
+                extMappings.forEach((key, value) -> {
                     if (!translations.containsKey(key)) translations.put(key, value);
                 });
             }
         }
         translations.entrySet().removeIf(e -> e.getKey().startsWith("//"));
-        if (translations.isEmpty())
-        {
+        if (translations.isEmpty()) {
             translationMap = null;
             return;
         }
         translationMap = translations;
     }
 
-    public static boolean isValidLanguage(String newValue)
-    {
+    public static boolean isValidLanguage(String newValue) {
         // will put some validations for availble languages at some point
         return true;
     }

@@ -8,8 +8,7 @@ import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public interface BlockPredicateInterface
-{
+public interface BlockPredicateInterface {
     BlockState getCMBlockState();
     Tag<Block> getCMBlockTag();
     Map<Value, Value> getCMProperties();

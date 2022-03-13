@@ -21,8 +21,7 @@ import net.cjsah.mod.carpet.script.value.Value;
  *
  * @param <R> The result type that the passed {@link Value}s will be converted to
  */
-public interface ValueConverter<R>
-{
+public interface ValueConverter<R> {
     /**
      * <p>Returns the the user-friendly name of the result this {@link ValueConverter} converts to, without {@code a} or {@code an}, and without
      * capitalizing the first letter.</p>
@@ -72,8 +71,7 @@ public interface ValueConverter<R>
      * @implNote The default implementation returns {@code false}
      * @see #valueConsumption()
      */
-    default public boolean consumesVariableArgs()
-    {
+    default public boolean consumesVariableArgs() {
         return false;
     }
 
@@ -87,8 +85,7 @@ public interface ValueConverter<R>
      * @implNote The default implementation returns {@code 1}
      * 
      */
-    default public int valueConsumption()
-    {
+    default public int valueConsumption() {
         return 1;
     }
 
@@ -107,8 +104,7 @@ public interface ValueConverter<R>
      * @return A usable {@link ValueConverter} to convert from a {@link Value} to {@code <R>}
      */
     @SuppressWarnings("unchecked")
-    public static <R> ValueConverter<R> fromAnnotatedType(AnnotatedType annoType)
-    {
+    public static <R> ValueConverter<R> fromAnnotatedType(AnnotatedType annoType) {
         Class<R> type = annoType.getType() instanceof ParameterizedType ? // We are defining R here.
                 (Class<R>) ((ParameterizedType) annoType.getType()).getRawType() :
                 (Class<R>) annoType.getType();
@@ -126,8 +122,7 @@ public interface ValueConverter<R>
             return (ValueConverter<R>) MapConverter.fromAnnotatedType(annoType); // Already checked that type is Map
         if (type == Optional.class)
             return (ValueConverter<R>) OptionalConverter.fromAnnotatedType(annoType);
-        if (annoType.getDeclaredAnnotations().length != 0)
-        {
+        if (annoType.getDeclaredAnnotations().length != 0) {
             if (annoType.isAnnotationPresent(Param.Custom.class))
                 return Param.Params.getCustomConverter(annoType, type); // Throws if incorrect usage
             if (annoType.isAnnotationPresent(Param.Strict.class))
@@ -168,8 +163,7 @@ public interface ValueConverter<R>
      * @implNote This method's default implementation runs the {@link #convert(Value)} function in the next {@link Value} ignoring {@link Context} and
      *           {@code theLazyT}.
      */
-    default public R checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT)
-    {
+    default public R checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT) {
         if (!valueIterator.hasNext())
             return null;
         return convert(valueIterator.next());

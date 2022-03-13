@@ -40,8 +40,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 @Mixin(NaturalSpawner.class)
-public class SpawnHelperMixin
-{
+public class SpawnHelperMixin {
     @Shadow @Final private static int CHUNK_AREA;
 
     @Shadow @Final private static MobCategory[] SPAWNABLE_GROUPS;
@@ -50,14 +49,12 @@ public class SpawnHelperMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerWorld;isSpaceEmpty(Lnet/minecraft/util/math/Box;)Z"
     ))
-    private static boolean doesNotCollide(ServerLevel world, AABB bb)
-    {
+    private static boolean doesNotCollide(ServerLevel world, AABB bb) {
         //.doesNotCollide is VERY expensive. On the other side - most worlds are not made of trapdoors in
         // various configurations, but solid and 'passable' blocks, like air, water grass, etc.
         // checking if in the BB of the entity are only passable blocks is very cheap and covers most cases
         // in case something more complex happens - we default to full block collision check
-        if (!CarpetSettings.lagFreeSpawning)
-        {
+        if (!CarpetSettings.lagFreeSpawning) {
             return world.noCollision(bb);
         }
         int minX = Mth.floor(bb.minX);
@@ -65,20 +62,15 @@ public class SpawnHelperMixin
         int minZ = Mth.floor(bb.minZ);
         int maxY = Mth.ceil(bb.maxY)-1;
         BlockPos.MutableBlockPos blockpos = new BlockPos.MutableBlockPos();
-        if (bb.getXsize() <= 1) // small mobs
-        {
-            for (int y=minY; y <= maxY; y++)
-            {
+        if (bb.getXsize() <= 1) // small mobs {
+            for (int y=minY; y <= maxY; y++) {
                 blockpos.set(minX,y,minZ);
                 VoxelShape box = world.getBlockState(blockpos).getCollisionShape(world, blockpos);
-                if (box != Shapes.empty())
-                {
-                    if (box == Shapes.block())
-                    {
+                if (box != Shapes.empty()) {
+                    if (box == Shapes.block()) {
                         return false;
                     }
-                    else
-                    {
+                    else {
                         return world.noCollision(bb);
                     }
                 }
@@ -90,18 +82,14 @@ public class SpawnHelperMixin
         int maxZ = Mth.ceil(bb.maxZ)-1;
         for (int y = minY; y <= maxY; y++)
             for (int x = minX; x <= maxX; x++)
-                for (int z = minZ; z <= maxZ; z++)
-                {
+                for (int z = minZ; z <= maxZ; z++) {
                     blockpos.set(x, y, z);
                     VoxelShape box = world.getBlockState(blockpos).getCollisionShape(world, blockpos);
-                    if (box != Shapes.empty())
-                    {
-                        if (box == Shapes.block())
-                        {
+                    if (box != Shapes.empty()) {
+                        if (box == Shapes.block()) {
                             return false;
                         }
-                        else
-                        {
+                        else {
                             return world.noCollision(bb);
                         }
                     }
@@ -109,10 +97,8 @@ public class SpawnHelperMixin
         int min_below = minY - 1;
         // we need to check blocks below for extended hitbox and in that case call
         // only applies to 'large mobs', slimes, spiders, magmacubes, ghasts, etc.
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int z = minZ; z <= maxZ; z++)
-            {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
                 blockpos.set(x, min_below, z);
                 BlockState state = world.getBlockState(blockpos);
                 Block block = state.getBlock();
@@ -120,8 +106,7 @@ public class SpawnHelperMixin
                         state.is(BlockTags.FENCES) ||
                         state.is(BlockTags.WALLS) ||
                         ((block instanceof FenceGateBlock) && !state.getValue(FenceGateBlock.OPEN))
-                )
-                {
+                ) {
                     if (x == minX || x == maxX || z == minZ || z == maxZ) return world.noCollision(bb);
                     return false;
                 }
@@ -134,10 +119,8 @@ public class SpawnHelperMixin
             value = "INVOKE",
             target = "Lnet/minecraft/entity/EntityType;create(Lnet/minecraft/world/World;)Lnet/minecraft/entity/Entity;"
     ))
-    private static Entity create(EntityType<?> entityType, Level world_1)
-    {
-        if (CarpetSettings.lagFreeSpawning)
-        {
+    private static Entity create(EntityType<?> entityType, Level world_1) {
+        if (CarpetSettings.lagFreeSpawning) {
             Map<EntityType<?>, Entity> precookedMobs = ((WorldInterface)world_1).getPrecookedMobs();
             if (precookedMobs.containsKey(entityType))
                 //this mob has been <init>'s but not used yet
@@ -154,14 +137,12 @@ public class SpawnHelperMixin
             target = "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V"
     ))
     private static void spawnEntity(ServerLevel world, Entity entity_1,
-                                    MobCategory group, ServerLevel world2, ChunkAccess chunk, BlockPos pos, NaturalSpawner.SpawnPredicate checker, NaturalSpawner.AfterSpawnCallback runner)
-    {
+                                    MobCategory group, ServerLevel world2, ChunkAccess chunk, BlockPos pos, NaturalSpawner.SpawnPredicate checker, NaturalSpawner.AfterSpawnCallback runner) {
         if (CarpetSettings.lagFreeSpawning)
             // we used the mob - next time we will create a new one when needed
             ((WorldInterface) world).getPrecookedMobs().remove(entity_1.getType());
 
-        if (SpawnReporter.track_spawns > 0L && SpawnReporter.local_spawns != null)
-        {
+        if (SpawnReporter.track_spawns > 0L && SpawnReporter.local_spawns != null) {
             SpawnReporter.registerSpawn(
                     //world.method_27983(), // getDimensionType //dimension.getType(), // getDimensionType
                     (Mob) entity_1,
@@ -177,8 +158,7 @@ public class SpawnHelperMixin
             value = "INVOKE",
             target = "Lnet/minecraft/entity/mob/MobEntity;initialize(Lnet/minecraft/world/ServerWorldAccess;Lnet/minecraft/world/LocalDifficulty;Lnet/minecraft/entity/SpawnReason;Lnet/minecraft/entity/EntityData;Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/entity/EntityData;"
     ))
-    private static SpawnGroupData spawnEntity(Mob mobEntity, ServerLevelAccessor serverWorldAccess, DifficultyInstance difficulty, MobSpawnType spawnReason, SpawnGroupData entityData, CompoundTag entityTag)
-    {
+    private static SpawnGroupData spawnEntity(Mob mobEntity, ServerLevelAccessor serverWorldAccess, DifficultyInstance difficulty, MobSpawnType spawnReason, SpawnGroupData entityData, CompoundTag entityTag) {
         if (!SpawnReporter.mock_spawns) // WorldAccess
             return mobEntity.finalizeSpawn(serverWorldAccess, difficulty, spawnReason, entityData, entityTag);
         return null;
@@ -189,8 +169,7 @@ public class SpawnHelperMixin
             target = "Lnet/minecraft/entity/player/PlayerEntity;squaredDistanceTo(DDD)D"
     ))
     private static double getSqDistanceTo(Player playerEntity, double double_1, double double_2, double double_3,
-                                          MobCategory entityCategory, ServerLevel serverWorld, ChunkAccess chunk, BlockPos blockPos)
-    {
+                                          MobCategory entityCategory, ServerLevel serverWorld, ChunkAccess chunk, BlockPos blockPos) {
         double distanceTo = playerEntity.distanceToSqr(double_1, double_2, double_3);
         if (CarpetSettings.lagFreeSpawning && distanceTo > 16384.0D && entityCategory != MobCategory.CREATURE)
             return 0.0;
@@ -206,10 +185,8 @@ public class SpawnHelperMixin
             target = "Lnet/minecraft/world/SpawnHelper;spawnEntitiesInChunk(Lnet/minecraft/entity/SpawnGroup;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/SpawnHelper$Checker;Lnet/minecraft/world/SpawnHelper$Runner;)V"
     ))
     // inject our repeat of spawns if more spawn ticks per tick are chosen.
-    private static void spawnMultipleTimes(MobCategory category, ServerLevel world, LevelChunk chunk, NaturalSpawner.SpawnPredicate checker, NaturalSpawner.AfterSpawnCallback runner)
-    {
-        for (int i = 0; i < SpawnReporter.spawn_tries.get(category); i++)
-        {
+    private static void spawnMultipleTimes(MobCategory category, ServerLevel world, LevelChunk chunk, NaturalSpawner.SpawnPredicate checker, NaturalSpawner.AfterSpawnCallback runner) {
+        for (int i = 0; i < SpawnReporter.spawn_tries.get(category); i++) {
             NaturalSpawner.spawnCategoryForChunk(category, world, chunk, checker, runner);
         }
     }
@@ -224,18 +201,15 @@ public class SpawnHelperMixin
     private static boolean changeMobcaps(
             SpawnHelper.Info info, SpawnGroup entityCategory,
             ServerWorld serverWorld, WorldChunk chunk, SpawnHelper.Info info_outer, boolean spawnAnimals, boolean spawnMonsters, boolean shouldSpawnAnimals
-    )
-    {
+    ) {
         DimensionType dim = serverWorld.dimension.getType();
         int newCap = (int) ((double)entityCategory.getSpawnCap()*(Math.pow(2.0,(SpawnReporter.mobcap_exponent/4))));
-        if (SpawnReporter.track_spawns > 0L)
-        {
+        if (SpawnReporter.track_spawns > 0L) {
             int int_2 = SpawnReporter.chunkCounts.get(dim); // eligible chunks for spawning
             int int_3 = newCap * int_2 / CHUNK_AREA; //current spawning limits
             int mobCount = info.getCategoryToCount().getInt(entityCategory);
 
-            if (SpawnReporter.track_spawns > 0L && !SpawnReporter.first_chunk_marker.contains(entityCategory))
-            {
+            if (SpawnReporter.track_spawns > 0L && !SpawnReporter.first_chunk_marker.contains(entityCategory)) {
                 SpawnReporter.first_chunk_marker.add(entityCategory);
                 //first chunk with spawn eligibility for that category
                 Pair key = Pair.of(dim, entityCategory);
@@ -250,8 +224,7 @@ public class SpawnHelperMixin
                         SpawnReporter.spawn_cap_count.get(key) + mobCount);
             }
 
-            if (mobCount <= int_3 || SpawnReporter.mock_spawns)
-            {
+            if (mobCount <= int_3 || SpawnReporter.mock_spawns) {
                 //place 0 to indicate there were spawn attempts for a category
                 //if (entityCategory != EntityCategory.CREATURE || world.getServer().getTicks() % 400 == 0)
                 // this will only be called once every 400 ticks anyways
@@ -270,25 +243,21 @@ public class SpawnHelperMixin
     @Inject(method = "spawn", at = @At("HEAD"))
     // allows to change mobcaps and captures each category try per dimension before it fails due to full mobcaps.
     private static void checkSpawns(ServerLevel world, LevelChunk chunk, NaturalSpawner.SpawnState info,
-                                    boolean spawnAnimals, boolean spawnMonsters, boolean shouldSpawnAnimals, CallbackInfo ci)
-    {
-        if (SpawnReporter.track_spawns > 0L)
-        {
+                                    boolean spawnAnimals, boolean spawnMonsters, boolean shouldSpawnAnimals, CallbackInfo ci) {
+        if (SpawnReporter.track_spawns > 0L) {
             MobCategory[] var6 = SPAWNABLE_GROUPS;
             int var7 = var6.length;
 
             for(int var8 = 0; var8 < var7; ++var8) {
                 MobCategory entityCategory = var6[var8];
-                if ((spawnAnimals || !entityCategory.isFriendly()) && (spawnMonsters || entityCategory.isFriendly()) && (shouldSpawnAnimals || !entityCategory.isPersistent()) )
-                {
+                if ((spawnAnimals || !entityCategory.isFriendly()) && (spawnMonsters || entityCategory.isFriendly()) && (shouldSpawnAnimals || !entityCategory.isPersistent()) ) {
                     ResourceKey<Level> dim = world.dimension(); // getDimensionType;
                     int newCap = (int) ((double)entityCategory.getMaxInstancesPerChunk()*(Math.pow(2.0,(SpawnReporter.mobcap_exponent/4))));
                     int int_2 = SpawnReporter.chunkCounts.get(dim); // eligible chunks for spawning
                     int int_3 = newCap * int_2 / CHUNK_AREA; //current spawning limits
                     int mobCount = info.getMobCategoryCounts().getInt(entityCategory);
 
-                    if (SpawnReporter.track_spawns > 0L && !SpawnReporter.first_chunk_marker.contains(entityCategory))
-                    {
+                    if (SpawnReporter.track_spawns > 0L && !SpawnReporter.first_chunk_marker.contains(entityCategory)) {
                         SpawnReporter.first_chunk_marker.add(entityCategory);
                         //first chunk with spawn eligibility for that category
                         Pair key = Pair.of(dim, entityCategory);
@@ -303,8 +272,7 @@ public class SpawnHelperMixin
                                 SpawnReporter.spawn_cap_count.get(key) + mobCount);
                     }
 
-                    if (mobCount <= int_3 || SpawnReporter.mock_spawns)
-                    {
+                    if (mobCount <= int_3 || SpawnReporter.mock_spawns) {
                         //place 0 to indicate there were spawn attempts for a category
                         //if (entityCategory != EntityCategory.CREATURE || world.getServer().getTicks() % 400 == 0)
                         // this will only be called once every 400 ticks anyways

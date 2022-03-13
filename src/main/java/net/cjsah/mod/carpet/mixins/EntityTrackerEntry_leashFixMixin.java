@@ -16,17 +16,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 
 @Mixin(ServerEntity.class)
-public class EntityTrackerEntry_leashFixMixin
-{
+public class EntityTrackerEntry_leashFixMixin {
     @Shadow @Final private Entity entity;
 
     @Inject(method = "sendPackets", at = @At("RETURN"))
-    private void sendLeashPackets(Consumer<Packet<?>> consumer_1, CallbackInfo ci)
-    {
-        if (CarpetSettings.leadFix)
-        {
-            if (entity instanceof Mob)
-            {
+    private void sendLeashPackets(Consumer<Packet<?>> consumer_1, CallbackInfo ci) {
+        if (CarpetSettings.leadFix) {
+            if (entity instanceof Mob) {
                 consumer_1.accept( new ClientboundSetEntityLinkPacket(entity, ((Mob) entity).getLeashHolder()));
             }
         }

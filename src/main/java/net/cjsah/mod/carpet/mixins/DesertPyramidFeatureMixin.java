@@ -12,26 +12,21 @@ import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 @Mixin(DesertPyramidFeature.class)
-public abstract class DesertPyramidFeatureMixin extends StructureFeature<NoneFeatureConfiguration>
-{
+public abstract class DesertPyramidFeatureMixin extends StructureFeature<NoneFeatureConfiguration> {
     private static final WeightedRandomList<MobSpawnSettings.SpawnerData> MONSTER_SPAWNS;
     
-    static
-    {
+    static {
         MONSTER_SPAWNS = WeightedRandomList.create(new MobSpawnSettings.SpawnerData(EntityType.HUSK, 1, 1, 1));
     }
 
-    public DesertPyramidFeatureMixin(Codec<NoneFeatureConfiguration> codec)
-    {
+    public DesertPyramidFeatureMixin(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
     }
 
 
     @Override
-    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMonsterSpawns()
-    {
-        if (CarpetSettings.huskSpawningInTemples)
-        {
+    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMonsterSpawns() {
+        if (CarpetSettings.huskSpawningInTemples) {
             return MONSTER_SPAWNS;
         }
         return  MobSpawnSettings.EMPTY_MOB_LIST;

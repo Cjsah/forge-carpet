@@ -1,6 +1,5 @@
 package net.cjsah.mod.carpet.fakes;
 
-public interface ChunkGeneratorInterface
-{
+public interface ChunkGeneratorInterface {
     void initStrongholds();
 }

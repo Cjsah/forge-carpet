@@ -17,8 +17,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Rule
-{
+public @interface Rule {
     /**
      * The rule name, by default the same as the field name
      */

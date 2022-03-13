@@ -20,8 +20,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemEntity.class)
-public abstract class ItemEntityMixin extends Entity implements ItemEntityInterface
-{
+public abstract class ItemEntityMixin extends Entity implements ItemEntityInterface {
     private static final int SHULKERBOX_MAX_STACK_AMOUNT = 64;
 
     @Shadow private int itemAge;
@@ -53,12 +52,10 @@ public abstract class ItemEntityMixin extends Entity implements ItemEntityInterf
     }
 
     @Inject(method="<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/item/ItemStack;)V", at = @At("RETURN"))
-    private void removeEmptyShulkerBoxTags(Level worldIn, double x, double y, double z, ItemStack stack, CallbackInfo ci)
-    {
+    private void removeEmptyShulkerBoxTags(Level worldIn, double x, double y, double z, ItemStack stack, CallbackInfo ci) {
         if (CarpetSettings.stackableShulkerBoxes
                 && stack.getItem() instanceof BlockItem
-                && ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock)
-        {
+                && ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock) {
             if (InventoryHelper.cleanUpShulkerBoxTag(stack)) {
                 ((ItemEntity) (Object) this).setItem(stack);
             }
@@ -84,8 +81,7 @@ public abstract class ItemEntityMixin extends Entity implements ItemEntityInterf
             at = @At("HEAD"),
             cancellable = true
     )
-    private void tryStackShulkerBoxes(ItemEntity other, CallbackInfo ci)
-    {
+    private void tryStackShulkerBoxes(ItemEntity other, CallbackInfo ci) {
         ItemEntity self = (ItemEntity)(Object)this;
         ItemStack selfStack = self.getItem();
         if (!CarpetSettings.stackableShulkerBoxes || !(selfStack.getItem() instanceof BlockItem) || !(((BlockItem)selfStack.getItem()).getBlock() instanceof ShulkerBoxBlock)) {
@@ -97,8 +93,7 @@ public abstract class ItemEntityMixin extends Entity implements ItemEntityInterf
                 && !InventoryHelper.shulkerBoxHasItems(selfStack)
                 && !InventoryHelper.shulkerBoxHasItems(otherStack)
                 && selfStack.hasTag() == otherStack.hasTag()
-                && selfStack.getCount() + otherStack.getCount() <= SHULKERBOX_MAX_STACK_AMOUNT)
-        {
+                && selfStack.getCount() + otherStack.getCount() <= SHULKERBOX_MAX_STACK_AMOUNT) {
             int amount = Math.min(otherStack.getCount(), SHULKERBOX_MAX_STACK_AMOUNT - selfStack.getCount());
 
             selfStack.grow(amount);
@@ -108,12 +103,10 @@ public abstract class ItemEntityMixin extends Entity implements ItemEntityInterf
             this.itemAge = Math.min(((ItemEntityInterface)other).getAgeCM(), this.itemAge);
 
             otherStack.shrink(amount);
-            if (otherStack.isEmpty())
-            {
+            if (otherStack.isEmpty()) {
                 other.discard(); // discard remove();
             }
-            else
-            {
+            else {
                 other.setItem(otherStack);
             }
             ci.cancel();

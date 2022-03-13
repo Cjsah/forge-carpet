@@ -137,8 +137,7 @@ public class WorldAccess {
             String name,
             List<Value> params,
             BiPredicate<BlockState, BlockPos> test
-    )
-    {
+    ) {
         CarpetContext cc = (CarpetContext) c;
         if (params.size() == 0)
             throw new InternalExpressionException("'" + name + "' requires at least one parameter");
@@ -154,17 +153,14 @@ public class WorldAccess {
             String name,
             List<Value> params,
             BiFunction<BlockState, BlockPos, String> test
-    )
-    {
+    ) {
         CarpetContext cc = (CarpetContext) c;
-        if (params.size() == 0)
-        {
+        if (params.size() == 0) {
             throw new InternalExpressionException("'" + name + "' requires at least one parameter");
         }
 
         Value v0 = params.get(0);
-        if (v0 instanceof BlockValue)
-        {
+        if (v0 instanceof BlockValue) {
             String strVal = test.apply( ((BlockValue) v0).getBlockState(), ((BlockValue) v0).getPos());
             return StringValue.of(strVal);
         }
@@ -177,20 +173,16 @@ public class WorldAccess {
             String name,
             List<Value> params,
             Fluff.TriFunction<BlockState, BlockPos, Level, Value> test
-    )
-    {
+    ) {
         CarpetContext cc = (CarpetContext) c;
         if (params.size() == 0)
             throw new InternalExpressionException("'" + name + "' requires at least one parameter");
         Value v0 = params.get(0);
-        if (v0 instanceof BlockValue)
-        {
-            try
-            {
+        if (v0 instanceof BlockValue) {
+            try {
                 return test.apply(((BlockValue) v0).getBlockState(), ((BlockValue) v0).getPos(), cc.s.getLevel());
             }
-            catch (NullPointerException ignored)
-            {
+            catch (NullPointerException ignored) {
                 throw new InternalExpressionException("'" + name + "' function requires a block that is positioned in the world");
             }
         }
@@ -199,36 +191,28 @@ public class WorldAccess {
     }
 
     private static <T extends Comparable<T>> BlockState setProperty(Property<T> property, String name, String value,
-                                                                    BlockState bs)
-    {
+                                                                    BlockState bs) {
         Optional<T> optional = property.getValue(value);
 
-        if (optional.isPresent())
-        {
+        if (optional.isPresent()) {
             bs = bs.setValue(property, optional.get());
         }
-        else
-        {
+        else {
             throw new InternalExpressionException(value + " is not a valid value for property " + name);
         }
         return bs;
     }
 
-    private static void BooYah(ChunkGenerator generator)
-    {
-        synchronized (generator)
-        {
+    private static void BooYah(ChunkGenerator generator) {
+        synchronized (generator) {
             ((ChunkGeneratorInterface)generator).initStrongholds();
         }
     }
 
-    public static void apply(Expression expression)
-    {
-        expression.addContextFunction("block", -1, (c, t, lv) ->
-        {
+    public static void apply(Expression expression) {
+        expression.addContextFunction("block", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext) c;
-            if (lv.size() == 0)
-            {
+            if (lv.size() == 0) {
                 throw new InternalExpressionException("Block requires at least one parameter");
             }
             BlockValue retval = BlockArgument.findIn(cc, lv, 0, true).block;
@@ -238,8 +222,7 @@ public class WorldAccess {
             return retval;
         });
 
-        expression.addContextFunction("block_data", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("block_data", -1, (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("Block requires at least one parameter");
             CompoundTag tag = BlockArgument.findIn( (CarpetContext) c, lv, 0, true).block.getData();
@@ -247,15 +230,13 @@ public class WorldAccess {
         });
 
         // poi_get(pos, radius?, type?, occupation?, column_mode?)
-        expression.addContextFunction("poi", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("poi", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext) c;
             if (lv.size() == 0) throw new InternalExpressionException("'poi' requires at least one parameter");
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0, false);
             BlockPos pos = locator.block.getPos();
             PoiManager store = cc.s.getLevel().getPoiManager();
-            if (lv.size() == locator.offset)
-            {
+            if (lv.size() == locator.offset) {
                 PoiType poiType = store.getType(pos).orElse(null);
                 if (poiType == null) return Value.NULL;
 
@@ -280,17 +261,14 @@ public class WorldAccess {
             Predicate<PoiType> condition = PoiType.ALL;
             PoiManager.Occupancy status = PoiManager.Occupancy.ANY;
             boolean inColumn = false;
-            if (locator.offset + 1 < lv.size())
-            {
+            if (locator.offset + 1 < lv.size()) {
                 String poiType = lv.get(locator.offset+1).getString().toLowerCase(Locale.ROOT);
-                if (!"any".equals(poiType))
-                {
+                if (!"any".equals(poiType)) {
                     PoiType type =  Registry.POINT_OF_INTEREST_TYPE.getOptional(InputValidator.identifierOf(poiType))
                             .orElseThrow(() -> new ThrowStatement(poiType, Throwables.UNKNOWN_POI));
                     condition = (tt) -> tt == type;
                 }
-                if (locator.offset + 2 < lv.size())
-                {
+                if (locator.offset + 2 < lv.size()) {
                     String statusString = lv.get(locator.offset+2).getString().toLowerCase(Locale.ROOT);
                     if ("occupied".equals(statusString))
                         status = PoiManager.Occupancy.IS_OCCUPIED;
@@ -300,8 +278,7 @@ public class WorldAccess {
                         throw new InternalExpressionException(
                                 "Incorrect POI occupation status "+status+ " use `any`, " + "`occupied` or `available`"
                         );
-                    if (locator.offset + 3 < lv.size())
-                    {
+                    if (locator.offset + 3 < lv.size()) {
                         inColumn = lv.get(locator.offset+3).getBoolean();
                     }
                 }
@@ -319,8 +296,7 @@ public class WorldAccess {
         });
 
         //poi_set(pos, null) poi_set(pos, type, occupied?,
-        expression.addContextFunction("set_poi", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("set_poi", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext) c;
             if (lv.size() == 0) throw new InternalExpressionException("'set_poi' requires at least one parameter");
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0, false);
@@ -328,8 +304,7 @@ public class WorldAccess {
             if (lv.size() < locator.offset) throw new InternalExpressionException("'set_poi' requires the new poi type or null, after position argument");
             Value poi = lv.get(locator.offset+0);
             PoiManager store = cc.s.getLevel().getPoiManager();
-            if (poi.isNull())
-            {   // clear poi information
+            if (poi.isNull()) {   // clear poi information
                 if (!store.getType(pos).isPresent()) return Value.FALSE;
                 store.remove(pos);
                 return Value.TRUE;
@@ -338,8 +313,7 @@ public class WorldAccess {
             PoiType type =  Registry.POINT_OF_INTEREST_TYPE.getOptional(InputValidator.identifierOf(poiTypeString))
             		.orElseThrow(() -> new ThrowStatement(poiTypeString, Throwables.UNKNOWN_POI));
             int occupancy = 0;
-            if (locator.offset + 1 < lv.size())
-            {
+            if (locator.offset + 1 < lv.size()) {
                 occupancy = (int)NumericValue.asNumber(lv.get(locator.offset + 1)).getLong();
                 if (occupancy < 0) throw new InternalExpressionException("Occupancy cannot be negative");
             }
@@ -347,8 +321,7 @@ public class WorldAccess {
             store.add(pos, type);
             // setting occupancy for a
             // again - don't want to mix in unnecessarily - peeps not gonna use it that often so not worries about it.
-            if (occupancy > 0)
-            {
+            if (occupancy > 0) {
                 int finalO = occupancy;
                 store.getInSquare((tt) -> tt==type, pos, 1, PoiManager.Occupancy.ANY
                 ).filter(p -> p.getPos().equals(pos)).findFirst().ifPresent(p -> {
@@ -367,8 +340,7 @@ public class WorldAccess {
 
             Value weather = lv.get(0);
             ServerLevelData worldProperties = ((ServerWorldInterface) world).getWorldPropertiesCM();
-            if(lv.size()==1)
-            {
+            if(lv.size()==1) {
                 int ticks;
                 switch (weather.getString().toLowerCase(Locale.ROOT)) {
                     case "clear":
@@ -385,11 +357,9 @@ public class WorldAccess {
                 }
                 return new NumericValue(ticks);
             }
-            if(lv.size()==2)
-            {
+            if(lv.size()==2) {
                 int ticks = NumericValue.asNumber(lv.get(1), "tick_time in 'weather'").getInt();
-                switch (weather.getString().toLowerCase(Locale.ROOT))
-                {
+                switch (weather.getString().toLowerCase(Locale.ROOT)) {
                     case "clear":
                         world.setWeatherParameters(ticks,0,false,false);
                         break;
@@ -415,30 +385,25 @@ public class WorldAccess {
             throw new InternalExpressionException("'weather' requires 0, 1 or 2 arguments");
         });
 
-        expression.addUnaryFunction("pos", v ->
-        {
-            if (v instanceof BlockValue)
-            {
+        expression.addUnaryFunction("pos", v -> {
+            if (v instanceof BlockValue) {
                 BlockPos pos = ((BlockValue) v).getPos();
                 if (pos == null)
                     throw new InternalExpressionException("Cannot fetch position of an unrealized block");
                 return ListValue.of(new NumericValue(pos.getX()), new NumericValue(pos.getY()), new NumericValue(pos.getZ()));
             }
-            else if (v instanceof EntityValue)
-            {
+            else if (v instanceof EntityValue) {
                 Entity e = ((EntityValue) v).getEntity();
                 if (e == null)
                     throw new InternalExpressionException("Null entity");
                 return ListValue.of(new NumericValue(e.getX()), new NumericValue(e.getY()), new NumericValue(e.getZ()));
             }
-            else
-            {
+            else {
                 throw new InternalExpressionException("'pos' works only with a block or an entity type");
             }
         });
 
-        expression.addContextFunction("pos_offset", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("pos_offset", -1, (c, t, lv) -> {
             BlockArgument locator = BlockArgument.findIn((CarpetContext)c, lv, 0);
             BlockPos pos = locator.block.getPos();
             if (lv.size() <= locator.offset)
@@ -499,8 +464,7 @@ public class WorldAccess {
         expression.addContextFunction("blast_resistance", -1, (c, t, lv) ->
                 genericStateTest(c, "blast_resistance", lv, (s, p, w) -> new NumericValue(s.getBlock().getExplosionResistance())));
 
-        expression.addContextFunction("in_slime_chunk", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("in_slime_chunk", -1, (c, t, lv) -> {
             BlockPos pos = BlockArgument.findIn((CarpetContext)c, lv, 0).block.getPos();
             ChunkPos chunkPos = new ChunkPos(pos);
             return BooleanValue.of(ChunkRandom.getSlimeRandom(
@@ -510,12 +474,10 @@ public class WorldAccess {
             ).nextInt(10) == 0);
         });
 
-        expression.addContextFunction("top", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("top", -1, (c, t, lv) -> {
             String type = lv.get(0).getString().toLowerCase(Locale.ROOT);
             Heightmap.Types htype;
-            switch (type)
-            {
+            switch (type) {
                 //case "light": htype = Heightmap.Type.LIGHT_BLOCKING; break;  //investigate
                 case "motion": htype = Heightmap.Types.MOTION_BLOCKING; break;
                 case "terrain": htype = Heightmap.Types.MOTION_BLOCKING_NO_LEAVES; break;
@@ -534,23 +496,20 @@ public class WorldAccess {
                 BooleanValue.of((((CarpetContext) c).s.getLevel().hasChunkAt(BlockArgument.findIn((CarpetContext) c, lv, 0).block.getPos()))));
 
         // Deprecated, use loaded_status as more indicative
-        expression.addContextFunction("loaded_ep", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("loaded_ep", -1, (c, t, lv) -> {
             c.host.issueDeprecation("loaded_ep(...)");
             BlockPos pos = BlockArgument.findIn((CarpetContext)c, lv, 0).block.getPos();
             return BooleanValue.of(((CarpetContext)c).s.getLevel().method_37118(pos));// 1.17pre1 getChunkManager().shouldTickChunk(new ChunkPos(pos)));
         });
 
-        expression.addContextFunction("loaded_status", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("loaded_status", -1, (c, t, lv) -> {
             BlockPos pos = BlockArgument.findIn((CarpetContext)c, lv, 0).block.getPos();
             LevelChunk chunk = ((CarpetContext)c).s.getLevel().getChunkSource().getChunk(pos.getX()>>4, pos.getZ()>>4, false);
             if (chunk == null) return Value.ZERO;
             return new NumericValue(chunk.getFullStatus().ordinal());
         });
 
-        expression.addContextFunction("is_chunk_generated", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("is_chunk_generated", -1, (c, t, lv) -> {
             BlockArgument locator = BlockArgument.findIn((CarpetContext)c, lv, 0);
             BlockPos pos = locator.block.getPos();
             boolean force = false;
@@ -559,8 +518,7 @@ public class WorldAccess {
             return BooleanValue.of(canHasChunk(((CarpetContext)c).s.getLevel(), new ChunkPos(pos), null, force));
         });
 
-        expression.addContextFunction("generation_status", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("generation_status", -1, (c, t, lv) -> {
             BlockArgument blockArgument = BlockArgument.findIn((CarpetContext)c, lv, 0);
             BlockPos pos = blockArgument.block.getPos();
             boolean forceLoad = false;
@@ -571,21 +529,17 @@ public class WorldAccess {
             return new StringValue(chunk.getStatus().getName());
         });
 
-        expression.addContextFunction("chunk_tickets", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("chunk_tickets", -1, (c, t, lv) -> {
             ServerLevel world = ((CarpetContext) c).s.getLevel();
             Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> levelTickets = (
                     (ChunkTicketManagerInterface) ((ServerChunkManagerInterface) world.getChunkSource())
                             .getCMTicketManager()
             ).getTicketsByPosition();
             List<Value> res = new ArrayList<>();
-            if (lv.size() == 0)
-            {
-                for (long key : levelTickets.keySet())
-                {
+            if (lv.size() == 0) {
+                for (long key : levelTickets.keySet()) {
                     ChunkPos chpos = new ChunkPos(key);
-                    for (Ticket ticket : levelTickets.get(key))
-                    {
+                    for (Ticket ticket : levelTickets.get(key)) {
                         res.add(ListValue.of(
                                 new StringValue(ticket.getType().toString()),
                                 new NumericValue(33 - ticket.getTicketLevel()),
@@ -595,15 +549,12 @@ public class WorldAccess {
                     }
                 }
             }
-            else
-            {
+            else {
                 BlockArgument blockArgument = BlockArgument.findIn((CarpetContext) c, lv, 0);
                 BlockPos pos = blockArgument.block.getPos();
                 SortedArraySet<Ticket<?>> tickets = levelTickets.get(new ChunkPos(pos).toLong());
-                if (tickets != null)
-                {
-                    for (Ticket ticket : tickets)
-                    {
+                if (tickets != null) {
+                    for (Ticket ticket : tickets) {
                         res.add(ListValue.of(
                                 new StringValue(ticket.getType().toString()),
                                 new NumericValue(33 - ticket.getTicketLevel())
@@ -625,23 +576,20 @@ public class WorldAccess {
                 booleanStateTest(c, "ticks_randomly", lv, (s, p) -> s.isRandomlyTicking()));
 
         expression.addContextFunction("update", -1, (c, t, lv) ->
-                booleanStateTest(c, "update", lv, (s, p) ->
-                {
+                booleanStateTest(c, "update", lv, (s, p) -> {
                     ((CarpetContext) c).s.getLevel().neighborChanged(p, s.getBlock(), p);
                     return true;
                 }));
 
         expression.addContextFunction("block_tick", -1, (c, t, lv) ->
-                booleanStateTest(c, "block_tick", lv, (s, p) ->
-                {
+                booleanStateTest(c, "block_tick", lv, (s, p) -> {
                     ServerLevel w = ((CarpetContext)c).s.getLevel();
                     s.randomTick(w, p, w.random);
                     return true;
                 }));
 
         expression.addContextFunction("random_tick", -1, (c, t, lv) ->
-                booleanStateTest(c, "random_tick", lv, (s, p) ->
-                {
+                booleanStateTest(c, "random_tick", lv, (s, p) -> {
                     ServerLevel w = ((CarpetContext)c).s.getLevel();
                     if (s.isRandomlyTicking() || s.getFluidState().isRandomlyTicking())
                         s.randomTick(w, p, w.random);
@@ -649,28 +597,23 @@ public class WorldAccess {
                 }));
 
         // lazy cause its parked execution
-        expression.addLazyFunction("without_updates", 1, (c, t, lv) ->
-        {
+        expression.addLazyFunction("without_updates", 1, (c, t, lv) -> {
             boolean previous = CarpetSettings.impendingFillSkipUpdates.get();
             if (previous) return lv.get(0);
             Value [] result = new Value[]{Value.NULL};
-            ((CarpetContext)c).s.getServer().executeBlocking( () ->
-            {
-                try
-                {
+            ((CarpetContext)c).s.getServer().executeBlocking( () -> {
+                try {
                     CarpetSettings.impendingFillSkipUpdates.set(true);
                     result[0] = lv.get(0).evalValue(c, t);
                 }
-                finally
-                {
+                finally {
                     CarpetSettings.impendingFillSkipUpdates.set(previous);
                 }
             });
             return (cc, tt) -> result[0];
         });
 
-        expression.addContextFunction("set", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("set", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             BlockArgument targetLocator = BlockArgument.findIn(cc, lv, 0);
@@ -678,32 +621,24 @@ public class WorldAccess {
             BlockState sourceBlockState = sourceLocator.block.getBlockState();
             BlockState targetBlockState = world.getBlockState(targetLocator.block.getPos());
             CompoundTag data = null;
-            if (lv.size() > sourceLocator.offset)
-            {
+            if (lv.size() > sourceLocator.offset) {
                 List<Value> args = new ArrayList<>();
-                for (int i = sourceLocator.offset, m = lv.size(); i < m; i++)
-                {
+                for (int i = sourceLocator.offset, m = lv.size(); i < m; i++) {
                     args.add(lv.get(i));
                 }
-                if (args.get(0) instanceof ListValue)
-                {
-                    if (args.size() == 2)
-                    {
+                if (args.get(0) instanceof ListValue) {
+                    if (args.size() == 2) {
                         Value dataValue = NBTSerializableValue.fromValue( args.get(1));
-                        if (dataValue instanceof NBTSerializableValue)
-                        {
+                        if (dataValue instanceof NBTSerializableValue) {
                             data = ((NBTSerializableValue) dataValue).getCompoundTag();
                         }
                     }
                     args = ((ListValue) args.get(0)).getItems();
                 }
-                else if (args.get(0) instanceof MapValue)
-                {
-                    if (args.size() == 2)
-                    {
+                else if (args.get(0) instanceof MapValue) {
+                    if (args.size() == 2) {
                         Value dataValue = NBTSerializableValue.fromValue( args.get(1));
-                        if (dataValue instanceof NBTSerializableValue)
-                        {
+                        if (dataValue instanceof NBTSerializableValue) {
                             data = ((NBTSerializableValue) dataValue).getCompoundTag();
                         }
                     }
@@ -712,20 +647,16 @@ public class WorldAccess {
                     state.forEach( (k, v) -> {mapargs.add(k); mapargs.add(v);});
                     args = mapargs;
                 }
-                else
-                {
-                    if ((args.size() & 1) == 1)
-                    {
+                else {
+                    if ((args.size() & 1) == 1) {
                         Value dataValue = NBTSerializableValue.fromValue( args.get(args.size()-1));
-                        if (dataValue instanceof NBTSerializableValue)
-                        {
+                        if (dataValue instanceof NBTSerializableValue) {
                             data = ((NBTSerializableValue) dataValue).getCompoundTag();
                         }
                     }
                 }
                 StateDefinition<Block, BlockState> states = sourceBlockState.getBlock().getStateDefinition();
-                for (int i = 0; i < args.size()-1; i += 2)
-                {
+                for (int i = 0; i < args.size()-1; i += 2) {
                     String paramString = args.get(i).getString();
                     Property<?> property = states.getProperty(paramString);
                     if (property == null)
@@ -743,15 +674,12 @@ public class WorldAccess {
             BlockState finalSourceBlockState = sourceBlockState;
             BlockPos targetPos = targetLocator.block.getPos();
             Boolean[] result = new Boolean[]{true};
-            cc.s.getServer().executeBlocking( () ->
-            {
+            cc.s.getServer().executeBlocking( () -> {
                 Clearable.tryClear(world.getBlockEntity(targetPos));
                 boolean success = world.setBlock(targetPos, finalSourceBlockState, 2);
-                if (finalData != null)
-                {
+                if (finalData != null) {
                     BlockEntity be = world.getBlockEntity(targetPos);
-                    if (be != null)
-                    {
+                    if (be != null) {
                         CompoundTag destTag = finalData.copy();
                         destTag.putInt("x", targetPos.getX());
                         destTag.putInt("y", targetPos.getY());
@@ -767,8 +695,7 @@ public class WorldAccess {
             return new BlockValue(finalSourceBlockState, world, targetLocator.block.getPos());
         });
 
-        expression.addContextFunction("destroy", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("destroy", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
@@ -779,15 +706,12 @@ public class WorldAccess {
             long how = 0;
             Item item = Items.DIAMOND_PICKAXE;
             boolean playerBreak = false;
-            if (lv.size() > locator.offset)
-            {
+            if (lv.size() > locator.offset) {
                 Value val = lv.get(locator.offset);
-                if (val instanceof NumericValue)
-                {
+                if (val instanceof NumericValue) {
                     how = ((NumericValue) val).getLong();
                 }
-                else
-                {
+                else {
                     playerBreak = true;
                     String itemString = val.getString();
                     item = Registry.ITEM.getOptional(InputValidator.identifierOf(itemString))
@@ -795,16 +719,14 @@ public class WorldAccess {
                 }
             }
             CompoundTag tag = null;
-            if (lv.size() > locator.offset+1)
-            {
+            if (lv.size() > locator.offset+1) {
                 if (!playerBreak) throw new InternalExpressionException("tag is not necessary with 'destroy' with no item");
                 Value tagValue = lv.get(locator.offset+1);
                 if (tagValue instanceof NullValue)
                     tag = null;
                 else if (tagValue instanceof NBTSerializableValue)
                     tag = ((NBTSerializableValue) tagValue).getCompoundTag();
-                else
-                {
+                else {
                     NBTSerializableValue readTag = NBTSerializableValue.parseString(tagValue.getString(), true);
                     tag = readTag.getCompoundTag();
                 }
@@ -820,18 +742,15 @@ public class WorldAccess {
 
             boolean toolBroke = false;
             boolean dropLoot = true;
-            if (playerBreak)
-            {
+            if (playerBreak) {
                 boolean isUsingEffectiveTool = !state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state);
                 //postMine() durability from item classes
                 float hardness = state.getDestroySpeed(world, where);
                 int damageAmount = 0;
-                if ((item instanceof DiggerItem && hardness > 0.0) || item instanceof ShearsItem)
-                {
+                if ((item instanceof DiggerItem && hardness > 0.0) || item instanceof ShearsItem) {
                     damageAmount = 1;
                 }
-                else if (item instanceof TridentItem || item instanceof SwordItem)
-                {
+                else if (item instanceof TridentItem || item instanceof SwordItem) {
                     damageAmount = 2;
                 }
                 toolBroke = damageAmount>0 && tool.hurt(damageAmount, world.getRandom(), null);
@@ -839,14 +758,11 @@ public class WorldAccess {
                     dropLoot = false;
             }
 
-            if (dropLoot)
-            {
-                if (how < 0 || (tag != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0))
-                {
+            if (dropLoot) {
+                if (how < 0 || (tag != null && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0)) {
                     Block.popResource(world, where, new ItemStack(state.getBlock()));
                 }
-                else
-                {
+                else {
                     if (how > 0)
                         tool.enchant(Enchantments.BLOCK_FORTUNE, (int) how);
                     if (DUMMY_ENTITY == null) DUMMY_ENTITY = new FallingBlockEntity(EntityType.FALLING_BLOCK, null);
@@ -864,8 +780,7 @@ public class WorldAccess {
 
         });
 
-        expression.addContextFunction("harvest", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("harvest", -1, (c, t, lv) -> {
             if (lv.size()<2)
                 throw new InternalExpressionException("'harvest' takes at least 2 parameters: entity and block, or position, to harvest");
             CarpetContext cc = (CarpetContext)c;
@@ -889,8 +804,7 @@ public class WorldAccess {
             return BooleanValue.of(success);
         });
 
-        expression.addContextFunction("create_explosion", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("create_explosion", -1, (c, t, lv) -> {
             if (lv.isEmpty())
                 throw new InternalExpressionException("'create_explosion' requires at least a position to explode");
             CarpetContext cc = (CarpetContext)c;
@@ -901,49 +815,39 @@ public class WorldAccess {
             LivingEntity attacker = null;
             Vector3Argument location = Vector3Argument.findIn(lv, 0, false, true);
             Vec3 pos = location.vec;
-            if (lv.size() > location.offset)
-            {
+            if (lv.size() > location.offset) {
                 powah = NumericValue.asNumber(lv.get(location.offset), "explosion power").getFloat();
                 if (powah < 0) throw new InternalExpressionException("Explosion power cannot be negative");
-                if (lv.size() > location.offset+1)
-                {
+                if (lv.size() > location.offset+1) {
                     String strval = lv.get(location.offset+1).getString();
                     try {
                         mode = Explosion.BlockInteraction.valueOf(strval.toUpperCase(Locale.ROOT));
                     }
                     catch (IllegalArgumentException ile) { throw new InternalExpressionException("Illegal explosions block behaviour: "+strval); }
-                    if (lv.size() > location.offset+2)
-                    {
+                    if (lv.size() > location.offset+2) {
                         createFire = lv.get(location.offset+2).getBoolean();
-                        if (lv.size() > location.offset+3)
-                        {
+                        if (lv.size() > location.offset+3) {
                             Value enVal= lv.get(location.offset+3);
                             if (enVal.isNull()) {} // is null already
-                            else if (enVal instanceof EntityValue)
-                            {
+                            else if (enVal instanceof EntityValue) {
                                 source = ((EntityValue) enVal).getEntity();
                             }
-                            else
-                            {
+                            else {
                                 throw new InternalExpressionException("Fourth parameter of the explosion has to be an entity, not "+enVal.getTypeString());
                             }
-                            if (lv.size() > location.offset+4)
-                            {
+                            if (lv.size() > location.offset+4) {
                                 enVal = lv.get(location.offset+4);
                                 if (enVal.isNull()) {} // is null already
-                                else if (enVal instanceof EntityValue)
-                                {
+                                else if (enVal instanceof EntityValue) {
                                     Entity attackingEntity =  ((EntityValue) enVal).getEntity();
-                                    if (attackingEntity instanceof LivingEntity)
-                                    {
+                                    if (attackingEntity instanceof LivingEntity) {
                                         attacker = (LivingEntity) attackingEntity;
                                     }
                                     else throw new InternalExpressionException("Attacking entity needs to be a living thing, "+
                                             ValueConversions.of(Registry.ENTITY_TYPE.getKey(attackingEntity.getType())).getString() +" ain't it.");
 
                                 }
-                                else
-                                {
+                                else {
                                     throw new InternalExpressionException("Fifth parameter of the explosion has to be a living entity, not "+enVal.getTypeString());
                                 }
                             }
@@ -972,8 +876,7 @@ public class WorldAccess {
         });
 
         // TODO rename to use_item
-        expression.addContextFunction("place_item", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("place_item", -1, (c, t, lv) -> {
             if (lv.size()<2)
                 throw new InternalExpressionException("'place_item' takes at least 2 parameters: item and block, or position, to place onto");
             CarpetContext cc = (CarpetContext) c;
@@ -989,32 +892,25 @@ public class WorldAccess {
                 sneakPlace = lv.get(locator.offset+1).getBoolean();
 
             BlockValue.PlacementContext ctx;
-            try
-            {
+            try {
                 ctx = BlockValue.PlacementContext.from(cc.s.getLevel(), where, facing, sneakPlace, stackArg.createItemStack(1, false));
             }
-            catch (CommandSyntaxException e)
-            {
+            catch (CommandSyntaxException e) {
                 throw new InternalExpressionException(e.getMessage());
             }
 
-            if (!(stackArg.getItem() instanceof BlockItem))
-            {
+            if (!(stackArg.getItem() instanceof BlockItem)) {
                 InteractionResult useResult = ctx.getItemInHand().useOn(ctx);
-                if (useResult == InteractionResult.CONSUME || useResult == InteractionResult.SUCCESS)
-                {
+                if (useResult == InteractionResult.CONSUME || useResult == InteractionResult.SUCCESS) {
                     return Value.TRUE;
                 }
             }
-            else
-            { // not sure we need special case for block items, since useOnBlock can do that as well
+            else { // not sure we need special case for block items, since useOnBlock can do that as well
                 BlockItem blockItem = (BlockItem) stackArg.getItem();
                 if (!ctx.canPlace()) return Value.FALSE;
                 BlockState placementState = blockItem.getBlock().getStateForPlacement(ctx);
-                if (placementState != null)
-                {
-                    if (placementState.canSurvive(cc.s.getLevel(), where))
-                    {
+                if (placementState != null) {
+                    if (placementState.canSurvive(cc.s.getLevel(), where)) {
                         cc.s.getLevel().setBlock(where, placementState, 2);
                         SoundType blockSoundGroup = placementState.getSoundType();
                         cc.s.getLevel().playSound(null, where, blockSoundGroup.getPlaceSound(), SoundSource.BLOCKS, (blockSoundGroup.getVolume() + 1.0F) / 2.0F, blockSoundGroup.getPitch() * 0.8F);
@@ -1043,8 +939,7 @@ public class WorldAccess {
 
 
         // Deprecated for block_state()
-        expression.addContextFunction("property", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("property", -1, (c, t, lv) -> {
             c.host.issueDeprecation("property(...)");
             BlockArgument locator = BlockArgument.findIn((CarpetContext) c, lv, 0);
             BlockState state = locator.block.getBlockState();
@@ -1058,8 +953,7 @@ public class WorldAccess {
         });
 
         // Deprecated for block_state()
-        expression.addContextFunction("block_properties", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("block_properties", -1, (c, t, lv) -> {
             c.host.issueDeprecation("block_properties(...)");
             BlockArgument locator = BlockArgument.findIn((CarpetContext) c, lv, 0);
             BlockState state = locator.block.getBlockState();
@@ -1071,16 +965,13 @@ public class WorldAccess {
 
         // block_state(block)
         // block_state(block, property)
-        expression.addContextFunction("block_state", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("block_state", -1, (c, t, lv) -> {
             BlockArgument locator = BlockArgument.findIn((CarpetContext) c, lv, 0, true);
             BlockState state = locator.block.getBlockState();
             StateDefinition<Block, BlockState> states = state.getBlock().getStateDefinition();
-            if (locator.offset == lv.size())
-            {
+            if (locator.offset == lv.size()) {
                 Map<Value,Value> properties = new HashMap<>();
-                for(Property<?> p : states.getProperties())
-                {
+                for(Property<?> p : states.getProperties()) {
                     properties.put(StringValue.of(p.getName()), ValueConversions.fromProperty(state, p));// ValueConversions.fromObject(state.get(p), false));
                 }
                 return MapValue.wrap(properties);
@@ -1092,8 +983,7 @@ public class WorldAccess {
             return ValueConversions.fromProperty(state, property);
         });
 
-        expression.addContextFunction("block_list", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("block_list", -1, (c, t, lv) -> {
             if (lv.size() == 0)
                 return ListValue.wrap(Registry.BLOCK.keySet().stream().map(ValueConversions::of).collect(Collectors.toList()));
             CarpetContext cc = (CarpetContext)c;
@@ -1104,15 +994,13 @@ public class WorldAccess {
             return ListValue.wrap(blockTag.getValues().stream().map(b -> ValueConversions.of(Registry.BLOCK.getKey(b))).collect(Collectors.toList()));
         });
 
-        expression.addContextFunction("block_tags", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("block_tags", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             TagContainer tagManager = cc.s.getServer().getTags();
             if (lv.size() == 0)
                 return ListValue.wrap(tagManager.getOrEmpty(Registry.BLOCK_REGISTRY).getAvailableTags().stream().map(ValueConversions::of).collect(Collectors.toList()));
             BlockArgument blockLocator = BlockArgument.findIn(cc, lv, 0, true);
-            if (blockLocator.offset == lv.size())
-            {
+            if (blockLocator.offset == lv.size()) {
                 Block target = blockLocator.block.getBlockState().getBlock();
                 return ListValue.wrap(tagManager.getOrEmpty(Registry.BLOCK_REGISTRY).getAllTags().entrySet().stream().filter(e -> e.getValue().contains(target)).map(e -> ValueConversions.of(e.getKey())).collect(Collectors.toList()));
             }
@@ -1131,19 +1019,16 @@ public class WorldAccess {
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0, false, false, true);
 
             Biome biome;
-            if (locator.replacement != null)
-            {
+            if (locator.replacement != null) {
                 biome = world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).get(InputValidator.identifierOf(locator.replacement));
                 if (biome == null) throw new ThrowStatement(locator.replacement, Throwables.UNKNOWN_BIOME) ;
             }
-            else
-            {
+            else {
                 BlockPos pos = locator.block.getPos();
                 biome = world.getBiome(pos);
             }
             // in locatebiome
-            if (locator.offset == lv.size())
-            {
+            if (locator.offset == lv.size()) {
                 ResourceLocation biomeId = cc.s.getServer().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getKey(biome);
                 return new StringValue(NBTSerializableValue.nameFromRegistryId(biomeId));
             }
@@ -1153,8 +1038,7 @@ public class WorldAccess {
             return featureProvider.apply(world, biome);
         });
 
-        expression.addContextFunction("set_biome", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("set_biome", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
             if (lv.size() == locator.offset)
@@ -1164,8 +1048,7 @@ public class WorldAccess {
             Biome biome = cc.s.getServer().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getOptional(InputValidator.identifierOf(biomeName))
                 .orElseThrow(() -> new ThrowStatement(biomeName, Throwables.UNKNOWN_BIOME));
             boolean doImmediateUpdate = true;
-            if (lv.size() > locator.offset+1)
-            {
+            if (lv.size() > locator.offset+1) {
                 doImmediateUpdate = lv.get(locator.offset+1).getBoolean();
             }
             ServerLevel world = cc.s.getLevel();
@@ -1208,8 +1091,7 @@ public class WorldAccess {
                     new NumericValue(16*ChunkPos.getZ(l)))).collect(Collectors.toList()));
         });
 
-        expression.addContextFunction("structure_eligibility", -1, (c, t, lv) ->
-        {// TODO rename structureName to class
+        expression.addContextFunction("structure_eligibility", -1, (c, t, lv) -> {// TODO rename structureName to class
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
 
@@ -1221,37 +1103,30 @@ public class WorldAccess {
             BlockPos pos = locator.block.getPos();
             StructureFeature<?> structure = null;
             boolean needSize = false;
-            if (lv.size() > locator.offset)
-            {
+            if (lv.size() > locator.offset) {
                 Value requested = lv.get(locator.offset+0);
-                if (!(requested instanceof NullValue))
-                {
+                if (!(requested instanceof NullValue)) {
                     String reqString = requested.getString();
                     structure = Registry.STRUCTURE_FEATURE.getOptional(InputValidator.identifierOf(reqString))
                             .orElseThrow(() -> new ThrowStatement(reqString, Throwables.UNKNOWN_STRUCTURE));
                 }
-                if (lv.size() > locator.offset+1)
-                {
+                if (lv.size() > locator.offset+1) {
                     needSize = lv.get(locator.offset+1).getBoolean();
                 }
             }
-            if (structure != null)
-            {
+            if (structure != null) {
                 StructureStart<?> start = FeatureGenerator.shouldStructureStartAt(world, pos, structure, needSize);
                 if (start == null) return Value.NULL;
                 if (!needSize) return Value.TRUE;
                 return ValueConversions.of(start);
             }
             Map<Value, Value> ret = new HashMap<>();
-            for(StructureFeature<?> str : StructureFeature.STRUCTURES_REGISTRY.values())
-            {
+            for(StructureFeature<?> str : StructureFeature.STRUCTURES_REGISTRY.values()) {
                 StructureStart<?> start;
-                try
-                {
+                try {
                     start = FeatureGenerator.shouldStructureStartAt(world, pos, str, needSize);
                 }
-                catch (NullPointerException npe)
-                {
+                catch (NullPointerException npe) {
                     CarpetSettings.LOG.error("Failed to detect structure: "+str.getFeatureName());
                     start = null;
                 }
@@ -1271,11 +1146,9 @@ public class WorldAccess {
             ServerLevel world = cc.s.getLevel();
             BlockPos pos = locator.block.getPos();
             Map<StructureFeature<?>, StructureStart<?>> structures = world.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.STRUCTURE_STARTS).getAllStarts();
-            if (lv.size() == locator.offset)
-            {
+            if (lv.size() == locator.offset) {
                 Map<Value, Value> structureList = new HashMap<>();
-                for (Map.Entry<StructureFeature<?>, StructureStart<?>> entry : structures.entrySet())
-                {
+                for (Map.Entry<StructureFeature<?>, StructureStart<?>> entry : structures.entrySet()) {
                     StructureStart<?> start = entry.getValue();
                     if (start == StructureStart.INVALID_START)
                         continue;
@@ -1291,8 +1164,7 @@ public class WorldAccess {
             return ValueConversions.of(structures.get(Registry.STRUCTURE_FEATURE.get(InputValidator.identifierOf(structureName))));
         });
 
-        expression.addContextFunction("set_structure", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("set_structure", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
 
@@ -1307,11 +1179,9 @@ public class WorldAccess {
             // good 'ol pointer
             Value[] result = new Value[]{Value.NULL};
             // technically a world modification. Even if we could let it slide, we will still park it
-            ((CarpetContext) c).s.getServer().executeBlocking(() ->
-            {
+            ((CarpetContext) c).s.getServer().executeBlocking(() -> {
                 Map<StructureFeature<?>, StructureStart<?>> structures = world.getChunk(pos).getAllStarts();
-                if (lv.size() == locator.offset + 1)
-                {
+                if (lv.size() == locator.offset + 1) {
                     Boolean res = FeatureGenerator.plopGrid(configuredStructure, ((CarpetContext) c).s.getLevel(), locator.block.getPos());
                     //Boolean res = FeatureGenerator.gridStructure(structureName, ((CarpetContext) c).s.getWorld(), locator.block.getPos());
                     if (res == null) return;
@@ -1319,20 +1189,16 @@ public class WorldAccess {
                     return;
                 }
                 Value newValue = lv.get(locator.offset+1);
-                if (newValue instanceof NullValue) // remove structure
-                {
+                if (newValue instanceof NullValue) // remove structure {
                     StructureFeature<?> structure = configuredStructure.feature;
-                    if (!structures.containsKey(structure))
-                    {
+                    if (!structures.containsKey(structure)) {
                         return;
                     }
                     StructureStart<?> start = structures.get(structure);
                     ChunkPos structureChunkPos = start.getChunkPos(); //   new ChunkPos(start.getChunkX(), start.getChunkZ());
                     BoundingBox box = start.setBoundingBoxFromChildren();
-                    for (int chx = box.minX() / 16; chx <= box.maxX() / 16; chx++)  // minx maxx
-                    {
-                        for (int chz = box.minZ() / 16; chz <= box.maxZ() / 16; chz++) //minZ maxZ
-                        {
+                    for (int chx = box.minX() / 16; chx <= box.maxX() / 16; chx++)  // minx maxx {
+                        for (int chz = box.minZ() / 16; chz <= box.maxZ() / 16; chz++) //minZ maxZ {
                             ChunkPos chpos = new ChunkPos(chx, chz);
                             // getting a chunk will convert it to full, allowing to modify references
                             Map<StructureFeature<?>, LongSet> references =
@@ -1348,23 +1214,19 @@ public class WorldAccess {
             return result[0]; // preventing from lazy evaluating of the result in case a future completes later
         });
 
-        expression.addContextFunction("custom_dimension", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("custom_dimension", -1, (c, t, lv) -> {
             if (lv.size() == 0) throw new InternalExpressionException("'custom_dimension' requires at least one argument");
             CarpetContext cc = (CarpetContext)c;
             cc.host.issueDeprecation("custom_dimension()");
             String worldKey = lv.get(0).getString();
 
             Long seed = null;
-            if (lv.size() > 1)
-            {
+            if (lv.size() > 1) {
                 String seedKey = lv.get(1).getString();
-                try
-                {
+                try {
                     seed = Long.parseLong(seedKey);
                 }
-                catch (NumberFormatException ignored)
-                {
+                catch (NumberFormatException ignored) {
                     throw new InternalExpressionException("Incorrect number format for seed: " + seedKey);
                 }
             }
@@ -1376,49 +1238,40 @@ public class WorldAccess {
         });
 
 
-        expression.addContextFunction("reset_chunk", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("reset_chunk", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             List<ChunkPos> requestedChunks = new ArrayList<>();
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 //either one block or list of chunks
                 Value first = lv.get(0);
-                if (first instanceof ListValue)
-                {
+                if (first instanceof ListValue) {
                     List<Value> listVal = ((ListValue) first).getItems();
                     int offset = 0;
                     BlockArgument locator = BlockArgument.findIn(cc, listVal, 0);
                     requestedChunks.add(new ChunkPos(locator.block.getPos()));
-                    while (listVal.size() > locator.offset)
-                    {
+                    while (listVal.size() > locator.offset) {
                         locator = BlockArgument.findIn(cc, listVal, locator.offset);
                         requestedChunks.add(new ChunkPos(locator.block.getPos()));
                     }
                 }
-                else
-                {
+                else {
                     BlockArgument locator = BlockArgument.findIn(cc, Collections.singletonList(first), 0);
                     requestedChunks.add(new ChunkPos(locator.block.getPos()));
                 }
             }
-            else
-            {
+            else {
                 BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
                 ChunkPos from = new ChunkPos(locator.block.getPos());
-                if (lv.size() > locator.offset)
-                {
+                if (lv.size() > locator.offset) {
                     locator = BlockArgument.findIn(cc, lv, locator.offset);
                     ChunkPos to = new ChunkPos(locator.block.getPos());
                     int xmax = Math.max(from.x, to.x);
                     int zmax = Math.max(from.z, to.z);
-                    for (int x = Math.min(from.x, to.x); x <= xmax; x++) for (int z = Math.min(from.z, to.z); z <= zmax; z++)
-                    {
+                    for (int x = Math.min(from.x, to.x); x <= xmax; x++) for (int z = Math.min(from.z, to.z); z <= zmax; z++) {
                         requestedChunks.add(new ChunkPos(x,z));
                     }
                 }
-                else
-                {
+                else {
                     requestedChunks.add(from);
                 }
             }
@@ -1428,13 +1281,10 @@ public class WorldAccess {
 
             Value [] result = new Value[]{Value.NULL};
 
-            ((CarpetContext)c).s.getServer().executeBlocking( () ->
-            {
+            ((CarpetContext)c).s.getServer().executeBlocking( () -> {
                 Map<String, Integer> report = ((ThreadedAnvilChunkStorageInterface) world.getChunkSource().chunkMap).regenerateChunkRegion(requestedChunks);
-                /*for (ChunkPos chpos: requestedChunks) // needed in 1.16 only
-                {
-                    if (world.getChunk(chpos.x, chpos.z, ChunkStatus.FULL, false) != null)
-                    {
+                /*for (ChunkPos chpos: requestedChunks) // needed in 1.16 only {
+                    if (world.getChunk(chpos.x, chpos.z, ChunkStatus.FULL, false) != null) {
                         WorldTools.forceChunkUpdate(chpos.getStartPos(), world);
                     }
                 }*/
@@ -1446,16 +1296,14 @@ public class WorldAccess {
             return result[0];
         });
 
-        expression.addContextFunction("inhabited_time", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("inhabited_time", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
             BlockPos pos = locator.block.getPos();
             return new NumericValue(cc.s.getLevel().getChunk(pos).getInhabitedTime());
         });
 
-        expression.addContextFunction("spawn_potential", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("spawn_potential", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
             BlockPos pos = locator.block.getPos();
@@ -1470,8 +1318,7 @@ public class WorldAccess {
             );
         });
 
-        expression.addContextFunction("add_chunk_ticket", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("add_chunk_ticket", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
             BlockPos pos = locator.block.getPos();

@@ -14,8 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 //import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PickaxeItem.class)
-public class PickaxeItem_missingToolsMixin extends DiggerItem
-{
+public class PickaxeItem_missingToolsMixin extends DiggerItem {
 
     protected PickaxeItem_missingToolsMixin(float attackDamage, float attackSpeed, Tier material, Tag<Block> tag, Properties settings) {
         super(attackDamage, attackSpeed, material, tag, settings);

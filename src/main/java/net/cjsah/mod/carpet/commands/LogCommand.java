@@ -23,10 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class LogCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class LogCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = Commands.literal("log").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandLog)).
                 executes((context) -> listLogs(context.getSource())).
@@ -65,56 +63,44 @@ public class LogCommand
 
         dispatcher.register(literalargumentbuilder);
     }
-    private static int listLogs(CommandSourceStack source)
-    {
+    private static int listLogs(CommandSourceStack source) {
         Player player;
-        try
-        {
+        try {
             player = source.getPlayerOrException();
         }
-        catch (CommandSyntaxException e)
-        {
+        catch (CommandSyntaxException e) {
             Messenger.m(source, "For players only");
             return 0;
         }
         Map<String,String> subs = LoggerRegistry.getPlayerSubscriptions(source.getTextName());
-        if (subs == null)
-        {
+        if (subs == null) {
             subs = new HashMap<>();
         }
         List<String> all_logs = new ArrayList<>(LoggerRegistry.getLoggerNames());
         Collections.sort(all_logs);
         Messenger.m(player, "w _____________________");
         Messenger.m(player, "w Available logging options:");
-        for (String lname: all_logs)
-        {
+        for (String lname: all_logs) {
             List<Object> comp = new ArrayList<>();
             String color = subs.containsKey(lname)?"w":"g";
             comp.add("w  - "+lname+": ");
             Logger logger = LoggerRegistry.getLogger(lname);
             String [] options = logger.getOptions();
-            if (options.length == 0)
-            {
-                if (subs.containsKey(lname))
-                {
+            if (options.length == 0) {
+                if (subs.containsKey(lname)) {
                     comp.add("l Subscribed ");
                 }
-                else
-                {
+                else {
                     comp.add(color + " [Subscribe] ");
                     comp.add("^w subscribe to " + lname);
                     comp.add("!/log " + lname);
                 }
             }
-            else
-            {
-                for (String option : logger.getOptions())
-                {
-                    if (subs.containsKey(lname) && subs.get(lname).equalsIgnoreCase(option))
-                    {
+            else {
+                for (String option : logger.getOptions()) {
+                    if (subs.containsKey(lname) && subs.get(lname).equalsIgnoreCase(option)) {
                         comp.add("l [" + option + "] ");
-                    } else
-                    {
+                    } else {
                         comp.add(color + " [" + option + "] ");
                         comp.add("^w subscribe to " + lname + " " + option);
                         comp.add("!/log " + lname + " " + option);
@@ -122,8 +108,7 @@ public class LogCommand
 
                 }
             }
-            if (subs.containsKey(lname))
-            {
+            if (subs.containsKey(lname)) {
                 comp.add("nb [X]");
                 comp.add("^w Click to unsubscribe");
                 comp.add("!/log "+lname);
@@ -132,31 +117,25 @@ public class LogCommand
         }
         return 1;
     }
-    private static int unsubFromAll(CommandSourceStack source, String player_name)
-    {
+    private static int unsubFromAll(CommandSourceStack source, String player_name) {
         Player player = source.getServer().getPlayerList().getPlayerByName(player_name);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(source, "r No player specified");
             return 0;
         }
-        for (String logname : LoggerRegistry.getLoggerNames())
-        {
+        for (String logname : LoggerRegistry.getLoggerNames()) {
             LoggerRegistry.unsubscribePlayer(player_name, logname);
         }
         Messenger.m(source, "gi Unsubscribed from all logs");
         return 1;
     }
-    private static int unsubFromLogger(CommandSourceStack source, String player_name, String logname)
-    {
+    private static int unsubFromLogger(CommandSourceStack source, String player_name, String logname) {
         Player player = source.getServer().getPlayerList().getPlayerByName(player_name);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(source, "r No player specified");
             return 0;
         }
-        if (LoggerRegistry.getLogger(logname) == null)
-        {
+        if (LoggerRegistry.getLogger(logname) == null) {
             Messenger.m(source, "r Unknown logger: ","rb "+logname);
             return 0;
         }
@@ -165,55 +144,44 @@ public class LogCommand
         return 1;
     }
 
-    private static int toggleSubscription(CommandSourceStack source, String player_name, String logName)
-    {
+    private static int toggleSubscription(CommandSourceStack source, String player_name, String logName) {
         Player player = source.getServer().getPlayerList().getPlayerByName(player_name);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(source, "r No player specified");
             return 0;
         }
-        if (LoggerRegistry.getLogger(logName) == null)
-        {
+        if (LoggerRegistry.getLogger(logName) == null) {
             Messenger.m(source, "r Unknown logger: ","rb "+logName);
             return 0;
         }
         boolean subscribed = LoggerRegistry.togglePlayerSubscription(player_name, logName);
-        if (subscribed)
-        {
+        if (subscribed) {
             Messenger.m(source, "gi "+player_name+" subscribed to " + logName + ".");
         }
-        else
-        {
+        else {
             Messenger.m(source, "gi "+player_name+" unsubscribed from " + logName + ".");
         }
         return 1;
     }
-    private static int subscribePlayer(CommandSourceStack source, String player_name, String logname, String option)
-    {
+    private static int subscribePlayer(CommandSourceStack source, String player_name, String logname, String option) {
         Player player = source.getServer().getPlayerList().getPlayerByName(player_name);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(source, "r No player specified");
             return 0;
         }
-        if (LoggerRegistry.getLogger(logname) == null)
-        {
+        if (LoggerRegistry.getLogger(logname) == null) {
             Messenger.m(source, "r Unknown logger: ","rb "+logname);
             return 0;
         }
-        if (!LoggerRegistry.getLogger(logname).isOptionValid(option))
-        {
+        if (!LoggerRegistry.getLogger(logname).isOptionValid(option)) {
             Messenger.m(source, "r Invalid option: ", "rb "+option);
             return 0;
         }
         LoggerRegistry.subscribePlayer(player_name, logname, option);
-        if (option != null)
-        {
+        if (option != null) {
             Messenger.m(source, "gi Subscribed to " + logname + "(" + option + ")");
         }
-        else
-        {
+        else {
             Messenger.m(source, "gi Subscribed to " + logname);
         }
         return 1;

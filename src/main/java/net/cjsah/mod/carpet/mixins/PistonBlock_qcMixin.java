@@ -11,16 +11,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PistonBaseBlock.class)
-public class PistonBlock_qcMixin
-{
+public class PistonBlock_qcMixin {
     @Inject(method = "shouldExtend", cancellable = true, at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/util/math/BlockPos;up()Lnet/minecraft/util/math/BlockPos;" // up
     ))
-    private void cancelUpCheck(Level world_1, BlockPos blockPos_1, Direction direction_1, CallbackInfoReturnable<Boolean> cir)
-    {
-        if (!CarpetSettings.quasiConnectivity)
-        {
+    private void cancelUpCheck(Level world_1, BlockPos blockPos_1, Direction direction_1, CallbackInfoReturnable<Boolean> cir) {
+        if (!CarpetSettings.quasiConnectivity) {
             cir.setReturnValue(false);
             cir.cancel();
         }

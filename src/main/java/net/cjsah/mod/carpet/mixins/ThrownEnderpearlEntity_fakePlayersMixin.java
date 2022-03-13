@@ -11,19 +11,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ThrownEnderpearl.class)
-public abstract class ThrownEnderpearlEntity_fakePlayersMixin extends ThrowableItemProjectile
-{
-    public ThrownEnderpearlEntity_fakePlayersMixin(EntityType<? extends ThrowableItemProjectile> entityType_1, Level world_1)
-    {
-        super(entityType_1, world_1);
+public abstract class ThrownEnderpearlEntity_fakePlayersMixin extends ThrowableItemProjectile {
+    public ThrownEnderpearlEntity_fakePlayersMixin(EntityType<? extends ThrowableItemProjectile> entityType, Level world) {
+        super(entityType, world);
     }
 
-    @Redirect(method =  "onCollision", at = @At(
+    @Redirect(method =  "onHit", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/network/ClientConnection;isOpen()Z"
+            target = "Lnet/minecraft/network/Connection;isConnected()Z"
     ))
-    private boolean isConnectionGood(Connection clientConnection)
-    {
-        return clientConnection.isConnected() || getOwner() instanceof EntityPlayerMPFake;
+    private boolean isConnectionGood(Connection connection) {
+        return connection.isConnected() || getOwner() instanceof EntityPlayerMPFake;
     }
 }

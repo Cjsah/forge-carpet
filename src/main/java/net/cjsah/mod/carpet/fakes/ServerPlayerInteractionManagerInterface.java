@@ -2,8 +2,7 @@ package net.cjsah.mod.carpet.fakes;
 
 import net.minecraft.core.BlockPos;
 
-public interface ServerPlayerInteractionManagerInterface
-{
+public interface ServerPlayerInteractionManagerInterface {
     BlockPos getCurrentBreakingBlock();
 
     int getCurrentBlockBreakingProgress();

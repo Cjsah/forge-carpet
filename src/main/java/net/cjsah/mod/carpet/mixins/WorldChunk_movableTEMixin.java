@@ -24,8 +24,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import static net.minecraft.world.level.chunk.LevelChunk.EMPTY_SECTION;
 
 @Mixin(LevelChunk.class)
-public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
-{
+public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface {
     @Shadow
     @Final
     private LevelChunkSection[] sections;
@@ -50,14 +49,11 @@ public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
     @Redirect(method = "setBlockState", at = @At(value = "INVOKE", ordinal = 0,
             target = "Lnet/minecraft/world/chunk/WorldChunk;getBlockEntity(Lnet/minecraft/util/math/BlockPos;" + "Lnet/minecraft/world/chunk/WorldChunk$CreationType;)" + "Lnet/minecraft/block/entity/BlockEntity;"))
     private BlockEntity ifGetBlockEntity(LevelChunk worldChunk, BlockPos blockPos_1,
-            LevelChunk.EntityCreationType worldChunk$CreationType_1)
-    {
-        if (!CarpetSettings.movableBlockEntities)
-        {
+            LevelChunk.EntityCreationType worldChunk$CreationType_1) {
+        if (!CarpetSettings.movableBlockEntities) {
             return this.getBlockEntity(blockPos_1, LevelChunk.EntityCreationType.CHECK);
         }
-        else
-        {
+        else {
             return this.world.getBlockEntity(blockPos_1);
         }
     }
@@ -71,17 +67,14 @@ public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
      */
     /* @Nullable */
     public BlockState setBlockStateWithBlockEntity(BlockPos blockPos_1, BlockState newBlockState, BlockEntity newBlockEntity,
-            boolean boolean_1)
-    {
+            boolean boolean_1) {
         int x = blockPos_1.getX() & 15;
         int y = blockPos_1.getY();
         int z = blockPos_1.getZ() & 15;
         int section = world.getSectionIndex(y);
         LevelChunkSection chunkSection = this.sections[section];
-        if (chunkSection == EMPTY_SECTION)
-        {
-            if (newBlockState.isAir())
-            {
+        if (chunkSection == EMPTY_SECTION) {
+            if (newBlockState.isAir()) {
                 return null;
             }
             
@@ -91,12 +84,10 @@ public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
         
         boolean boolean_2 = chunkSection.hasOnlyAir();
         BlockState oldBlockState = chunkSection.setBlockState(x, y & 15, z, newBlockState);
-        if (oldBlockState == newBlockState)
-        {
+        if (oldBlockState == newBlockState) {
             return null;
         }
-        else
-        {
+        else {
             Block newBlock = newBlockState.getBlock();
             Block oldBlock = oldBlockState.getBlock();
             ((Heightmap) this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING)).update(x, y, z, newBlockState);
@@ -104,46 +95,36 @@ public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
             ((Heightmap) this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR)).update(x, y, z, newBlockState);
             ((Heightmap) this.heightmaps.get(Heightmap.Types.WORLD_SURFACE)).update(x, y, z, newBlockState);
             boolean boolean_3 = chunkSection.hasOnlyAir();
-            if (boolean_2 != boolean_3)
-            {
+            if (boolean_2 != boolean_3) {
                 this.world.getChunkSource().getLightEngine().updateSectionStatus(blockPos_1, boolean_3);
             }
             
-            if (!this.world.isClientSide)
-            {
+            if (!this.world.isClientSide) {
                 if (!(oldBlock instanceof MovingPistonBlock))//this is a movableTE special case, if condition wasn't there it would remove the blockentity that was carried for some reason
                     oldBlockState.onRemove(this.world, blockPos_1, newBlockState, boolean_1);//this kills it
             }
-            else if (oldBlock != newBlock && oldBlock instanceof EntityBlock)
-            {
+            else if (oldBlock != newBlock && oldBlock instanceof EntityBlock) {
                 this.world.removeBlockEntity(blockPos_1);
             }
             
-            if (chunkSection.getBlockState(x, y & 15, z).getBlock() != newBlock)
-            {
+            if (chunkSection.getBlockState(x, y & 15, z).getBlock() != newBlock) {
                 return null;
             }
-            else
-            {
+            else {
                 BlockEntity oldBlockEntity = null;
-                if (oldBlockState.hasBlockEntity())
-                {
+                if (oldBlockState.hasBlockEntity()) {
                     oldBlockEntity = this.getBlockEntity(blockPos_1, LevelChunk.EntityCreationType.CHECK);
-                    if (oldBlockEntity != null)
-                    {
+                    if (oldBlockEntity != null) {
                         oldBlockEntity.setBlockState(oldBlockState);
                         updateTicker(oldBlockEntity);
                     }
                 }
 
-                if (oldBlockState.hasBlockEntity())
-                {
-                    if (newBlockEntity == null)
-                    {
+                if (oldBlockState.hasBlockEntity()) {
+                    if (newBlockEntity == null) {
                         newBlockEntity = ((EntityBlock) newBlock).newBlockEntity(blockPos_1, newBlockState);
                     }
-                    if (newBlockEntity != oldBlockEntity && newBlockEntity != null)
-                    {
+                    if (newBlockEntity != oldBlockEntity && newBlockEntity != null) {
                         newBlockEntity.clearRemoved();
                         this.world.setBlockEntity(newBlockEntity);
                         newBlockEntity.setBlockState(newBlockState);
@@ -151,8 +132,7 @@ public abstract class WorldChunk_movableTEMixin implements WorldChunkInterface
                     }
                 }
 
-                if (!this.world.isClientSide)
-                {
+                if (!this.world.isClientSide) {
                     newBlockState.onPlace(this.world, blockPos_1, oldBlockState, boolean_1); //This can call setblockstate! (e.g. hopper does)
                 }
                 

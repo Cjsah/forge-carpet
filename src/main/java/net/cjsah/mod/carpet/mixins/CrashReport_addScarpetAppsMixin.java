@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.cjsah.mod.carpet.CarpetServer;
 
 @Mixin(SystemReport.class)
-public abstract class CrashReport_addScarpetAppsMixin
-{
+public abstract class CrashReport_addScarpetAppsMixin {
     @Shadow public abstract void addSection(String name, Supplier<String> valueSupplier);
 
     @Inject(method = "<init>", at = @At("RETURN"))

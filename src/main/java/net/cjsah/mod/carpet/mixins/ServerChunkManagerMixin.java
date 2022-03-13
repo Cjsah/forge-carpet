@@ -22,15 +22,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
 
 @Mixin(ServerChunkCache.class)
-public abstract class ServerChunkManagerMixin implements ServerChunkManagerInterface
-{
+public abstract class ServerChunkManagerMixin implements ServerChunkManagerInterface {
     @Shadow @Final private ServerLevel world;
 
     @Shadow @Final private DistanceManager ticketManager;
 
     @Override // shared between scarpet and spawnChunks setting
-    public DistanceManager getCMTicketManager()
-    {
+    public DistanceManager getCMTicketManager() {
         return ticketManager;
     }
 
@@ -39,20 +37,17 @@ public abstract class ServerChunkManagerMixin implements ServerChunkManagerInter
             target = "Lnet/minecraft/server/world/ChunkTicketManager;getSpawningChunkCount()I"
     ))
     //this runs once per world spawning cycle. Allows to grab mob counts and count spawn ticks
-    private int setupTracking(DistanceManager chunkTicketManager)
-    {
+    private int setupTracking(DistanceManager chunkTicketManager) {
         int j = chunkTicketManager.getSpawningChunkCount();
         ResourceKey<Level> dim = this.world.dimension(); // getDimensionType;
         //((WorldInterface)world).getPrecookedMobs().clear(); not needed because mobs are compared with predefined BBs
         SpawnReporter.chunkCounts.put(dim, j);
 
-        if (SpawnReporter.track_spawns > 0L)
-        {
+        if (SpawnReporter.track_spawns > 0L) {
             //local spawns now need to be tracked globally cause each calll is just for chunk
             SpawnReporter.local_spawns = new HashMap<>();
             SpawnReporter.first_chunk_marker = new HashSet<>();
-            for (MobCategory cat : MobCategory.values())
-            {
+            for (MobCategory cat : MobCategory.values()) {
                 Pair key = Pair.of(dim, cat);
                 SpawnReporter.overall_spawn_ticks.put(key,
                         SpawnReporter.overall_spawn_ticks.get(key)+
@@ -64,29 +59,23 @@ public abstract class ServerChunkManagerMixin implements ServerChunkManagerInter
 
 
     @Inject(method = "tickChunks", at = @At("RETURN"))
-    private void onFinishSpawnWorldCycle(CallbackInfo ci)
-    {
+    private void onFinishSpawnWorldCycle(CallbackInfo ci) {
         LevelData levelProperties_1 = this.world.getLevelData(); // levelProperies class
         boolean boolean_3 = levelProperties_1.getGameTime() % 400L == 0L;
-        if (SpawnReporter.track_spawns > 0L && SpawnReporter.local_spawns != null)
-        {
-            for (MobCategory cat: MobCategory.values())
-            {
+        if (SpawnReporter.track_spawns > 0L && SpawnReporter.local_spawns != null) {
+            for (MobCategory cat: MobCategory.values()) {
                 ResourceKey<Level> dim = world.dimension(); // getDimensionType;
                 Pair key = Pair.of(dim, cat);
                 int spawnTries = SpawnReporter.spawn_tries.get(cat);
-                if (!SpawnReporter.local_spawns.containsKey(cat))
-                {
-                    if (!cat.isPersistent() || boolean_3) // isAnimal
-                    {
+                if (!SpawnReporter.local_spawns.containsKey(cat)) {
+                    if (!cat.isPersistent() || boolean_3) // isAnimal {
                         // fill mobcaps for that category so spawn got cancelled
                         SpawnReporter.spawn_ticks_full.put(key,
                                 SpawnReporter.spawn_ticks_full.get(key)+ spawnTries);
                     }
 
                 }
-                else if (SpawnReporter.local_spawns.get(cat) > 0)
-                {
+                else if (SpawnReporter.local_spawns.get(cat) > 0) {
                     // tick spawned mobs for that type
                     SpawnReporter.spawn_ticks_succ.put(key,
                         SpawnReporter.spawn_ticks_succ.get(key)+spawnTries);
@@ -99,8 +88,7 @@ public abstract class ServerChunkManagerMixin implements ServerChunkManagerInter
                         // considering spawn tries to remove, as with warp
                         // there is little need for them anyways.
                 }
-                else // spawn no mobs despite trying
-                {
+                else // spawn no mobs despite trying {
                     //tick didn's spawn mobs of that type
                     SpawnReporter.spawn_ticks_fail.put(key,
                         SpawnReporter.spawn_ticks_fail.get(key)+spawnTries);

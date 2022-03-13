@@ -6,35 +6,29 @@ import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 
-public class FormattedTextValue extends StringValue
-{
+public class FormattedTextValue extends StringValue {
     Component text;
-    public FormattedTextValue(Component text)
-    {
+    public FormattedTextValue(Component text) {
         super(null);
         this.text = text;
     }
 
     public static Value combine(Value left, Value right) {
         BaseComponent text;
-        if (left instanceof FormattedTextValue)
-        {
+        if (left instanceof FormattedTextValue) {
             text = (BaseComponent) ((FormattedTextValue) left).getText().copy();
         }
-        else
-        {
+        else {
             if (left instanceof NullValue)
                 return right;
             text = new TextComponent(left.getString());
         }
         
-        if (right instanceof FormattedTextValue)
-        {
+        if (right instanceof FormattedTextValue) {
             text.append(((FormattedTextValue) right).getText().copy());
             return new FormattedTextValue(text);
         }
-        else
-        {
+        else {
             if (right instanceof NullValue)
                 return left;
             text.append(right.getString());
@@ -58,25 +52,21 @@ public class FormattedTextValue extends StringValue
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new FormattedTextValue(text);
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "text";
     }
 
-    public Component getText()
-    {
+    public Component getText() {
         return text;
     }
 
     @Override
-    public Tag toTag(boolean force)
-    {
+    public Tag toTag(boolean force) {
         if (!force) throw new NBTSerializableValue.IncompatibleTypeException(this);
         return StringTag.valueOf(Component.Serializer.toJson(text));
     }
@@ -86,13 +76,11 @@ public class FormattedTextValue extends StringValue
         return combine(this, o);
     }
 
-    public String serialize()
-    {
+    public String serialize() {
         return Component.Serializer.toJson(text);
     }
 
-    public static FormattedTextValue deserialize(String serialized)
-    {
+    public static FormattedTextValue deserialize(String serialized) {
         return new FormattedTextValue(Component.Serializer.fromJson(serialized));
     }
 

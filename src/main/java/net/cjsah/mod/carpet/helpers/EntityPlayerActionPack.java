@@ -71,8 +71,7 @@ public class EntityPlayerActionPack {
     public EntityPlayerActionPack start(ActionType type, Action action) {
         Action previous = actions.remove(type);
         if (previous != null) type.stop(player, previous);
-        if (action != null)
-        {
+        if (action != null) {
             actions.put(type, action);
             type.start(player, action); // noop
         }

@@ -22,12 +22,9 @@ import net.minecraft.world.level.NaturalSpawner;
 
 public class Monitoring {
 
-    public static void apply(Expression expression)
-    {
-        expression.addContextFunction("system_info", -1, (c, t, lv) ->
-        {
-            if (lv.size() == 0)
-            {
+    public static void apply(Expression expression) {
+        expression.addContextFunction("system_info", -1, (c, t, lv) -> {
+            if (lv.size() == 0) {
                 return SystemInfo.getAll((CarpetContext) c);
             }
             if (lv.size() == 1) {
@@ -39,19 +36,16 @@ public class Monitoring {
             throw new InternalExpressionException("'system_info' requires one or no parameters");
         });
         // game processed snooper functions
-        expression.addContextFunction("get_mob_counts", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("get_mob_counts", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             NaturalSpawner.SpawnState info = world.getChunkSource().getLastSpawnState();
             if (info == null) return Value.NULL;
             Object2IntMap<MobCategory> mobcounts = info.getMobCategoryCounts();
             int chunks = ((SpawnHelperInnerInterface)info).cmGetChunkCount();
-            if (lv.size() == 0)
-            {
+            if (lv.size() == 0) {
                 Map<Value, Value> retDict = new HashMap<>();
-                for (MobCategory category: mobcounts.keySet())
-                {
+                for (MobCategory category: mobcounts.keySet()) {
                     int currentCap = (int)(category.getMaxInstancesPerChunk() * chunks / SpawnReporter.currentMagicNumber()); // MAGIC_NUMBER
                     retDict.put(
                             new StringValue(category.getSerializedName().toLowerCase(Locale.ROOT)),

@@ -23,8 +23,7 @@ import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 
-public class BlockInfo
-{
+public class BlockInfo {
     public static final Map<SoundType, String> soundName = new HashMap<>() {{
         put(SoundType.WOOD, "wood");
         put(SoundType.GRAVEL, "gravel");
@@ -189,14 +188,12 @@ public class BlockInfo
         put(Material.AMETHYST, "amethyst");
     }};
 
-    public static List<BaseComponent> blockInfo(BlockPos pos, ServerLevel world)
-    {
+    public static List<BaseComponent> blockInfo(BlockPos pos, ServerLevel world) {
         BlockState state = world.getBlockState(pos);
         Material material = state.getMaterial();
         Block block = state.getBlock();
         String metastring = "";
-        for (net.minecraft.world.level.block.state.properties.Property<?> iproperty : state.getProperties())
-        {
+        for (net.minecraft.world.level.block.state.properties.Property<?> iproperty : state.getProperties()) {
             metastring += ", "+iproperty.getName() + '='+state.getValue(iproperty);
         }
         List<BaseComponent> lst = new ArrayList<>();
@@ -240,31 +237,25 @@ public class BlockInfo
         return lst;
     }
 
-    private static BaseComponent wander_chances(BlockPos pos, ServerLevel worldIn)
-    {
+    private static BaseComponent wander_chances(BlockPos pos, ServerLevel worldIn) {
         PathfinderMob creature = new ZombifiedPiglin(EntityType.ZOMBIFIED_PIGLIN, worldIn);
         creature.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
         creature.moveTo(pos, 0.0F, 0.0F);
         RandomStrollGoal wander = new RandomStrollGoal(creature, 0.8D);
         int success = 0;
-        for (int i=0; i<1000; i++)
-        {
+        for (int i=0; i<1000; i++) {
 
             Vec3 vec = DefaultRandomPos.getPos(creature, 10, 7); // TargetFinder.findTarget(creature, 10, 7);
-            if (vec == null)
-            {
+            if (vec == null) {
                 continue;
             }
             success++;
         }
         long total_ticks = 0;
-        for (int trie=0; trie<1000; trie++)
-        {
+        for (int trie=0; trie<1000; trie++) {
             int i;
-            for (i=1;i<30*20*60; i++) //*60 used to be 5 hours, limited to 30 mins
-            {
-                if (wander.canUse())
-                {
+            for (i=1;i<30*20*60; i++) //*60 used to be 5 hours, limited to 30 mins {
+                if (wander.canUse()) {
                     break;
                 }
             }

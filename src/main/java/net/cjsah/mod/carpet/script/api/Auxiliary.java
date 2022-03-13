@@ -133,24 +133,20 @@ public class Auxiliary {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().registerTypeAdapter(Value.class, new ScarpetJsonDeserializer()).create();
 
     @Deprecated
-    public static String recognizeResource(Value value, boolean isFloder)
-    {
+    public static String recognizeResource(Value value, boolean isFloder) {
         String origfile = value.getString();
         String file = origfile.toLowerCase(Locale.ROOT).replaceAll("[^A-Za-z0-9\\-+_/]", "");
         file = Arrays.stream(file.split("/+")).filter(s -> !s.isEmpty()).collect(Collectors.joining("/"));
-        if (file.isEmpty() && !isFloder)
-        {
+        if (file.isEmpty() && !isFloder) {
             throw new InternalExpressionException("Cannot use "+origfile+" as resource name - must have some letters and numbers");
         }
         return file;
     }
 
-    public static void apply(Expression expression)
-    {
+    public static void apply(Expression expression) {
         expression.addContextFunction("sound", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
-            if (lv.size() == 0)
-            {
+            if (lv.size() == 0) {
                 return ListValue.wrap(Registry.SOUND_EVENT.keySet().stream().map(ValueConversions::of));
             }
             String rawString = lv.get(0).getString();
@@ -161,14 +157,11 @@ public class Auxiliary {
             float volume = 1.0F;
             float pitch = 1.0F;
             SoundSource mixer = SoundSource.MASTER;
-            if (lv.size() > 0+locator.offset)
-            {
+            if (lv.size() > 0+locator.offset) {
                 volume = (float) NumericValue.asNumber(lv.get(0+locator.offset)).getDouble();
-                if (lv.size() > 1+locator.offset)
-                {
+                if (lv.size() > 1+locator.offset) {
                     pitch = (float) NumericValue.asNumber(lv.get(1+locator.offset)).getDouble();
-                    if (lv.size() > 2+locator.offset)
-                    {
+                    if (lv.size() > 2+locator.offset) {
                         String mixerName = lv.get(2+locator.offset).getString();
                         mixer = mixerMap.get(mixerName.toLowerCase(Locale.ROOT));
                         if (mixer == null) throw  new InternalExpressionException(mixerName +" is not a valid mixer name");
@@ -178,16 +171,14 @@ public class Auxiliary {
             Vec3 vec = locator.vec;
             double d0 = Math.pow(volume > 1.0F ? (double)(volume * 16.0F) : 16.0D, 2.0D);
             int count = 0;
-            for (ServerPlayer player : cc.s.getLevel().getPlayers( (p) -> p.distanceToSqr(vec) < d0))
-            {
+            for (ServerPlayer player : cc.s.getLevel().getPlayers( (p) -> p.distanceToSqr(vec) < d0)) {
                 count++;
                 player.connection.send(new ClientboundCustomSoundPacket(soundName, mixer, vec, volume, pitch));
             }
             return new NumericValue(count);
         });
 
-        expression.addContextFunction("particle", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("particle", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             if (lv.size() == 0) return ListValue.wrap(Registry.PARTICLE_TYPE.keySet().stream().map(ValueConversions::of));
             MinecraftServer ms = cc.s.getServer();
@@ -198,17 +189,13 @@ public class Auxiliary {
             double speed = 0;
             float spread = 0.5f;
             ServerPlayer player = null;
-            if (lv.size() > locator.offset)
-            {
+            if (lv.size() > locator.offset) {
                 count = (int) NumericValue.asNumber(lv.get(locator.offset)).getLong();
-                if (lv.size() > 1+locator.offset)
-                {
+                if (lv.size() > 1+locator.offset) {
                     spread = (float) NumericValue.asNumber(lv.get(1+locator.offset)).getDouble();
-                    if (lv.size() > 2+locator.offset)
-                    {
+                    if (lv.size() > 2+locator.offset) {
                         speed = NumericValue.asNumber(lv.get(2 + locator.offset)).getDouble();
-                        if (lv.size() > 3 + locator.offset) // should accept entity as well as long as it is player
-                        {
+                        if (lv.size() > 3 + locator.offset) // should accept entity as well as long as it is player {
                             player = ms.getPlayerList().getPlayerByName(lv.get(3 + locator.offset).getString());
                         }
                     }
@@ -216,16 +203,13 @@ public class Auxiliary {
             }
             ParticleOptions particle = ShapeDispatcher.getParticleData(particleName);
             Vec3 vec = locator.vec;
-            if (player == null)
-            {
-                for (Player p : (world.players()))
-                {
+            if (player == null) {
+                for (Player p : (world.players())) {
                     world.sendParticles((ServerPlayer)p, particle, true, vec.x, vec.y, vec.z, count,
                             spread, spread, spread, speed);
                 }
             }
-            else
-            {
+            else {
                 world.sendParticles(player,
                         particle, true, vec.x, vec.y, vec.z, count,
                         spread, spread, spread, speed);
@@ -234,8 +218,7 @@ public class Auxiliary {
             return Value.TRUE;
         });
 
-        expression.addContextFunction("particle_line", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("particle_line", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             String particleName = lv.get(0).getString();
@@ -244,24 +227,19 @@ public class Auxiliary {
             Vector3Argument pos2 = Vector3Argument.findIn(lv, pos1.offset);
             double density = 1.0;
             ServerPlayer player = null;
-            if (lv.size() > pos2.offset+0 )
-            {
+            if (lv.size() > pos2.offset+0 ) {
                 density = NumericValue.asNumber(lv.get(pos2.offset+0)).getDouble();
-                if (density <= 0)
-                {
+                if (density <= 0) {
                     throw new InternalExpressionException("Particle density should be positive");
                 }
-                if (lv.size() > pos2.offset+1)
-                {
+                if (lv.size() > pos2.offset+1) {
                     Value playerValue = lv.get(pos2.offset+1);
-                    if (playerValue instanceof EntityValue)
-                    {
+                    if (playerValue instanceof EntityValue) {
                         Entity e = ((EntityValue) playerValue).getEntity();
                         if (!(e instanceof ServerPlayer)) throw new InternalExpressionException("'particle_line' player argument has to be a player");
                         player = (ServerPlayer) e;
                     }
-                    else
-                    {
+                    else {
                         player = cc.s.getServer().getPlayerList().getPlayerByName(playerValue.getString());
                     }
                 }
@@ -273,8 +251,7 @@ public class Auxiliary {
             ));
         });
 
-        expression.addContextFunction("particle_box", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("particle_box", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             String particleName = lv.get(0).getString();
@@ -284,24 +261,19 @@ public class Auxiliary {
 
             double density = 1.0;
             ServerPlayer player = null;
-            if (lv.size() > pos2.offset+0 )
-            {
+            if (lv.size() > pos2.offset+0 ) {
                 density = NumericValue.asNumber(lv.get(pos2.offset+0)).getDouble();
-                if (density <= 0)
-                {
+                if (density <= 0) {
                     throw new InternalExpressionException("Particle density should be positive");
                 }
-                if (lv.size() > pos2.offset+1)
-                {
+                if (lv.size() > pos2.offset+1) {
                     Value playerValue = lv.get(pos2.offset+1);
-                    if (playerValue instanceof EntityValue)
-                    {
+                    if (playerValue instanceof EntityValue) {
                         Entity e = ((EntityValue) playerValue).getEntity();
                         if (!(e instanceof ServerPlayer)) throw new InternalExpressionException("'particle_box' player argument has to be a player");
                         player = (ServerPlayer) e;
                     }
-                    else
-                    {
+                    else {
                         player = cc.s.getServer().getPlayerList().getPlayerByName(playerValue.getString());
                     }
                 }
@@ -320,25 +292,21 @@ public class Auxiliary {
         expression.alias("particle_rect", "particle_box");
 
 
-        expression.addContextFunction("draw_shape", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("draw_shape", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             MinecraftServer server = world.getServer();
             Set<ServerPlayer> playerTargets = new HashSet<>();
             List<ShapeDispatcher.ShapeWithConfig> shapes = new ArrayList<>();
-            if (lv.size() == 1) // bulk
-            {
+            if (lv.size() == 1) // bulk {
                 Value specLoad = lv.get(0);
                 if (!(specLoad instanceof ListValue)) throw new InternalExpressionException("In bulk mode - shapes need to be provided as a list of shape specs");
-                for (Value list : ((ListValue) specLoad).getItems())
-                {
+                for (Value list : ((ListValue) specLoad).getItems()) {
                     if (!(list instanceof ListValue))  throw new InternalExpressionException("In bulk mode - shapes need to be provided as a list of shape specs");
                     shapes.add( ShapeDispatcher.fromFunctionArgs(server, world, ((ListValue) list).getItems(), playerTargets));
                 }
             }
-            else
-            {
+            else {
                 shapes.add(ShapeDispatcher.fromFunctionArgs(server, world, lv, playerTargets));
             }
 
@@ -355,44 +323,35 @@ public class Auxiliary {
             Vector3Argument pointLocator;
             boolean interactable = true;
             String name;
-            try
-            {
+            try {
                 Value nameValue = lv.get(0);
                 name = nameValue instanceof NullValue ? "" : nameValue.getString();
                 pointLocator = Vector3Argument.findIn(lv, 1, true, false);
-                if (lv.size()>pointLocator.offset)
-                {
+                if (lv.size()>pointLocator.offset) {
                     BlockArgument blockLocator = BlockArgument.findIn(cc, lv, pointLocator.offset, true, true, false);
                     if (blockLocator.block != null) targetBlock = blockLocator.block.getBlockState();
-                    if (lv.size() > blockLocator.offset)
-                    {
+                    if (lv.size() > blockLocator.offset) {
                         interactable = lv.get(blockLocator.offset).getBoolean();
                     }
                 }
             }
-            catch (IndexOutOfBoundsException e)
-            {
+            catch (IndexOutOfBoundsException e) {
                 throw new InternalExpressionException("'create_marker' requires a name and three coordinates, with optional direction, and optional block on its head");
             }
 
             ArmorStand armorstand = new ArmorStand(EntityType.ARMOR_STAND, cc.s.getLevel());
             double yoffset;
-            if (targetBlock == null && name.isEmpty())
-            {
+            if (targetBlock == null && name.isEmpty()) {
                 yoffset = 0.0;
             }
-            else if (!interactable && targetBlock == null)
-            {
+            else if (!interactable && targetBlock == null) {
                 yoffset = -0.41;
             }
-            else
-            {
-                if (targetBlock==null)
-                {
+            else {
+                if (targetBlock==null) {
                     yoffset = -armorstand.getBbHeight()-0.41;
                 }
-                else
-                {
+                else {
                     yoffset = -armorstand.getBbHeight()+0.3;
                 }
             }
@@ -408,8 +367,7 @@ public class Auxiliary {
             armorstand.addTag(MARKER_STRING);
             if (targetBlock != null)
                 armorstand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(targetBlock.getBlock().asItem()));
-            if (!name.isEmpty())
-            {
+            if (!name.isEmpty()) {
                 armorstand.setCustomName(new TextComponent(name));
                 armorstand.setCustomNameVisible(true);
             }
@@ -426,8 +384,7 @@ public class Auxiliary {
             CarpetContext cc = (CarpetContext)c;
             int total = 0;
             String markerName = MARKER_STRING+"_"+((cc.host.getName()==null)?"":cc.host.getName());
-            for (Entity e : cc.s.getLevel().getEntities(EntityType.ARMOR_STAND, (as) -> as.getTags().contains(markerName)))
-            {
+            for (Entity e : cc.s.getLevel().getEntities(EntityType.ARMOR_STAND, (as) -> as.getTags().contains(markerName))) {
                 total ++;
                 e.discard(); // discard // remove();
             }
@@ -461,27 +418,23 @@ public class Auxiliary {
             Value v = lv.get(0);
             boolean force = (argSize > 1) && lv.get(1).getBoolean();
             Tag tag;
-            try
-            {
+            try {
                 tag = v.toTag(force);
             }
-            catch (NBTSerializableValue.IncompatibleTypeException ignored)
-            {
+            catch (NBTSerializableValue.IncompatibleTypeException ignored) {
                 throw new InternalExpressionException("cannot reliably encode to a tag the value of '"+ignored.val.getPrettyString()+"'");
             }
             return new NBTSerializableValue(tag);
         });
 
         //"overridden" native call that prints to stderr
-        expression.addContextFunction("print", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("print", -1, (c, t, lv) -> {
             if (lv.size() == 0 || lv.size() > 2) throw new InternalExpressionException("'print' takes one or two arguments");
             CommandSourceStack s = ((CarpetContext)c).s;
             MinecraftServer server = s.getServer();
             Value res = lv.get(0);
             List<ServerPlayer> targets = null;
-            if (lv.size() == 2)
-            {
+            if (lv.size() == 2) {
                 List<Value> playerValues = (res instanceof ListValue)?((ListValue) res).getItems():Collections.singletonList(res);
                 List<ServerPlayer> playerTargets = new ArrayList<>();
                 playerValues.forEach(pv -> {
@@ -493,12 +446,10 @@ public class Auxiliary {
                 res = lv.get(1);
             }
             Component message = FormattedTextValue.getTextByValue(res);
-            if (targets == null)
-            {
+            if (targets == null) {
                 s.sendSuccess(message, false);
             }
-            else
-            {
+            else {
                 targets.forEach(p -> p.createCommandSourceStack().sendSuccess(message, false));
             }
             return res; // pass through for variables
@@ -509,8 +460,7 @@ public class Auxiliary {
             Value pVal = lv.get(0);
             if (!(pVal instanceof ListValue)) pVal = ListValue.of(pVal);
             MinecraftServer server = ((CarpetContext)c).s.getServer();
-            Stream<ServerPlayer> targets = ((ListValue) pVal).getItems().stream().map(v ->
-            {
+            Stream<ServerPlayer> targets = ((ListValue) pVal).getItems().stream().map(v -> {
                 ServerPlayer player = EntityValue.getPlayerByValue(server, v);
                 if (player == null) throw new InternalExpressionException("'display_title' requires a valid online player or a list of players as first argument. "+v.getString()+" is not a player.");
                 return player;
@@ -518,8 +468,7 @@ public class Auxiliary {
             Function<Component, Packet<?>> packetGetter = null;
             //TitleS2CPacket.Action action;
             String actionString = lv.get(1).getString().toLowerCase(Locale.ROOT);
-            switch (actionString)
-            {
+            switch (actionString) {
                 case "title":
                     packetGetter = ClientboundSetTitleTextPacket::new;
                     //action = Action.TITLE;
@@ -555,15 +504,13 @@ public class Auxiliary {
             //    throw new InternalExpressionException("Third argument of 'display_title' must be present except for 'clear' type");
             Component title;
             boolean soundsTrue = false;
-            if (lv.size() > 2)
-            {
+            if (lv.size() > 2) {
                 pVal = lv.get(2);
                 title = FormattedTextValue.getTextByValue(pVal);
                 soundsTrue = pVal.getBoolean();
             }
             else title = null; // Will never happen, just to make lambda happy
-            if (packetGetter == null)
-            {
+            if (packetGetter == null) {
                 Map<String, BaseComponent> map;
                 if (actionString.equals("player_list_header"))
                     map = HUDController.scarpet_headers;
@@ -586,8 +533,7 @@ public class Auxiliary {
                 return NumericValue.of(total.get());
             }
             ClientboundSetTitlesAnimationPacket timesPacket; // TimesPacket
-            if (lv.size() > 3)
-            {
+            if (lv.size() > 3) {
                 if (lv.size() != 6) throw new InternalExpressionException("'display_title' needs all fade-in, stay and fade-out times");
                 int in = NumericValue.asNumber(lv.get(3),"fade in for display_title" ).getInt();
                 int stay = NumericValue.asNumber(lv.get(4),"stay for display_title" ).getInt();
@@ -615,11 +561,9 @@ public class Auxiliary {
             return new FormattedTextValue(Messenger.c(values.stream().map(Value::getString).toArray()));
         });
 
-        expression.addContextFunction("run", 1, (c, t, lv) ->
-        {
+        expression.addContextFunction("run", 1, (c, t, lv) -> {
             CommandSourceStack s = ((CarpetContext)c).s;
-            try
-            {
+            try {
                 Component[] error = {null};
                 List<Component> output = new ArrayList<>();
                 Value retval = new NumericValue(s.getServer().getCommands().performCommand(
@@ -632,14 +576,12 @@ public class Auxiliary {
                         FormattedTextValue.of(error[0])
                 );
             }
-            catch (Exception exc)
-            {
+            catch (Exception exc) {
                 return ListValue.of(Value.NULL, ListValue.of(), new FormattedTextValue(new TextComponent(exc.getMessage())));
             }
         });
 
-        expression.addContextFunction("save", 0, (c, t, lv) ->
-        {
+        expression.addContextFunction("save", 0, (c, t, lv) -> {
             CommandSourceStack s = ((CarpetContext)c).s;
             s.getServer().getPlayerList().saveAll();
             s.getServer().saveAllChunks(true,true,true);
@@ -656,11 +598,9 @@ public class Auxiliary {
             return new NumericValue(((CarpetContext) c).s.getLevel().getGameTime());
         });
 
-        expression.addContextFunction("day_time", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("day_time", -1, (c, t, lv) -> {
             Value time = new NumericValue(((CarpetContext) c).s.getLevel().getDayTime());
-            if (lv.size() > 0)
-            {
+            if (lv.size() > 0) {
                 long newTime = NumericValue.asNumber(lv.get(0)).getLong();
                 if (newTime < 0) newTime = 0;
                 ((CarpetContext) c).s.getLevel().setDayTime(newTime);// setTimeOfDay(newTime);
@@ -668,8 +608,7 @@ public class Auxiliary {
             return time;
         });
 
-        expression.addContextFunction("last_tick_times", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("last_tick_times", -1, (c, t, lv) -> {
             c.host.issueDeprecation("last_tick_times()");
             return SystemInfo.get("last_tick_times", (CarpetContext)c);
         });
@@ -681,31 +620,25 @@ public class Auxiliary {
             if (CarpetServer.scriptServer == null) return Value.NULL;
             if (!s.getServer().isSameThread()) throw new InternalExpressionException("Unable to run ticks from threads");
             if (CarpetServer.scriptServer.tickDepth > 16) throw new InternalExpressionException("'game_tick' function caused other 'game_tick' functions to run. You should not allow that.");
-            try
-            {
+            try {
                 CarpetServer.scriptServer.tickDepth ++;
                 ((MinecraftServerInterface) s.getServer()).forceTick(() -> System.nanoTime() - CarpetServer.scriptServer.tickStart < 50000000L);
-                if (lv.size() > 0)
-                {
+                if (lv.size() > 0) {
                     long ms_total = NumericValue.asNumber(lv.get(0)).getLong();
                     long end_expected = CarpetServer.scriptServer.tickStart + ms_total * 1000000L;
                     long wait = end_expected - System.nanoTime();
-                    if (wait > 0L)
-                    {
-                        try
-                        {
+                    if (wait > 0L) {
+                        try {
                             Thread.sleep(wait / 1000000L);
                         }
-                        catch (InterruptedException ignored)
-                        {
+                        catch (InterruptedException ignored) {
                         }
                     }
                 }
                 CarpetServer.scriptServer.tickStart = System.nanoTime(); // for the next tick
                 Thread.yield();
             }
-            finally
-            {
+            finally {
                 if (CarpetServer.scriptServer != null)
                     CarpetServer.scriptServer.tickDepth --;
             }
@@ -720,8 +653,7 @@ public class Auxiliary {
             return new NumericValue(s.getLevel().getSeed());
         });
 
-        expression.addContextFunction("relight", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("relight", -1, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext) c;
             BlockArgument locator = BlockArgument.findIn(cc, lv, 0);
             BlockPos pos = locator.block.getPos();
@@ -754,8 +686,7 @@ public class Auxiliary {
         });
 
         expression.addContextFunction("plop", -1, (c, t, lv) ->{
-            if (lv.size() == 0)
-            {
+            if (lv.size() == 0) {
                 Map<Value, Value> plopData = new HashMap<>();
                 CarpetContext cc = (CarpetContext)c;
                 RegistryAccess registryManager = cc.s.getLevel().registryAccess();
@@ -781,8 +712,7 @@ public class Auxiliary {
                 throw new InternalExpressionException("'plop' needs extra argument indicating what to plop");
             String what = lv.get(locator.offset).getString();
             Value [] result = new Value[]{Value.NULL};
-            ((CarpetContext)c).s.getServer().executeBlocking( () ->
-            {
+            ((CarpetContext)c).s.getServer().executeBlocking( () -> {
                 Boolean res = FeatureGenerator.plop(what, ((CarpetContext) c).s.getLevel(), locator.block.getPos());
 
                 if (res == null)
@@ -809,17 +739,14 @@ public class Auxiliary {
             return Value.TRUE;
         });
 
-        expression.addImpureFunction("logger", lv ->
-        {
+        expression.addImpureFunction("logger", lv -> {
             Value res;
 
-            if(lv.size()==1)
-            {
+            if(lv.size()==1) {
                 res = lv.get(0);
                 CarpetScriptServer.LOG.info(res.getString());
             }
-            else if(lv.size()==2)
-            {
+            else if(lv.size()==2) {
                 String level = lv.get(0).getString().toLowerCase(Locale.ROOT);
                 res = lv.get(1);
                 switch(level){
@@ -836,26 +763,22 @@ public class Auxiliary {
             return res; // pass through for variables
         });
 
-        expression.addContextFunction("list_files", 2, (c, t, lv) ->
-        {
+        expression.addContextFunction("list_files", 2, (c, t, lv) -> {
             FileArgument fdesc = FileArgument.from(lv,true, FileArgument.Reason.READ);
             Stream<String> files = ((CarpetScriptHost) c.host).listFolder(fdesc);
             if (files == null) return Value.NULL;
             return ListValue.wrap(files.map(StringValue::of).collect(Collectors.toList()));
         });
 
-        expression.addContextFunction("read_file", 2, (c, t, lv) ->
-        {
+        expression.addContextFunction("read_file", 2, (c, t, lv) -> {
             FileArgument fdesc = FileArgument.from(lv,false, FileArgument.Reason.READ);
             Value retVal;
-            if (fdesc.type == FileArgument.Type.NBT)
-            {
+            if (fdesc.type == FileArgument.Type.NBT) {
                 Tag state = ((CarpetScriptHost) c.host).readFileTag(fdesc);
                 if (state == null) return Value.NULL;
                 retVal = new NBTSerializableValue(state);
             }
-            else if (fdesc.type == FileArgument.Type.JSON)
-            {
+            else if (fdesc.type == FileArgument.Type.JSON) {
                 JsonElement json;
                 json = ((CarpetScriptHost) c.host).readJsonFile(fdesc);
                 Value parsedJson = GSON.fromJson(json, Value.class);
@@ -864,8 +787,7 @@ public class Auxiliary {
                 else
                     retVal = parsedJson;
             }
-            else
-            {
+            else {
                 List<String> content = ((CarpetScriptHost) c.host).readTextResource(fdesc);
                 if (content == null) return Value.NULL;
                 retVal = ListValue.wrap(content.stream().map(StringValue::new).collect(Collectors.toList()));
@@ -881,8 +803,7 @@ public class Auxiliary {
             FileArgument fdesc = FileArgument.from(lv, false, FileArgument.Reason.CREATE);
 
             boolean success;
-            if (fdesc.type == FileArgument.Type.NBT)
-            {
+            if (fdesc.type == FileArgument.Type.NBT) {
                 Value val = lv.get(2);
                 NBTSerializableValue tagValue =  (val instanceof NBTSerializableValue)
                         ? (NBTSerializableValue) val
@@ -890,32 +811,25 @@ public class Auxiliary {
                 Tag tag = tagValue.getTag();
                 success = ((CarpetScriptHost) c.host).writeTagFile(tag, fdesc);
             }
-            else if (fdesc.type == FileArgument.Type.JSON)
-            {
+            else if (fdesc.type == FileArgument.Type.JSON) {
                 List<String> data = Collections.singletonList(GSON.toJson(lv.get(2).toJson()));
                 ((CarpetScriptHost) c.host).removeResourceFile(fdesc);
                 success = ((CarpetScriptHost) c.host).appendLogFile(fdesc, data);
             }
-            else
-            {
+            else {
                 List<String> data = new ArrayList<>();
-                if (lv.size()==3)
-                {
+                if (lv.size()==3) {
                     Value val = lv.get(2);
-                    if (val instanceof ListValue)
-                    {
+                    if (val instanceof ListValue) {
                         List<Value> lval = ((ListValue) val).getItems();
                         lval.forEach(v -> data.add(v.getString()));
                     }
-                    else
-                    {
+                    else {
                         data.add(val.getString());
                     }
                 }
-                else
-                {
-                    for(int i = 2; i < lv.size(); i++)
-                    {
+                else {
+                    for(int i = 2; i < lv.size(); i++) {
                         data.add(lv.get(i).getString());
                     }
                 }
@@ -924,11 +838,9 @@ public class Auxiliary {
             return BooleanValue.of(success);
         });
 
-        expression.addContextFunction("load_app_data", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("load_app_data", -1, (c, t, lv) -> {
             FileArgument fdesc = new FileArgument(null, FileArgument.Type.NBT, null, false, false, FileArgument.Reason.READ);
-            if (lv.size()>0)
-            {
+            if (lv.size()>0) {
                 c.host.issueDeprecation("load_app_data(...) with arguments");
                 String resource = recognizeResource(lv.get(0), false);
                 boolean shared = lv.size() > 1 && lv.get(1).getBoolean();
@@ -937,14 +849,12 @@ public class Auxiliary {
             return NBTSerializableValue.of(((CarpetScriptHost) c.host).readFileTag(fdesc));
         });
 
-        expression.addContextFunction("store_app_data", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("store_app_data", -1, (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'store_app_data' needs NBT tag and an optional file");
             Value val = lv.get(0);
             FileArgument fdesc = new FileArgument(null, FileArgument.Type.NBT, null, false, false, FileArgument.Reason.CREATE);
-            if (lv.size()>1)
-            {
+            if (lv.size()>1) {
                 c.host.issueDeprecation("store_app_data(...) with more than one argument");
                 String resource = recognizeResource(lv.get(1), false);
                 boolean shared = lv.size() > 2 && lv.get(2).getBoolean();
@@ -956,8 +866,7 @@ public class Auxiliary {
             return BooleanValue.of(((CarpetScriptHost) c.host).writeTagFile(tagValue.getTag(), fdesc));
         });
 
-        expression.addContextFunction("statistic", 3, (c, t, lv) ->
-        {
+        expression.addContextFunction("statistic", 3, (c, t, lv) -> {
             CarpetContext cc = (CarpetContext)c;
             ServerPlayer player = EntityValue.getPlayerByValue(cc.s.getServer(), lv.get(0));
             if (player == null) return Value.NULL;
@@ -973,8 +882,7 @@ public class Auxiliary {
         });
 
         //handle_event('event', function...)
-        expression.addContextFunction("handle_event", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("handle_event", -1, (c, t, lv) -> {
             if (lv.size() < 2)
                 throw new InternalExpressionException("'handle_event' requires at least two arguments, event name, and a callback");
             String event = lv.get(0).getString();
@@ -986,8 +894,7 @@ public class Auxiliary {
             return BooleanValue.of( host.getScriptServer().events.handleCustomEvent(event, host, callback.function, callback.args ));
         });
         //signal_event('event', player or null, args.... ) -> number of apps notified
-        expression.addContextFunction("signal_event", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("signal_event", -1, (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'signal' requires at least one argument");
             CarpetContext cc = (CarpetContext)c;
@@ -997,8 +904,7 @@ public class Auxiliary {
             if (CarpetEventServer.Event.getEvent(eventName, server) == null) return Value.NULL;
             ServerPlayer player = null;
             List<Value> args = Collections.emptyList();
-            if (lv.size() > 1)
-            {
+            if (lv.size() > 1) {
                 player = EntityValue.getPlayerByValue(server.server, lv.get(1));
                 if (lv.size() > 2) args = lv.subList(2, lv.size());
             }
@@ -1033,8 +939,7 @@ public class Auxiliary {
             String origName = lv.get(0).getString();
             String name = InputValidator.validateSimpleString(origName, true);
             MinecraftServer server = cc.s.getServer();
-            for (String dpName : server.getPackRepository().getAvailableIds())
-            {
+            for (String dpName : server.getPackRepository().getAvailableIds()) {
                 if (dpName.equalsIgnoreCase("file/"+name+".zip") ||
                         dpName.equalsIgnoreCase("file/"+name))
                     return Value.NULL;
@@ -1048,8 +953,7 @@ public class Auxiliary {
             Path packFloder = dbFloder.resolve(name+".zip");
             if (Files.exists(packFloder) || Files.exists(dbFloder.resolve(name))) return Value.NULL;
             Boolean [] successful = new Boolean[]{true};
-            server.executeBlocking( () ->
-            {
+            server.executeBlocking( () -> {
                 try {
                     //Files.createDirectory(packFloder);
                     try (FileSystem zipfs = FileSystems.newFileSystem(URI.create("jar:" + packFloder.toUri().toString()), Map.of("create", "true"))) {
@@ -1080,8 +984,7 @@ public class Auxiliary {
                     if (!successful[0]) {
                         throw new IOException();
                     }
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     successful[0] = false;
                     try {
                         FileUtils.forceDelete(packFloder.toFile());
@@ -1127,8 +1030,7 @@ public class Auxiliary {
             List<Value> addeds = new ArrayList<>();
             for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : generatorOptions.dimensions().entrySet()) {
                 ResourceKey<LevelStem> registryKey = entry.getKey();
-                if (!existing_worlds.containsKey(registryKey))
-                {
+                if (!existing_worlds.containsKey(registryKey)) {
                     addeds.add(ValueConversions.of(registryKey.location()));
                     ResourceKey<Level> registryKey2 = ResourceKey.create(Registry.DIMENSION_REGISTRY, registryKey.location());
                     DimensionType dimensionType3 = entry.getValue().type();
@@ -1143,8 +1045,7 @@ public class Auxiliary {
         });
     }
 
-    private static void zipValueToJson(Path path, Value output) throws IOException
-    {
+    private static void zipValueToJson(Path path, Value output) throws IOException {
         JsonElement element = output.toJson();
         if (element == null)
             throw new InternalExpressionException("Cannot interpret "+output.getPrettyString()+" as a json object");
@@ -1152,17 +1053,14 @@ public class Auxiliary {
         Files.createDirectories(path.getParent());
         BufferedWriter bufferedWriter = Files.newBufferedWriter(path);
         Throwable incident = null;
-        try
-        {
+        try {
             bufferedWriter.write(string);
         }
-        catch (Throwable shitHappened)
-        {
+        catch (Throwable shitHappened) {
             incident = shitHappened;
             throw shitHappened;
         }
-        finally
-        {
+        finally {
             if (incident != null) {
                 try {
                     bufferedWriter.close();
@@ -1175,20 +1073,16 @@ public class Auxiliary {
         }
     }
 
-    private static void walkTheDPMap(MapValue node, Path path) throws IOException
-    {
+    private static void walkTheDPMap(MapValue node, Path path) throws IOException {
         Map<Value,Value> items = node.getMap();
-        for (Map.Entry<Value, Value> entry : items.entrySet())
-        {
+        for (Map.Entry<Value, Value> entry : items.entrySet()) {
             Value val = entry.getValue();
             String strkey = entry.getKey().getString();
             Path child = path.resolve(strkey);
-            if (strkey.endsWith(".json"))
-            {
+            if (strkey.endsWith(".json")) {
                 zipValueToJson(child, val);
             }
-            else
-            {
+            else {
                 if (!(val instanceof MapValue)) throw new InternalExpressionException("Value of "+strkey+" should be a map");
                 Files.createDirectory(child);
                 walkTheDPMap((MapValue) val, child);
@@ -1196,8 +1090,7 @@ public class Auxiliary {
         }
     }
 
-    private static <T> Stat<T> getStat(StatType<T> type, ResourceLocation id)
-    {
+    private static <T> Stat<T> getStat(StatType<T> type, ResourceLocation id) {
         T key = type.getRegistry().get(id);
         if (key == null || !type.contains(key))
             return null;

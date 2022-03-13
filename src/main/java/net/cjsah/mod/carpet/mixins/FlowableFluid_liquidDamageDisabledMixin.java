@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FlowingFluid.class)
-public class FlowableFluid_liquidDamageDisabledMixin
-{
+public class FlowableFluid_liquidDamageDisabledMixin {
     @Inject(
             method = "canFill",
             at = @At(
@@ -23,10 +22,8 @@ public class FlowableFluid_liquidDamageDisabledMixin
             ),
             cancellable = true
     )
-    private void stopBreakingBlock(BlockGetter world, BlockPos pos, BlockState state, Fluid fluid, CallbackInfoReturnable<Boolean> cir)
-    {
-        if (CarpetSettings.liquidDamageDisabled)
-        {
+    private void stopBreakingBlock(BlockGetter world, BlockPos pos, BlockState state, Fluid fluid, CallbackInfoReturnable<Boolean> cir) {
+        if (CarpetSettings.liquidDamageDisabled) {
             Material material = state.getMaterial();
             cir.setReturnValue(material == Material.AIR || material.isLiquid());
         }

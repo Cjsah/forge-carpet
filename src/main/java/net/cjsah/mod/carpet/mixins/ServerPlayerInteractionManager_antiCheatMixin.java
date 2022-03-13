@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(value = ServerPlayerGameMode.class, priority = 69420) // not that important for carpet
-public class ServerPlayerInteractionManager_antiCheatMixin
-{
+public class ServerPlayerInteractionManager_antiCheatMixin {
     /*
     @ModifyConstant(method = "processBlockBreakingAction", require = 0,
             constant = @Constant(doubleValue = 36D))
@@ -32,8 +31,7 @@ public class ServerPlayerInteractionManager_antiCheatMixin
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;getX()D"
             ))
     private double getXX(ServerPlayer player,
-                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight)
-    {
+                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight) {
         if (CarpetSettings.antiCheatDisabled &&
                 player.position().add(0, 1.5, 0).distanceToSqr(Vec3.atCenterOf(pos)) < 1024
         ) return pos.getX()+0.5;
@@ -45,8 +43,7 @@ public class ServerPlayerInteractionManager_antiCheatMixin
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;getY()D"
     ))
     private double getYY(ServerPlayer player,
-                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight)
-    {
+                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight) {
         if (CarpetSettings.antiCheatDisabled &&
                 player.position().add(0, 1.5, 0).distanceToSqr(Vec3.atCenterOf(pos)) < 1024
         ) return pos.getY()-1.0;
@@ -58,8 +55,7 @@ public class ServerPlayerInteractionManager_antiCheatMixin
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;getZ()D"
     ))
     private double getZZ(ServerPlayer player,
-                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight)
-    {
+                         BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight) {
         if (CarpetSettings.antiCheatDisabled &&
                 player.position().add(0, 1.5, 0).distanceToSqr(Vec3.atCenterOf(pos)) < 1024
         ) return pos.getZ()+0.5;

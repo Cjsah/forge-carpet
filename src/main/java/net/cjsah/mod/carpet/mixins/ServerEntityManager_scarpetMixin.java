@@ -11,38 +11,30 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PersistentEntitySectionManager.class)
-public class ServerEntityManager_scarpetMixin
-{
+public class ServerEntityManager_scarpetMixin {
     @Inject(method = "addEntity(Lnet/minecraft/world/entity/EntityLike;Z)Z", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/EntityTrackingStatus;shouldTick()Z"
     ))
-    private void handleAddedEntity(EntityAccess entityLike, boolean existing, CallbackInfoReturnable<Boolean> cir)
-    {
+    private void handleAddedEntity(EntityAccess entityLike, boolean existing, CallbackInfoReturnable<Boolean> cir) {
         Entity entity = (Entity)entityLike;
         CarpetEventServer.Event event = CarpetEventServer.Event.ENTITY_HANDLER.get(entity.getType());
-        if (event != null)
-        {
-            if (event.isNeeded())
-            {
+        if (event != null) {
+            if (event.isNeeded()) {
                 event.onEntityAction(entity, !existing);
             }
         }
-        else
-        {
+        else {
             CarpetScriptServer.LOG.error("Failed to handle entity type " + entity.getType().getDescriptionId());
         }
 
         event = CarpetEventServer.Event.ENTITY_LOAD.get(entity.getType());
-        if (event != null)
-        {
-            if (event.isNeeded())
-            {
+        if (event != null) {
+            if (event.isNeeded()) {
                 event.onEntityAction(entity, true);
             }
         }
-        else
-        {
+        else {
             CarpetScriptServer.LOG.error("Failed to handle entity type " + entity.getType().getDescriptionId());
         }
 

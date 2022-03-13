@@ -37,8 +37,7 @@ public class Operators {
         put("nextop;", 1);
     }};
 
-    public static void apply(Expression expression)
-    {
+    public static void apply(Expression expression) {
         expression.addBinaryOperator("+", precedence.get("addition+-"), true, Value::add);
         expression.addFunction("sum", lv -> {
             int size = lv.size();
@@ -109,8 +108,7 @@ public class Operators {
         });
 
         // lazy cause RHS is only conditional
-        expression.addLazyBinaryOperator("&&", precedence.get("and&&"), false, true, t -> Context.Type.BOOLEAN, (c, t, lv1, lv2) ->
-        { // todo check how is optimizations going
+        expression.addLazyBinaryOperator("&&", precedence.get("and&&"), false, true, t -> Context.Type.BOOLEAN, (c, t, lv1, lv2) -> { // todo check how is optimizations going
             Value v1 = lv1.evalValue(c, Context.BOOLEAN);
             if (!v1.getBoolean()) return (cc, tt) -> v1;
             return lv2;
@@ -119,16 +117,13 @@ public class Operators {
         expression.addPureLazyFunction("and", -1, t -> Context.Type.BOOLEAN, (c, t, lv) -> {
             int last = lv.size()-1;
             if (last == -1) return LazyValue.TRUE;
-            for (LazyValue l: lv.subList(0, last))
-            {
+            for (LazyValue l: lv.subList(0, last)) {
                 Value val = l.evalValue(c, Context.Type.BOOLEAN);
-                if (val instanceof FunctionUnpackedArgumentsValue)
-                {
+                if (val instanceof FunctionUnpackedArgumentsValue) {
                     for (Value it : (FunctionUnpackedArgumentsValue) val)
                         if (!it.getBoolean()) return (cc, tt) -> it;
                 }
-                else
-                {
+                else {
                     if (!val.getBoolean()) return (cc, tt) -> val;
                 }
             }
@@ -137,8 +132,7 @@ public class Operators {
         expression.addFunctionalEquivalence("&&", "and");
 
         // lazy cause RHS is only conditional
-        expression.addLazyBinaryOperator("||", precedence.get("or||"), false, true, t -> Context.Type.BOOLEAN, (c, t, lv1, lv2) ->
-        {
+        expression.addLazyBinaryOperator("||", precedence.get("or||"), false, true, t -> Context.Type.BOOLEAN, (c, t, lv1, lv2) -> {
             Value v1 = lv1.evalValue(c, Context.BOOLEAN);
             if (v1.getBoolean()) return (cc, tt) -> v1;
             return lv2;
@@ -147,16 +141,13 @@ public class Operators {
         expression.addPureLazyFunction("or", -1, t -> Context.Type.BOOLEAN, (c, t, lv) -> {
             int last = lv.size()-1;
             if (last == -1) return LazyValue.FALSE;
-            for (LazyValue l: lv.subList(0, last))
-            {
+            for (LazyValue l: lv.subList(0, last)) {
                 Value val = l.evalValue(c, Context.Type.BOOLEAN);
-                if (val instanceof FunctionUnpackedArgumentsValue)
-                {
+                if (val instanceof FunctionUnpackedArgumentsValue) {
                     for (Value it : (FunctionUnpackedArgumentsValue) val)
                         if (it.getBoolean()) return (cc, tt) -> it;
                 }
-                else
-                {
+                else {
                     if (val.getBoolean()) return (cc, tt) -> val;
                 }
             }
@@ -172,8 +163,7 @@ public class Operators {
             int size = lv.size();
             if (size < 2) return Value.TRUE;
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (prev.compareTo(next) <= 0) return Value.FALSE;
                 prev = next;
             }
@@ -187,8 +177,7 @@ public class Operators {
             int size = lv.size();
             if (size < 2) return Value.TRUE;
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (prev.compareTo(next) < 0) return Value.FALSE;
                 prev = next;
             }
@@ -202,8 +191,7 @@ public class Operators {
             int size = lv.size();
             if (size < 2) return Value.TRUE;
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (prev.compareTo(next) >= 0) return Value.FALSE;
                 prev = next;
             }
@@ -217,8 +205,7 @@ public class Operators {
             int size = lv.size();
             if (size < 2) return Value.TRUE;
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (prev.compareTo(next) > 0) return Value.FALSE;
                 prev = next;
             }
@@ -266,8 +253,7 @@ public class Operators {
             int size = lv.size();
             if (size < 2) return Value.TRUE;
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (!prev.equals(next)) return Value.FALSE;
                 prev = next;
             }
@@ -284,8 +270,7 @@ public class Operators {
             // need to order them so same obejects will be next to each other.
             lv.sort(Comparator.comparingInt(Value::hashCode));
             Value prev = lv.get(0);
-            for (Value next: lv.subList(1, size))
-            {
+            for (Value next: lv.subList(1, size)) {
                 if (prev.equals(next)) return Value.FALSE;
                 prev = next;
             }
@@ -294,12 +279,10 @@ public class Operators {
         expression.addFunctionalEquivalence("!=", "unique");
 
         // lazy cause of assignment which is non-trivial
-        expression.addLazyBinaryOperator("=", precedence.get("assign=<>"), false, false, t -> Context.Type.LVALUE, (c, t, lv1, lv2) ->
-        {
+        expression.addLazyBinaryOperator("=", precedence.get("assign=<>"), false, false, t -> Context.Type.LVALUE, (c, t, lv1, lv2) -> {
             Value v1 = lv1.evalValue(c, Context.LVALUE);
             Value v2 = lv2.evalValue(c);
-            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue)
-            {
+            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue) {
                 List<Value> ll = ((ListValue)v1).getItems();
                 List<Value> rl = ((ListValue)v2).getItems();
                 if (ll.size() < rl.size()) throw new InternalExpressionException("Too many values to unpack");
@@ -307,16 +290,14 @@ public class Operators {
                 for (Value v: ll) v.assertAssignable();
                 Iterator<Value> li = ll.iterator();
                 Iterator<Value> ri = rl.iterator();
-                while(li.hasNext())
-                {
+                while(li.hasNext()) {
                     String lname = li.next().getVariable();
                     Value vval = ri.next().reboundedTo(lname);
                     expression.setAnyVariable(c, lname, (cc, tt) -> vval);
                 }
                 return (cc, tt) -> Value.TRUE;
             }
-            if (v1 instanceof LContainerValue)
-            {
+            if (v1 instanceof LContainerValue) {
                 ContainerValueInterface container = ((LContainerValue) v1).getContainer();
                 if (container == null)
                     return (cc, tt) -> Value.NULL;
@@ -333,12 +314,10 @@ public class Operators {
         });
 
         // lazy due to assignment
-        expression.addLazyBinaryOperator("+=", precedence.get("assign=<>"), false, false, t -> Context.Type.LVALUE, (c, t, lv1, lv2) ->
-        {
+        expression.addLazyBinaryOperator("+=", precedence.get("assign=<>"), false, false, t -> Context.Type.LVALUE, (c, t, lv1, lv2) -> {
             Value v1 = lv1.evalValue(c, Context.LVALUE);
             Value v2 = lv2.evalValue(c);
-            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue)
-            {
+            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue) {
                 List<Value> ll = ((ListValue)v1).getItems();
                 List<Value> rl = ((ListValue)v2).getItems();
                 if (ll.size() < rl.size()) throw new InternalExpressionException("Too many values to unpack");
@@ -346,8 +325,7 @@ public class Operators {
                 for (Value v: ll) v.assertAssignable();
                 Iterator<Value> li = ll.iterator();
                 Iterator<Value> ri = rl.iterator();
-                while(li.hasNext())
-                {
+                while(li.hasNext()) {
                     Value lval = li.next();
                     String lname = lval.getVariable();
                     Value result = lval.add(ri.next()).bindTo(lname);
@@ -355,22 +333,18 @@ public class Operators {
                 }
                 return (cc, tt) -> Value.TRUE;
             }
-            if (v1 instanceof LContainerValue)
-            {
+            if (v1 instanceof LContainerValue) {
                 ContainerValueInterface cvi = ((LContainerValue) v1).getContainer();
-                if (cvi == null)
-                {
+                if (cvi == null) {
                     throw new InternalExpressionException("Failed to resolve left hand side of the += operation");
                 }
                 Value key = ((LContainerValue) v1).getAddress();
                 Value value = cvi.get(key);
-                if (value instanceof ListValue || value instanceof MapValue)
-                {
+                if (value instanceof ListValue || value instanceof MapValue) {
                     ((AbstractListValue) value).append(v2);
                     return (cc, tt) -> value;
                 }
-                else
-                {
+                else {
                     Value res = value.add(v2);
                     cvi.put(key, res);
                     return (cc, tt) -> res;
@@ -379,13 +353,11 @@ public class Operators {
             v1.assertAssignable();
             String varname = v1.getVariable();
             LazyValue boundedLHS;
-            if (v1 instanceof ListValue || v1 instanceof MapValue)
-            {
+            if (v1 instanceof ListValue || v1 instanceof MapValue) {
                 ((AbstractListValue) v1).append(v2);
                 boundedLHS = (cc, tt)-> v1;
             }
-            else
-            {
+            else {
                 Value result = v1.add(v2).bindTo(varname);
                 boundedLHS = (cc, tt) -> result;
             }
@@ -393,10 +365,8 @@ public class Operators {
             return boundedLHS;
         });
 
-        expression.addBinaryContextOperator("<>", precedence.get("assign=<>"), false, false, false, (c, t, v1, v2) ->
-        {
-            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue.ListConstructorValue)
-            {
+        expression.addBinaryContextOperator("<>", precedence.get("assign=<>"), false, false, false, (c, t, v1, v2) -> {
+            if (v1 instanceof ListValue.ListConstructorValue && v2 instanceof ListValue.ListConstructorValue) {
                 List<Value> ll = ((ListValue)v1).getItems();
                 List<Value> rl = ((ListValue)v2).getItems();
                 if (ll.size() < rl.size()) throw new InternalExpressionException("Too many values to unpack");
@@ -405,8 +375,7 @@ public class Operators {
                 for (Value v: rl) v.assertAssignable();
                 Iterator<Value> li = ll.iterator();
                 Iterator<Value> ri = rl.iterator();
-                while(li.hasNext())
-                {
+                while(li.hasNext()) {
                     Value lval = li.next();
                     Value rval = ri.next();
                     String lname = lval.getVariable();
@@ -439,8 +408,7 @@ public class Operators {
         ); // might need context boolean
 
         // lazy because of typed evaluation of the argument
-        expression.addLazyUnaryOperator("...", Operators.precedence.get("unary+-!..."), false, true, t -> t== Context.Type.LOCALIZATION?Context.NONE:t, (c, t, lv) ->
-        {
+        expression.addLazyUnaryOperator("...", Operators.precedence.get("unary+-!..."), false, true, t -> t== Context.Type.LOCALIZATION?Context.NONE:t, (c, t, lv) -> {
             if (t == Context.LOCALIZATION)
                 return (cc, tt) -> new FunctionAnnotationValue(lv.evalValue(c), FunctionAnnotationValue.Type.VARARG);
 

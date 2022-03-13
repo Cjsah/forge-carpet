@@ -23,8 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * The {@link Mixin} which removes items in a hopper if it points into a wool counter, and calls {@link HopperCounter#add}
  */
 @Mixin(HopperBlockEntity.class)
-public abstract class HopperBlockEntityMixin extends RandomizableContainerBlockEntity
-{
+public abstract class HopperBlockEntityMixin extends RandomizableContainerBlockEntity {
     protected HopperBlockEntityMixin(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
     }
@@ -37,18 +36,14 @@ public abstract class HopperBlockEntityMixin extends RandomizableContainerBlockE
      * A method to remove items from hoppers pointing into wool and count them via {@link HopperCounter#add} method
      */
     @Inject(method = "insert", at = @At("HEAD"), cancellable = true)
-    private static void onInsert(Level world, BlockPos blockPos, BlockState blockState, Container inventory, CallbackInfoReturnable<Boolean> cir)
-    {
+    private static void onInsert(Level world, BlockPos blockPos, BlockState blockState, Container inventory, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.hopperCounters) {
             DyeColor wool_color = WoolTool.getWoolColorAtPosition(
                     world,
                     blockPos.relative(blockState.getValue(HopperBlock.FACING))); // offset
-            if (wool_color != null)
-            {
-                for (int i = 0; i < inventory.getContainerSize(); ++i)
-                {
-                    if (!inventory.getItem(i).isEmpty())
-                    {
+            if (wool_color != null) {
+                for (int i = 0; i < inventory.getContainerSize(); ++i) {
+                    if (!inventory.getItem(i).isEmpty()) {
                         ItemStack itemstack = inventory.getItem(i);//.copy();
                         HopperCounter.COUNTERS.get(wool_color).add(world.getServer(), itemstack);
                         inventory.setItem(i, ItemStack.EMPTY);

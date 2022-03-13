@@ -18,15 +18,13 @@ import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
 
 @Mixin(ChunkHolder.class)
-public abstract class ChunkHolder_scarpetChunkCreationMixin implements ChunkHolderInterface
-{
+public abstract class ChunkHolder_scarpetChunkCreationMixin implements ChunkHolderInterface {
     @Shadow protected abstract void combineSavingFuture(CompletableFuture<? extends Either<? extends ChunkAccess, ChunkHolder.ChunkLoadingFailure>> newChunkFuture, String type);
 
     @Shadow @Final private AtomicReferenceArray<CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>> futuresByStatus;
 
     @Override
-    public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> setDefaultProtoChunk(ChunkPos chpos, BlockableEventLoop<Runnable> executor, ServerLevel world)
-    {
+    public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> setDefaultProtoChunk(ChunkPos chpos, BlockableEventLoop<Runnable> executor, ServerLevel world) {
         int i = ChunkStatus.EMPTY.getIndex();
         CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completableFuture2 = CompletableFuture.supplyAsync(
                 () -> Either.left(new ProtoChunk(chpos, UpgradeData.EMPTY, world)),

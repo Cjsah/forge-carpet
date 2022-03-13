@@ -38,16 +38,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public class WorldTools
-{
+public class WorldTools {
 
-    public static boolean canHasChunk(ServerLevel world, ChunkPos chpos, Map<String, RegionFile> regionCache, boolean deepcheck)
-    {
+    public static boolean canHasChunk(ServerLevel world, ChunkPos chpos, Map<String, RegionFile> regionCache, boolean deepcheck) {
         if (world.getChunk(chpos.x, chpos.z, ChunkStatus.STRUCTURE_STARTS, false) != null)
             return true;
         String currentRegionName = "r." + chpos.getRegionX() + "." + chpos.getRegionZ() + ".mca";
-        if (regionCache != null && regionCache.containsKey(currentRegionName))
-        {
+        if (regionCache != null && regionCache.containsKey(currentRegionName)) {
             RegionFile region = regionCache.get(currentRegionName);
             if (region == null) return false;
             return region.hasChunk(chpos);
@@ -55,14 +52,12 @@ public class WorldTools
         Path regionPath = new File(((MinecraftServerInterface )world.getServer()).getCMSession().getDimensionPath(world.dimension()), "region").toPath();
         Path regionFilePath = regionPath.resolve(currentRegionName);
         File regionFile = regionFilePath.toFile();
-        if (!regionFile.exists())
-        {
+        if (!regionFile.exists()) {
             if (regionCache != null) regionCache.put(currentRegionName, null);
             return false;
         }
         if (!deepcheck) return true; // not using cache in this case.
-        try
-        {
+        try {
             RegionFile region = new RegionFile(regionFile, regionPath.toFile(), true);
             if (regionCache != null) regionCache.put(currentRegionName, region);
             return region.hasChunk(chpos);
@@ -71,16 +66,13 @@ public class WorldTools
         return true;
     }
 
-    public static boolean createWorld(MinecraftServer server, String worldKey, Long seed)
-    {
+    public static boolean createWorld(MinecraftServer server, String worldKey, Long seed) {
         ResourceLocation worldId = new ResourceLocation(worldKey);
         ServerLevel overWorld = server.overworld();
 
         Set<ResourceKey<Level>> worldKeys = server.levelKeys();
-        for (ResourceKey<Level> worldRegistryKey : worldKeys)
-        {
-            if (worldRegistryKey.location().equals(worldId))
-            {
+        for (ResourceKey<Level> worldRegistryKey : worldKeys) {
+            if (worldRegistryKey.location().equals(worldId)) {
                 // world with this id already exists
                 return false;
             }
@@ -131,16 +123,13 @@ public class WorldTools
         return true;
     }
 
-    public static void forceChunkUpdate(BlockPos pos, ServerLevel world)
-    {
+    public static void forceChunkUpdate(BlockPos pos, ServerLevel world) {
         LevelChunk worldChunk = world.getChunkSource().getChunk(pos.getX()>>4, pos.getZ()>>4, false);
-        if (worldChunk != null)
-        {
+        if (worldChunk != null) {
             int vd = world.getServer().getPlayerList().getViewDistance() * 16;
             int vvd = vd * vd;
             List<ServerPlayer> nearbyPlayers = world.getPlayers(p -> pos.distSqr(p.getX(), pos.getY(), p.getZ(), true) < vvd);
-            if (!nearbyPlayers.isEmpty())
-            {
+            if (!nearbyPlayers.isEmpty()) {
                 ClientboundLevelChunkWithLightPacket packet = new ClientboundLevelChunkWithLightPacket(worldChunk);
                 ChunkPos chpos = new ChunkPos(pos);
                 nearbyPlayers.forEach(p -> p.connection.send(packet));
@@ -149,8 +138,7 @@ public class WorldTools
     }
 
 
-    private static class NoopWorldGenerationProgressListener implements ChunkProgressListener
-    {
+    private static class NoopWorldGenerationProgressListener implements ChunkProgressListener {
         @Override public void updateSpawnPos(ChunkPos spawnPos) { }
         @Override public void onStatusChange(ChunkPos pos, ChunkStatus status) { }
         @Environment(EnvType.CLIENT)

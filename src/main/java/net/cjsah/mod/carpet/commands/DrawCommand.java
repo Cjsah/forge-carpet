@@ -33,10 +33,8 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class DrawCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class DrawCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> command = literal("draw").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandDraw)).
                 then(literal("sphere").
@@ -81,20 +79,17 @@ public class DrawCommand
     }
 
     @FunctionalInterface
-    private interface OptionalBlockSelector
-    {
+    private interface OptionalBlockSelector {
         Integer apply(final CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
     }
 
     @FunctionalInterface
-    private interface ArgumentExtractor<T>
-    {
+    private interface ArgumentExtractor<T> {
         T apply(final CommandContext<CommandSourceStack> ctx, final String argName) throws CommandSyntaxException;
     }
 
     private static RequiredArgumentBuilder<CommandSourceStack, BlockInput>
-    drawShape(OptionalBlockSelector drawer)
-    {
+    drawShape(OptionalBlockSelector drawer) {
         return argument("block", BlockStateArgument.block()).
                 executes(drawer::apply)
                 .then(literal("replace")
@@ -104,20 +99,16 @@ public class DrawCommand
 
     private static class ErrorHandled extends RuntimeException {}
 
-    private static <T> T getArg(CommandContext<CommandSourceStack> ctx, ArgumentExtractor<T> extract, String hwat) throws CommandSyntaxException
-    {
+    private static <T> T getArg(CommandContext<CommandSourceStack> ctx, ArgumentExtractor<T> extract, String hwat) throws CommandSyntaxException {
         return getArg(ctx, extract, hwat, false);
     }
 
-    private static <T> T getArg(CommandContext<CommandSourceStack> ctx, ArgumentExtractor<T> extract, String hwat, boolean optional) throws CommandSyntaxException
-    {
+    private static <T> T getArg(CommandContext<CommandSourceStack> ctx, ArgumentExtractor<T> extract, String hwat, boolean optional) throws CommandSyntaxException {
         T arg = null;
-        try
-        {
+        try {
             arg = extract.apply(ctx, hwat);
         }
-        catch (IllegalArgumentException e)
-        {
+        catch (IllegalArgumentException e) {
             if (optional) return null;
             Messenger.m(ctx.getSource(), "rb Missing "+hwat);
             throw new ErrorHandled();
@@ -125,8 +116,7 @@ public class DrawCommand
         return arg;
     }
 
-    private static double lengthSq(double x, double y, double z)
-    {
+    private static double lengthSq(double x, double y, double z) {
         return (x * x) + (y * y) + (z * z);
     }
 
@@ -134,19 +124,15 @@ public class DrawCommand
             ServerLevel world, BlockPos.MutableBlockPos mbpos, int x, int y, int z,
             BlockInput block, Predicate<BlockInWorld> replacement,
             List<BlockPos> list
-    )
-    {
+    ) {
         mbpos.set(x, y, z);
         int success=0;
-        if (replacement == null || replacement.test(new BlockInWorld(world, mbpos, true)))
-        {
+        if (replacement == null || replacement.test(new BlockInWorld(world, mbpos, true))) {
             BlockEntity tileentity = world.getBlockEntity(mbpos);
-            if (tileentity instanceof Container)
-            {
+            if (tileentity instanceof Container) {
                 ((Container) tileentity).clearContent();
             }
-            if (block.place(world, mbpos, 2))
-            {
+            if (block.place(world, mbpos, 2)) {
                 list.add(mbpos.immutable());
                 ++success;
             }
@@ -155,14 +141,12 @@ public class DrawCommand
         return success;
     }
 
-    private static int drawSphere(CommandContext<CommandSourceStack> ctx, boolean solid) throws CommandSyntaxException
-    {
+    private static int drawSphere(CommandContext<CommandSourceStack> ctx, boolean solid) throws CommandSyntaxException {
         BlockPos pos;
         int radius;
         BlockInput block;
         Predicate<BlockInWorld> replacement;
-        try
-        {
+        try {
             pos = getArg(ctx, BlockPosArgument::getSpawnablePos, "center");
             radius = getArg(ctx, IntegerArgumentType::getInteger, "radius");
             block = getArg(ctx, BlockStateArgument::getBlock, "block");
@@ -190,28 +174,22 @@ public class DrawCommand
 
         double nextXn = 0;
 
-        forX: for (int x = 0; x <= ceilRadiusX; ++x)
-        {
+        forX: for (int x = 0; x <= ceilRadiusX; ++x) {
             final double xn = nextXn;
             nextXn = (x + 1) * invRadiusX;
             double nextYn = 0;
-            forY: for (int y = 0; y <= ceilRadiusY; ++y)
-            {
+            forY: for (int y = 0; y <= ceilRadiusY; ++y) {
                 final double yn = nextYn;
                 nextYn = (y + 1) * invRadiusY;
                 double nextZn = 0;
-                forZ: for (int z = 0; z <= ceilRadiusZ; ++z)
-                {
+                forZ: for (int z = 0; z <= ceilRadiusZ; ++z) {
                     final double zn = nextZn;
                     nextZn = (z + 1) * invRadiusZ;
 
                     double distanceSq = lengthSq(xn, yn, zn);
-                    if (distanceSq > 1)
-                    {
-                        if (z == 0)
-                        {
-                            if (y == 0)
-                            {
+                    if (distanceSq > 1) {
+                        if (z == 0) {
+                            if (y == 0) {
                                 break forX;
                             }
                             break forY;
@@ -219,18 +197,14 @@ public class DrawCommand
                         break forZ;
                     }
 
-                    if (!solid && lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1)
-                    {
+                    if (!solid && lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1) {
                         continue;
                     }
 
                     CarpetSettings.impendingFillSkipUpdates.set(!CarpetSettings.fillUpdates);
-                    for (int xmod = -1; xmod < 2; xmod += 2)
-                    {
-                        for (int ymod = -1; ymod < 2; ymod += 2)
-                        {
-                            for (int zmod = -1; zmod < 2; zmod += 2)
-                            {
+                    for (int xmod = -1; xmod < 2; xmod += 2) {
+                        for (int ymod = -1; ymod < 2; ymod += 2) {
+                            for (int zmod = -1; zmod < 2; zmod += 2) {
                                 affected+= setBlock(world, mbpos,
                                         pos.getX() + xmod * x, pos.getY() + ymod * y, pos.getZ() + zmod * z,
                                         block, replacement, list
@@ -242,22 +216,19 @@ public class DrawCommand
                 }
             }
         }
-        if (CarpetSettings.fillUpdates)
-        {
+        if (CarpetSettings.fillUpdates) {
             list.forEach(blockpos1 -> world.blockUpdated(blockpos1, world.getBlockState(blockpos1).getBlock()));
         }
         Messenger.m(ctx.getSource(), "gi Filled " + affected + " blocks");
         return affected;
     }
 
-    private static int drawDiamond(CommandContext<CommandSourceStack> ctx, boolean solid) throws CommandSyntaxException
-    {
+    private static int drawDiamond(CommandContext<CommandSourceStack> ctx, boolean solid) throws CommandSyntaxException {
         BlockPos pos;
         int radius;
         BlockInput block;
         Predicate<BlockInWorld> replacement;
-        try
-        {
+        try {
             pos = getArg(ctx, BlockPosArgument::getSpawnablePos, "center");
             radius = getArg(ctx, IntegerArgumentType::getInteger, "radius");
             block = getArg(ctx, BlockStateArgument::getBlock, "block");
@@ -276,11 +247,9 @@ public class DrawCommand
 
         CarpetSettings.impendingFillSkipUpdates.set(!CarpetSettings.fillUpdates);
 
-        for (int r = 0; r < radius; ++r)
-        {
+        for (int r = 0; r < radius; ++r) {
             int y=r-radius+1;
-            for (int x = -r; x <= r; ++x)
-            {
+            for (int x = -r; x <= r; ++x) {
                 int z=r-Math.abs(x);
 
                 affected+= setBlock(world, mbpos, pos.getX()+x, pos.getY()-y, pos.getZ()+z, block, replacement, list);
@@ -292,8 +261,7 @@ public class DrawCommand
 
         CarpetSettings.impendingFillSkipUpdates.set(false);
 
-        if (CarpetSettings.fillUpdates)
-        {
+        if (CarpetSettings.fillUpdates) {
             list.forEach(p -> world.blockUpdated(p, world.getBlockState(p).getBlock()));
         }
 
@@ -306,15 +274,12 @@ public class DrawCommand
             ServerLevel world, BlockPos pos, int offset, double dr, boolean rectangle, String orientation,
             BlockInput block, Predicate<BlockInWorld> replacement,
             List<BlockPos> list, BlockPos.MutableBlockPos mbpos
-    )
-    {
+    ) {
         int successes=0;
         int r = Mth.floor(dr);
         double drsq = dr*dr;
-        if (orientation.equalsIgnoreCase("x"))
-        {
-            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq)
-            {
+        if (orientation.equalsIgnoreCase("x")) {
+            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq) {
                 successes += setBlock(
                         world, mbpos,pos.getX()+offset, pos.getY()+a, pos.getZ()+b,
                         block, replacement, list
@@ -322,10 +287,8 @@ public class DrawCommand
             }
             return successes;
         }
-        if (orientation.equalsIgnoreCase("y"))
-        {
-            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq)
-            {
+        if (orientation.equalsIgnoreCase("y")) {
+            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq) {
                 successes += setBlock(
                         world, mbpos,pos.getX()+a, pos.getY()+offset, pos.getZ()+b,
                         block, replacement, list
@@ -333,10 +296,8 @@ public class DrawCommand
             }
             return successes;
         }
-        if (orientation.equalsIgnoreCase("z"))
-        {
-            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq)
-            {
+        if (orientation.equalsIgnoreCase("z")) {
+            for(int a=-r; a<=r; ++a) for(int b=-r; b<=r; ++b) if(rectangle || a*a + b*b <= drsq) {
                 successes += setBlock(
                         world, mbpos,pos.getX()+b, pos.getY()+a, pos.getZ()+offset,
                         block, replacement, list
@@ -347,8 +308,7 @@ public class DrawCommand
         return 0;
     }
 
-    private static int drawPyramid(CommandContext<CommandSourceStack> ctx, String base, boolean solid) throws CommandSyntaxException
-    {
+    private static int drawPyramid(CommandContext<CommandSourceStack> ctx, String base, boolean solid) throws CommandSyntaxException {
         BlockPos pos;
         double radius;
         int height;
@@ -356,8 +316,7 @@ public class DrawCommand
         String orientation;
         BlockInput block;
         Predicate<BlockInWorld> replacement;
-        try
-        {
+        try {
             pos = getArg(ctx, BlockPosArgument::getSpawnablePos, "center");
             radius = getArg(ctx, IntegerArgumentType::getInteger, "radius")+0.5D;
             height = getArg(ctx, IntegerArgumentType::getInteger, "height");
@@ -381,8 +340,7 @@ public class DrawCommand
 
         boolean isSquare = base.equalsIgnoreCase("square");
 
-        for(int i =0; i<height;++i)
-        {
+        for(int i =0; i<height;++i) {
             double r = pointup ? radius - radius * i / height - 1 : radius * i / height;
             affected+= fillFlat(world, pos, i, r, isSquare, orientation, block, replacement, list, mbpos);
         }
@@ -409,8 +367,7 @@ public class DrawCommand
         String orientation;
         BlockInput block;
         Predicate<BlockInWorld> replacement;
-        try
-        {
+        try {
             pos = getArg(ctx, BlockPosArgument::getSpawnablePos, "center");
             radius = getArg(ctx, IntegerArgumentType::getInteger, "radius")+0.5D;
             height = getArg(ctx, IntegerArgumentType::getInteger, "height");
@@ -433,8 +390,7 @@ public class DrawCommand
 
         boolean isSquare = base.equalsIgnoreCase("square");
 
-        for(int i =0; i<height;++i)
-        {
+        for(int i =0; i<height;++i) {
             affected+= fillFlat(world, pos, i, radius, isSquare, orientation, block, replacement, list, mbpos);
         }
 

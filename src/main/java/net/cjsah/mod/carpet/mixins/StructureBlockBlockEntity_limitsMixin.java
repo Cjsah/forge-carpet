@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(StructureBlockEntity.class)
-public abstract class StructureBlockBlockEntity_limitsMixin
-{
+public abstract class StructureBlockBlockEntity_limitsMixin {
     @ModifyConstant(
             method = "readNbt",
             constant = @Constant(intValue = 48)

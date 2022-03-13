@@ -6,13 +6,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ExpirableValue.class)
-public class Memory_scarpetMixin implements MemoryInterface
-{
+public class Memory_scarpetMixin implements MemoryInterface {
     @Shadow private long expiry;
 
     @Override
-    public long getScarpetExpiry()
-    {
+    public long getScarpetExpiry() {
         return expiry;
     }
 }

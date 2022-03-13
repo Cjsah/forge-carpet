@@ -13,22 +13,18 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 
 @Mixin(ChunkMap.class)
-public class ThreadedAnvilChunkStorage_tickMixin
-{
+public class ThreadedAnvilChunkStorage_tickMixin {
     @Shadow @Final private ServerLevel world;
     CarpetProfiler.ProfilerToken currentSection;
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void startProfilerSection(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    private void startProfilerSection(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         currentSection = CarpetProfiler.start_section(world, "Unloading", CarpetProfiler.TYPE.GENERAL);
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
-    private void stopProfilerSecion(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
-        if (currentSection != null)
-        {
+    private void stopProfilerSecion(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
+        if (currentSection != null) {
             CarpetProfiler.end_current_section(currentSection);
         }
     }

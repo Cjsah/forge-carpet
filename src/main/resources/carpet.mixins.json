@@ -1,20 +1,21 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "net.cjsah.mod.carpet.mixins",
-    "compatibilityLevel": "JAVA_8",
-    "refmap": "mixins.refmap.json",
-    "mixins": [
-        "CommandsMixin",
-        "EntityMixin",
-        "PlayerEntity_fakePlayersMixin",
-        "PlayerList_fakePlayersMixin",
-        "ServerPlayerEntityMixin",
-        "ThrownEnderpearlEntity_fakePlayersMixin"
-    ],
-    "client": [
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.cjsah.mod.carpet.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.refmap.json",
+  "mixins": [
+    "AbstractCauldronBlock_stackableSBoxesMixin",
+    "CommandsMixin",
+    "EntityMixin",
+    "PlayerEntity_fakePlayersMixin",
+    "PlayerList_fakePlayersMixin",
+    "ServerPlayerEntityMixin",
+    "ThrownEnderpearlEntity_fakePlayersMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

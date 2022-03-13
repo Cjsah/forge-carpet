@@ -26,8 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public abstract class ScriptHost
-{
+public abstract class ScriptHost {
     public static Map<Value, Value> systemGlobals = new ConcurrentHashMap<>();
     private static final Map<Long, Random> randomizers = new Long2ObjectOpenHashMap<>();
 
@@ -38,8 +37,7 @@ public abstract class ScriptHost
 
     private final Set<String> deprecations = new HashSet<>();
 
-    public Random getRandom(long aLong)
-    {
+    public Random getRandom(long aLong) {
         if (randomizers.size() > 65536)
             randomizers.clear();
         return randomizers.computeIfAbsent(aLong, Random::new);
@@ -49,8 +47,7 @@ public abstract class ScriptHost
         return randomizers.remove(aLong) != null;
     }
 
-    public static class ModuleData
-    {
+    public static class ModuleData {
         Module parent;
         public Map<String, FunctionValue> globalFunctions = new Object2ObjectOpenHashMap<>();
         public Map<String, LazyValue> globalVariables = new Object2ObjectOpenHashMap<>();
@@ -58,13 +55,11 @@ public abstract class ScriptHost
         public Map<String, ModuleData> globalsImports = new Object2ObjectOpenHashMap<>(); // imported global variables string to module
         public Map<String, ModuleData> futureImports = new Object2ObjectOpenHashMap<>(); // imports not known before used
 
-        public ModuleData(Module parent, ModuleData other)
-        {
+        public ModuleData(Module parent, ModuleData other) {
             // imports are just pointers, but they still point to the wrong modules (point to the parent)
             this.parent = parent;
             globalFunctions.putAll(other.globalFunctions);
-            other.globalVariables.forEach((key, value) ->
-            {
+            other.globalVariables.forEach((key, value) -> {
                 Value var = value.evalValue(null);
                 Value copy = var.deepcopy();
                 copy.boundVariable = var.boundVariable;
@@ -72,8 +67,7 @@ public abstract class ScriptHost
             });
         }
 
-        public void setImportsBasedOn(ScriptHost host, ModuleData other)
-        {
+        public void setImportsBasedOn(ScriptHost host, ModuleData other) {
             // fixing imports
             other.functionImports.forEach((name, targetData) -> {
                 functionImports.put(name, host.moduleData.get(targetData.parent));
@@ -87,8 +81,7 @@ public abstract class ScriptHost
 
         }
 
-        public ModuleData(Module parent)
-        {
+        public ModuleData(Module parent) {
             this.parent = parent;
         }
     }
@@ -105,14 +98,12 @@ public abstract class ScriptHost
     public final Module main;
 
     @FunctionalInterface
-    public interface ErrorSnooper
-    {
+    public interface ErrorSnooper {
         List<String> apply(Expression expression, Tokenizer.Token token, Context context, String message);
     }
     public ErrorSnooper errorSnooper = null;
 
-    protected ScriptHost(Module code, boolean perUser, ScriptHost parent)
-    {
+    protected ScriptHost(Module code, boolean perUser, ScriptHost parent) {
         this.parent = parent;
         this.main = code;
         this.perUser = perUser;
@@ -124,12 +115,10 @@ public abstract class ScriptHost
         mainThread = Thread.currentThread();
     }
 
-    void initializeModuleGlobals(ModuleData md)
-    {
+    void initializeModuleGlobals(ModuleData md) {
     }
 
-    public void importModule(Context c, String moduleName)
-    {
+    public void importModule(Context c, String moduleName) {
         if (modules.containsKey(moduleName.toLowerCase(Locale.ROOT))) return;  // aready imported
         Module module = getModuleOrLibraryByName(moduleName);
         if (modules.containsKey(module.getName())) return;  // aready imported, once again, in case some discrepancies in names?
@@ -142,42 +131,33 @@ public abstract class ScriptHost
         //modules.remove(module.getName());
         //throw new InternalExpressionException("Failed to import a module "+moduleName);
     }
-    public void importNames(Context c, Module targetModule, String sourceModuleName, List<String> identifiers )
-    {
-        if (!moduleData.containsKey(targetModule))
-        {
+    public void importNames(Context c, Module targetModule, String sourceModuleName, List<String> identifiers ) {
+        if (!moduleData.containsKey(targetModule)) {
             throw new InternalExpressionException("Cannot import to module that doesn't exist");
         }
         Module source = modules.get(sourceModuleName);
         ModuleData sourceData = moduleData.get(source);
         ModuleData targetData = moduleData.get(targetModule);
-        if (sourceData == null || targetData == null)
-        {
+        if (sourceData == null || targetData == null) {
             throw new InternalExpressionException("Cannot import from module that is not imported");
         }
-        for (String identifier: identifiers)
-        {
-            if (sourceData.globalFunctions.containsKey(identifier))
-            {
+        for (String identifier: identifiers) {
+            if (sourceData.globalFunctions.containsKey(identifier)) {
                 targetData.functionImports.put(identifier, sourceData);
             }
-            else if (sourceData.globalVariables.containsKey(identifier))
-            {
+            else if (sourceData.globalVariables.containsKey(identifier)) {
                 targetData.globalsImports.put(identifier, sourceData);
             }
-            else
-            {
+            else {
                 targetData.futureImports.put(identifier, sourceData);
             }
         }
     }
 
-    public Stream<String> availableImports(String moduleName)
-    {
+    public Stream<String> availableImports(String moduleName) {
         Module source = modules.get(moduleName);
         ModuleData sourceData = moduleData.get(source);
-        if (sourceData == null)
-        {
+        if (sourceData == null) {
             throw new InternalExpressionException("Cannot import from module that is not imported");
         }
         return Stream.concat(
@@ -191,11 +171,9 @@ public abstract class ScriptHost
     protected abstract void runModuleCode(Context c, Module module); // this should be shell out in the executor
 
     public FunctionValue getFunction(String name) { return getFunction(main, name); }
-    public FunctionValue getAssertFunction(Module module, String name)
-    {
+    public FunctionValue getAssertFunction(Module module, String name) {
         FunctionValue ret = getFunction(module, name);
-        if (ret == null)
-        {
+        if (ret == null) {
             if (module == main)
                 throw new InternalExpressionException("Function '"+name+"' is not defined yet");
             else
@@ -203,14 +181,12 @@ public abstract class ScriptHost
         }
         return ret;
     }
-    private FunctionValue getFunction(Module module, String name)
-    {
+    private FunctionValue getFunction(Module module, String name) {
         ModuleData local = getModuleData(module);
         FunctionValue ret = local.globalFunctions.get(name); // most uses would be from local scope anyways
         if (ret != null) return ret;
         ModuleData target = local.functionImports.get(name);
-        if (target != null)
-        {
+        if (target != null) {
             ret = target.globalFunctions.get(name);
             if (ret != null) return ret;
         }
@@ -224,8 +200,7 @@ public abstract class ScriptHost
         return target.globalFunctions.get(name);
     }
 
-    private ModuleData findModuleDataFromFunctionImports(String name, ModuleData source, int ttl)
-    {
+    private ModuleData findModuleDataFromFunctionImports(String name, ModuleData source, int ttl) {
         if (ttl > 64) throw new InternalExpressionException("Cannot import "+name+", either your imports are too deep or too loopy");
         if (source.globalFunctions.containsKey(name))
             return source;
@@ -237,14 +212,12 @@ public abstract class ScriptHost
     }
 
     public LazyValue getGlobalVariable(String name) { return getGlobalVariable(main, name); }
-    public LazyValue getGlobalVariable(Module module, String name)
-    {
+    public LazyValue getGlobalVariable(Module module, String name) {
         ModuleData local = getModuleData(module);
         LazyValue ret = local.globalVariables.get(name); // most uses would be from local scope anyways
         if (ret != null) return ret;
         ModuleData target = local.globalsImports.get(name);
-        if (target != null)
-        {
+        if (target != null) {
             ret = target.globalVariables.get(name);
             if (ret != null) return ret;
         }
@@ -258,8 +231,7 @@ public abstract class ScriptHost
         return target.globalVariables.get(name);
     }
 
-    private ModuleData findModuleDataFromGlobalImports(String name, ModuleData source, int ttl)
-    {
+    private ModuleData findModuleDataFromGlobalImports(String name, ModuleData source, int ttl) {
         if (ttl > 64) throw new InternalExpressionException("Cannot import "+name+", either your imports are too deep or too loopy");
         if (source.globalVariables.containsKey(name))
             return source;
@@ -270,73 +242,62 @@ public abstract class ScriptHost
         return null;
     }
 
-    public void delFunctionWithPrefix(Module module, String prefix)
-    {
+    public void delFunctionWithPrefix(Module module, String prefix) {
         ModuleData data = getModuleData(module);
         data.globalFunctions.entrySet().removeIf(e -> e.getKey().startsWith(prefix));
         data.functionImports.entrySet().removeIf(e -> e.getKey().startsWith(prefix));
     }
-    public void delFunction(Module module, String funName)
-    {
+    public void delFunction(Module module, String funName) {
         ModuleData data = getModuleData(module);
         data.globalFunctions.remove(funName);
         data.functionImports.remove(funName);
     }
 
-    public void delGlobalVariableWithPrefix(Module module, String prefix)
-    {
+    public void delGlobalVariableWithPrefix(Module module, String prefix) {
         ModuleData data = getModuleData(module);
         data.globalVariables.entrySet().removeIf(e -> e.getKey().startsWith(prefix));
         data.globalsImports.entrySet().removeIf(e -> e.getKey().startsWith(prefix));
     }
 
-    public void delGlobalVariable(Module module, String varName)
-    {
+    public void delGlobalVariable(Module module, String varName) {
         ModuleData data = getModuleData(module);
         data.globalFunctions.remove(varName);
         data.functionImports.remove(varName);
     }
 
-    private ModuleData getModuleData(Module module)
-    {
+    private ModuleData getModuleData(Module module) {
         ModuleData data = moduleData.get(module);
         if (data == null) throw new IntegrityException("Module structure changed for the app. Did you reload the app with tasks running?");
         return data;
     }
 
-    protected void assertAppIntegrity(Module module)
-    {
+    protected void assertAppIntegrity(Module module) {
         getModuleData(module);
     }
 
-    public void addUserDefinedFunction(Context ctx, Module module, String name, FunctionValue fun)
-    {
+    public void addUserDefinedFunction(Context ctx, Module module, String name, FunctionValue fun) {
         getModuleData(module).globalFunctions.put(name, fun);
     }
 
-    public void setGlobalVariable(Module module, String name, LazyValue lv)
-    {
+    public void setGlobalVariable(Module module, String name, LazyValue lv) {
         getModuleData(module).globalVariables.put(name, lv);
     }
 
-    public Stream<String> globalVariableNames(Module module, Predicate<String> predicate)
-    {
+    public Stream<String> globalVariableNames(Module module, Predicate<String> predicate) {
         return Stream.concat(Stream.concat(
                 getModuleData(module).globalVariables.keySet().stream(),
                 getModuleData(module).globalsImports.keySet().stream()
         ), getModuleData(module).futureImports.keySet().stream().filter(s -> s.startsWith("global_"))).filter(predicate);
     }
 
-    public Stream<String> globalFunctionNames(Module module, Predicate<String> predicate)
-    {
+    public Stream<String> globalFunctionNames(Module module, Predicate<String> predicate) {
         return Stream.concat(Stream.concat(
                 getModuleData(module).globalFunctions.keySet().stream(),
                 getModuleData(module).functionImports.keySet().stream()
         ),getModuleData(module).futureImports.keySet().stream().filter(s -> !s.startsWith("global_"))).filter(predicate);
     }
 
-    public ScriptHost retrieveForExecution(String /*Nullable*/ user)
-    {
+    public ScriptHost retrieveForExecution(String /*Nullable*/ user) {
         if (!perUser) return this;
         ScriptHost oldUserHost = userHosts.get(user);
         if (oldUserHost != null) return oldUserHost;
@@ -347,8 +308,7 @@ public abstract class ScriptHost
         return userHost;
     }
 
-    protected void setupUserHost(ScriptHost host)
-    {
+    protected void setupUserHost(ScriptHost host) {
         // adding imports
         host.modules.putAll(this.modules);
         this.moduleData.forEach((key, value) -> host.moduleData.put(key, new ModuleData(key, value)));
@@ -356,45 +316,37 @@ public abstract class ScriptHost
         host.moduleData.forEach((module, data) -> data.setImportsBasedOn(host, this.moduleData.get(data.parent)));
     }
 
-    synchronized public void handleExpressionException(String msg, ExpressionException exc)
-    {
+    synchronized public void handleExpressionException(String msg, ExpressionException exc) {
         System.out.println(msg+": "+exc);
     }
 
 
     protected abstract ScriptHost duplicate();
 
-    public Object getLock(Value name)
-    {
+    public Object getLock(Value name) {
         return locks.computeIfAbsent(name, (n) -> new Object());
     }
 
-    public ThreadPoolExecutor getExecutor(Value pool)
-    {
+    public ThreadPoolExecutor getExecutor(Value pool) {
         if (inTermination) return null;
         return executorServices.computeIfAbsent(pool, (v) -> (ThreadPoolExecutor) Executors.newCachedThreadPool());
     }
 
-    public int taskCount()
-    {
+    public int taskCount() {
         return executorServices.values().stream().map(ThreadPoolExecutor::getActiveCount).reduce(0, Integer::sum);
     }
-    public int taskCount(Value pool)
-    {
-        if (executorServices.containsKey(pool))
-        {
+    public int taskCount(Value pool) {
+        if (executorServices.containsKey(pool)) {
             return executorServices.get(pool).getActiveCount();
         }
         return 0;
     }
 
-    public void onClose()
-    {
+    public void onClose() {
         inTermination = true;
         executorServices.values().forEach(ThreadPoolExecutor::shutdown);
         for (ScriptHost uh : userHosts.values()) uh.onClose();
-        if (taskCount() > 0)
-        {
+        if (taskCount() > 0) {
             executorServices.values().forEach(e -> {
                 ExecutorService stopper = Executors.newSingleThreadExecutor();
                 stopper.submit( () -> {
@@ -419,28 +371,24 @@ public abstract class ScriptHost
         }
     }
 
-    public void setPerPlayer(boolean isPerUser)
-    {
+    public void setPerPlayer(boolean isPerUser) {
         perUser = isPerUser;
     }
 
     public boolean isPerUser() {return perUser;}
 
-    public Set<String> getUserList()
-    {
+    public Set<String> getUserList() {
         return userHosts.keySet();
     }
 
 
-    public void resetErrorSnooper()
-    {
+    public void resetErrorSnooper() {
         errorSnooper=null;
     }
 
     public static final Logger DEPRECATION_LOG = LogManager.getLogger("Scarpet Deprecation Warnings");
 
-    public boolean issueDeprecation(String feature)
-    {
+    public boolean issueDeprecation(String feature) {
         if (deprecations.contains(feature)) return false;
         deprecations.add(feature);
         DEPRECATION_LOG.warn("'"+feature+"' is deprecated and soon will be removed. Please consult the docs for their replacement");

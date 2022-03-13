@@ -18,21 +18,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntity_scarpetEventsMixin extends Entity implements LivingEntityInterface
-{
+public abstract class LivingEntity_scarpetEventsMixin extends Entity implements LivingEntityInterface {
 
     @Shadow protected abstract void jump();
 
     @Shadow protected boolean jumping;
 
-    public LivingEntity_scarpetEventsMixin(EntityType<?> type, Level world)
-    {
+    public LivingEntity_scarpetEventsMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     @Inject(method = "onDeath", at = @At("HEAD"))
-    private void onDeathCall(DamageSource damageSource_1, CallbackInfo ci)
-    {
+    private void onDeathCall(DamageSource damageSource_1, CallbackInfo ci) {
         ((EntityInterface)this).getEventContainer().onEvent(EntityEventsGroup.Event.ON_DEATH, damageSource_1.msgId);
     }
 
@@ -41,29 +38,25 @@ public abstract class LivingEntity_scarpetEventsMixin extends Entity implements 
             target = "Lnet/minecraft/entity/LivingEntity;applyArmorToDamage(Lnet/minecraft/entity/damage/DamageSource;F)F",
             shift = At.Shift.BEFORE
     ))
-    private void entityTakingDamage(DamageSource source, float amount, CallbackInfo ci)
-    {
+    private void entityTakingDamage(DamageSource source, float amount, CallbackInfo ci) {
         ((EntityInterface)this).getEventContainer().onEvent(EntityEventsGroup.Event.ON_DAMAGE, amount, source);
         // this is not applicable since its not a playr for sure
         //if (entity instanceof ServerPlayerEntity && PLAYER_TAKES_DAMAGE.isNeeded())
         //{
         //    PLAYER_TAKES_DAMAGE.onDamage(entity, float_2, damageSource_1);
         //}
-        if (source.getEntity() instanceof ServerPlayer && CarpetEventServer.Event.PLAYER_DEALS_DAMAGE.isNeeded())
-        {
+        if (source.getEntity() instanceof ServerPlayer && CarpetEventServer.Event.PLAYER_DEALS_DAMAGE.isNeeded()) {
             CarpetEventServer.Event.PLAYER_DEALS_DAMAGE.onDamage(this, amount, source);
         }
     }
 
     @Override
-    public void doJumpCM()
-    {
+    public void doJumpCM() {
         jump();
     }
 
     @Override
-    public boolean isJumpingCM()
-    {
+    public boolean isJumpingCM() {
         return jumping;
     }
 }

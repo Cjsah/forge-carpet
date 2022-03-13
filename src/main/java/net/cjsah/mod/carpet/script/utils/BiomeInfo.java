@@ -17,8 +17,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 
-public class BiomeInfo
-{
+public class BiomeInfo {
     public final static Map<String, BiFunction<ServerLevel, Biome, Value>> biomeFeatures = new HashMap<String, BiFunction<ServerLevel, Biome, Value>>(){{
         put("top_material", (w, b) -> new BlockValue( b.getGenerationSettings().getSurfaceConfig().getTopMaterial(), null, null));
         put("under_material", (w, b) -> new BlockValue( b.getGenerationSettings().getSurfaceConfig().getUnderMaterial(), null, null));

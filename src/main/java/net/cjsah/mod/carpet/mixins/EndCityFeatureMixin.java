@@ -12,18 +12,15 @@ import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 @Mixin(EndCityFeature.class)
-public abstract class EndCityFeatureMixin extends StructureFeature<NoneFeatureConfiguration>
-{
+public abstract class EndCityFeatureMixin extends StructureFeature<NoneFeatureConfiguration> {
     private static final WeightedRandomList<MobSpawnSettings.SpawnerData> spawnList = WeightedRandomList.create(new MobSpawnSettings.SpawnerData(EntityType.SHULKER, 10, 4, 4));
 
-    public EndCityFeatureMixin(Codec<NoneFeatureConfiguration> codec)
-    {
+    public EndCityFeatureMixin(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
     }
 
     @Override
-    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMonsterSpawns()
-    {
+    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMonsterSpawns() {
         if (CarpetSettings.shulkerSpawningInEndCities)
             return spawnList;
         return  MobSpawnSettings.EMPTY_MOB_LIST;

@@ -6,13 +6,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-public class BundledModule extends Module
-{
+public class BundledModule extends Module {
     private String name;
     private String code;
     private boolean library;
-    public BundledModule(String name, String code, boolean isLibrary)
-    {
+    public BundledModule(String name, String code, boolean isLibrary) {
         library = isLibrary;
         this.name = name;
         this.code = code;
@@ -23,8 +21,7 @@ public class BundledModule extends Module
      * @param isLibrary A {@link boolean} indicating whether or not the script is a library
      * @return The created {@link BundledModule}
      */
-    public static BundledModule carpetNative(String scriptName, boolean isLibrary)
-    {
+    public static BundledModule carpetNative(String scriptName, boolean isLibrary) {
         return fromPath("assets/carpet/scripts/", scriptName, isLibrary);
     }
     
@@ -52,16 +49,14 @@ public class BundledModule extends Module
      */
     public static BundledModule fromPathWithCustomName(String fullPath, String customName, boolean isLibrary) {
     	BundledModule module = new BundledModule(null, null, isLibrary);
-    	try
-    	{
+    	try {
             module.name = customName.toLowerCase(Locale.ROOT);
             module.code = IOUtils.toString(
             		BundledModule.class.getClassLoader().getResourceAsStream(fullPath),
                     StandardCharsets.UTF_8
             );
         }
-        catch ( NullPointerException | IOException e)
-        {
+        catch ( NullPointerException | IOException e) {
             module.name = null;
             module.code = null;
         }

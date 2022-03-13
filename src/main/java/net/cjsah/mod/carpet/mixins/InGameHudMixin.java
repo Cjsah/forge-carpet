@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Gui.class)
-public abstract class InGameHudMixin
-{
+public abstract class InGameHudMixin {
     @Shadow
     @Final
     private Minecraft client;
@@ -20,8 +19,7 @@ public abstract class InGameHudMixin
     @Shadow @Final private PlayerTabOverlay playerListHud;
 
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;isInSingleplayer()Z"))
-    private boolean onDraw(Minecraft minecraftClient)
-    {
+    private boolean onDraw(Minecraft minecraftClient) {
         return this.client.isLocalServer() && !((PlayerListHudInterface) playerListHud).hasFooterOrHeader();
     }
 

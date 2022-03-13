@@ -23,8 +23,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Random;
 
 @Mixin(StructureFeature.class)
-public abstract class StructureFeatureMixin<C extends FeatureConfiguration> implements StructureFeatureInterface<C>
-{
+public abstract class StructureFeatureMixin<C extends FeatureConfiguration> implements StructureFeatureInterface<C> {
     @Shadow public abstract String getName();
 
     @Shadow public abstract StructureFeature.StructureStartFactory getStructureStartFactory();
@@ -32,71 +31,59 @@ public abstract class StructureFeatureMixin<C extends FeatureConfiguration> impl
     @Shadow protected abstract boolean shouldStartAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long worldSeed, ChunkRandom random, ChunkPos chunkPos, Biome biome, ChunkPos chunkPos2, C featureConfig, LevelHeightAccessor heightLimitView);
 
     @Override
-    public boolean plopAnywhere(ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly, Biome biome, FeatureConfiguration config)
-    {
+    public boolean plopAnywhere(ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly, Biome biome, FeatureConfiguration config) {
         if (world.isClientSide())
             return false;
         CarpetSettings.skipGenerationChecks.set(true);
-        try
-        {
+        try {
             Random rand = new Random(world.getRandom().nextInt());
             int j = pos.getX() >> 4;
             int k = pos.getZ() >> 4;
             long chId = ChunkPos.asLong(j, k);
             StructureStart structurestart = forceStructureStart(world, generator, rand, chId, biome, config);
-            if (structurestart == StructureStart.INVALID_START)
-            {
+            if (structurestart == StructureStart.INVALID_START) {
                 return false;
             }
             world.getChunk(j, k).addReferenceForFeature((StructureFeature) (Object)this, chId);
 
             BoundingBox box = structurestart.setBoundingBoxFromChildren();  // getBB
-            if (!wireOnly)
-            {
+            if (!wireOnly) {
                 structurestart.generateStructure(world, world.structureFeatureManager(), generator, rand,box, new ChunkPos(j, k));
             }
             //structurestart.notifyPostProcessAt(new ChunkPos(j, k));
             int i = Math.max(box.getXSpan(),box.getZSpan())/16+1;
 
             //int i = getRadius();
-            for (int k1 = j - i; k1 <= j + i; ++k1)
-            {
-                for (int l1 = k - i; l1 <= k + i; ++l1)
-                {
+            for (int k1 = j - i; k1 <= j + i; ++k1) {
+                for (int l1 = k - i; l1 <= k + i; ++l1) {
                     if (k1 == j && l1 == k) continue;
                     long nbchkid = ChunkPos.asLong(k1, l1);
-                    if (box.intersects(k1<<4, l1<<4, (k1<<4) + 15, (l1<<4) + 15))
-                    {
+                    if (box.intersects(k1<<4, l1<<4, (k1<<4) + 15, (l1<<4) + 15)) {
                         world.getChunk(k1, l1).addReferenceForFeature((StructureFeature) (Object)this, chId);
                     }
                 }
             }
         }
-        catch (Exception booboo)
-        {
+        catch (Exception booboo) {
             CarpetSettings.LOG.error("Unknown Exception while plopping structure: "+booboo, booboo);
             return false;
         }
-        finally
-        {
+        finally {
             CarpetSettings.skipGenerationChecks.set(false);
         }
         return true;
     }
 
-    private StructureStart forceStructureStart(ServerLevel worldIn, ChunkGenerator generator, Random rand, long packedChunkPos, Biome biome, FeatureConfiguration config)
-    {
+    private StructureStart forceStructureStart(ServerLevel worldIn, ChunkGenerator generator, Random rand, long packedChunkPos, Biome biome, FeatureConfiguration config) {
         ChunkPos chunkpos = new ChunkPos(packedChunkPos);
         StructureStart structurestart;
 
         ChunkAccess ichunk = worldIn.getChunk(chunkpos.x, chunkpos.z, ChunkStatus.STRUCTURE_STARTS, false);
 
-        if (ichunk != null)
-        {
+        if (ichunk != null) {
             structurestart = ichunk.getStartForFeature((StructureFeature)(Object)this);
 
-            if (structurestart != null && structurestart != StructureStart.INVALID_START)
-            {
+            if (structurestart != null && structurestart != StructureStart.INVALID_START) {
                 return structurestart;
             }
         }
@@ -110,8 +97,7 @@ public abstract class StructureFeatureMixin<C extends FeatureConfiguration> impl
         structurestart1.init(worldIn.registryAccess(), generator, worldIn.getStructureManager() , chunkpos, biome_1, config, ichunk);
         structurestart = structurestart1.isValid() ? structurestart1 : StructureStart.INVALID_START;
 
-        if (structurestart.isValid())
-        {
+        if (structurestart.isValid()) {
             worldIn.getChunk(chunkpos.x, chunkpos.z).setStartForFeature((StructureFeature)(Object)this, structurestart);
         }
 
@@ -120,8 +106,7 @@ public abstract class StructureFeatureMixin<C extends FeatureConfiguration> impl
     }
 
     @Override
-    public boolean shouldStartPublicAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long l, ChunkRandom chunkRandom, ChunkPos chpos, Biome biome, ChunkPos chunkPos, C featureConfig, LevelHeightAccessor heightLimitView)
-    {
+    public boolean shouldStartPublicAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long l, ChunkRandom chunkRandom, ChunkPos chpos, Biome biome, ChunkPos chunkPos, C featureConfig, LevelHeightAccessor heightLimitView) {
         return shouldStartAt(chunkGenerator, biomeSource, l, chunkRandom, chpos, biome, chunkPos, featureConfig, heightLimitView);
     }
 }

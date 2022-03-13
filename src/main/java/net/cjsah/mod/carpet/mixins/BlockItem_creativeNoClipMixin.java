@@ -14,18 +14,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(BlockItem.class)
-public class BlockItem_creativeNoClipMixin
-{
+public class BlockItem_creativeNoClipMixin {
     @Redirect(method = "canPlace", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/World;canPlace(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Z"
     ))
     private boolean canSpectatingPlace(Level world, BlockState state, BlockPos pos, CollisionContext context,
-                                       BlockPlaceContext contextOuter, BlockState stateOuter)
-    {
+                                       BlockPlaceContext contextOuter, BlockState stateOuter) {
         Player player = contextOuter.getPlayer();
-        if (CarpetSettings.creativeNoClip && player != null && player.isCreative() && player.getAbilities().flying)
-        {
+        if (CarpetSettings.creativeNoClip && player != null && player.isCreative() && player.getAbilities().flying) {
             // copy from canPlace
             VoxelShape voxelShape = state.getCollisionShape(world, pos, context);
             return voxelShape.isEmpty() || world.isUnobstructed(player, voxelShape.move(pos.getX(), pos.getY(), pos.getZ()));

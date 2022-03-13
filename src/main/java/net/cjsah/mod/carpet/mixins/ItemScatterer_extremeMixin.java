@@ -9,14 +9,12 @@ import java.util.Random;
 import net.minecraft.world.Containers;
 
 @Mixin(Containers.class)
-public class ItemScatterer_extremeMixin
-{
+public class ItemScatterer_extremeMixin {
     @Redirect(method = "spawn(Lnet/minecraft/world/World;DDDLnet/minecraft/item/ItemStack;)V",  expect = 3, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private static double nextGauBian(Random random)
-    {
+    private static double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

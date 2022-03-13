@@ -12,20 +12,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Connection.class)
-public abstract class ClientConnectionMixin
-{
+public abstract class ClientConnectionMixin {
     // Add to the packet counter whenever a packet is received.
     @Inject(method = "channelRead0", at = @At("HEAD"))
-    private void packetInCount(ChannelHandlerContext channelHandlerContext_1, Packet<?> packet_1, CallbackInfo ci)
-    {
+    private void packetInCount(ChannelHandlerContext channelHandlerContext_1, Packet<?> packet_1, CallbackInfo ci) {
         PacketCounter.totalIn++;
     }
     
     // Add to the packet counter whenever a packet is sent.
     @Inject(method = "sendImmediately", at = @At("HEAD"))
     private void packetOutCount(Packet<?> packet_1,
-            GenericFutureListener<? extends Future<? super Void>> genericFutureListener_1, CallbackInfo ci)
-    {
+            GenericFutureListener<? extends Future<? super Void>> genericFutureListener_1, CallbackInfo ci) {
         PacketCounter.totalOut++;
     }
 }

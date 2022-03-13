@@ -10,13 +10,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(DistanceManager.class)
-public abstract class ChunkTicketManager_scarpetMixin implements ChunkTicketManagerInterface
-{
+public abstract class ChunkTicketManager_scarpetMixin implements ChunkTicketManagerInterface {
     @Shadow @Final private Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> ticketsByPosition;
 
     @Override
-    public Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>>  getTicketsByPosition()
-    {
+    public Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>>  getTicketsByPosition() {
         return ticketsByPosition;
     }
 

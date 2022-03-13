@@ -8,8 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-public class EquipmentInventory implements Container
-{
+public class EquipmentInventory implements Container {
     private static final List<EquipmentSlot> slotToSlot = Arrays.asList(
             EquipmentSlot.MAINHAND,
             EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD,
@@ -17,35 +16,29 @@ public class EquipmentInventory implements Container
     );
 
     LivingEntity mob;
-    public EquipmentInventory(LivingEntity mob)
-    {
+    public EquipmentInventory(LivingEntity mob) {
         this.mob = mob;
     }
 
     @Override
-    public int getContainerSize()
-    {
+    public int getContainerSize() {
         return 6;
     }
 
     @Override
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         for (EquipmentSlot slot: slotToSlot)
             if (!mob.getItemBySlot(slot).isEmpty()) return false;
         return true;
     }
 
     @Override
-    public ItemStack getItem(int slot)
-    {
+    public ItemStack getItem(int slot) {
         EquipmentSlot slotSlot;
-        try
-        {
+        try {
             slotSlot = slotToSlot.get(slot);
         }
-        catch (IndexOutOfBoundsException ignored)
-        {
+        catch (IndexOutOfBoundsException ignored) {
             //going out of the index should be really exceptional
             return ItemStack.EMPTY;
         }
@@ -53,15 +46,12 @@ public class EquipmentInventory implements Container
     }
 
     @Override
-    public ItemStack removeItem(int slot, int amount)
-    {
+    public ItemStack removeItem(int slot, int amount) {
         EquipmentSlot slotSlot;
-        try
-        {
+        try {
             slotSlot = slotToSlot.get(slot);
         }
-        catch (IndexOutOfBoundsException ignored)
-        {
+        catch (IndexOutOfBoundsException ignored) {
             //going out of the index should be really exceptional
             return ItemStack.EMPTY;
         }
@@ -69,15 +59,12 @@ public class EquipmentInventory implements Container
     }
 
     @Override
-    public ItemStack removeItemNoUpdate(int slot)
-    {
+    public ItemStack removeItemNoUpdate(int slot) {
         EquipmentSlot slotSlot;
-        try
-        {
+        try {
             slotSlot = slotToSlot.get(slot);
         }
-        catch (IndexOutOfBoundsException ignored)
-        {
+        catch (IndexOutOfBoundsException ignored) {
             //going out of the index should be really exceptional
             return ItemStack.EMPTY;
         }
@@ -87,15 +74,12 @@ public class EquipmentInventory implements Container
     }
 
     @Override
-    public void setItem(int slot, ItemStack stack)
-    {
+    public void setItem(int slot, ItemStack stack) {
         EquipmentSlot slotSlot;
-        try
-        {
+        try {
             slotSlot = slotToSlot.get(slot);
         }
-        catch (IndexOutOfBoundsException ignored)
-        {
+        catch (IndexOutOfBoundsException ignored) {
             //going out of the index should be really exceptional
             return;
         }
@@ -103,20 +87,17 @@ public class EquipmentInventory implements Container
     }
 
     @Override
-    public void setChanged()
-    {
+    public void setChanged() {
 
     }
 
     @Override
-    public boolean stillValid(Player player)
-    {
+    public boolean stillValid(Player player) {
         return false;
     }
 
     @Override
-    public void clearContent()
-    {
+    public void clearContent() {
         for (EquipmentSlot slot: slotToSlot)
             mob.setItemSlot(slot, ItemStack.EMPTY);
     }

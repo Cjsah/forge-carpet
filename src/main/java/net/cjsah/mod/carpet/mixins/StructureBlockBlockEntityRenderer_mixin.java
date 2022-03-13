@@ -10,11 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(StructureBlockRenderer.class)
-public abstract class StructureBlockBlockEntityRenderer_mixin implements BlockEntityRenderer<StructureBlockEntity>
-{
+public abstract class StructureBlockBlockEntityRenderer_mixin implements BlockEntityRenderer<StructureBlockEntity> {
     @Inject(method = "getRenderDistance", at = @At("HEAD"), cancellable = true)
-    void newLimit(CallbackInfoReturnable<Integer> cir)
-    {
+    void newLimit(CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.structureBlockOutlineDistance != 96)
             cir.setReturnValue(CarpetSettings.structureBlockOutlineDistance);
     }

@@ -7,8 +7,7 @@ public class FunctionsTestClass {
 	@ScarpetFunction(maxParams = 6)
 	public Integer display_title2(@AllowSingleton List<ServerPlayerEntity> targets, String actionString, Optional<Text> content, Integer... times) {
 	    TitleS2CPacket.Action action;
-	    switch (actionString.toLowerCase(Locale.ROOT))
-	    {
+	    switch (actionString.toLowerCase(Locale.ROOT)) {
 	        case "title":
 	            action = Action.TITLE;
 	            break;
@@ -28,8 +27,7 @@ public class FunctionsTestClass {
 	        default:
 	            throw new InternalExpressionException("'display_title' requires 'title', 'subtitle', 'actionbar', 'player_list_header', 'player_list_footer' or 'clear' as second argument");
 	    }
-	    if (action == null) // Player list
-	    {
+	    if (action == null) // Player list {
 	        Map<String, BaseText> map = actionString.equals("player_list_header") ? HUDController.scarpet_headers : HUDController.scarpet_footers;
 	        if (!content.isPresent()) // null
 	            for (ServerPlayerEntity p : targets)

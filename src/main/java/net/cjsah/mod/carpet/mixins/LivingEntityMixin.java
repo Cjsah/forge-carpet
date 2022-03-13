@@ -11,17 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity
-{
+public abstract class LivingEntityMixin extends Entity {
 
-    public LivingEntityMixin(EntityType<?> type, Level world)
-    {
+    public LivingEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     @Redirect(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasCustomName()Z"))
-    private boolean shouldLogDeaths(LivingEntity livingEntity)
-    {
+    private boolean shouldLogDeaths(LivingEntity livingEntity) {
         return livingEntity.hasCustomName() && CarpetSettings.cleanLogs && level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
     }
 }

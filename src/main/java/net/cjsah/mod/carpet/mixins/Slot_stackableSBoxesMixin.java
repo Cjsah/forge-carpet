@@ -16,14 +16,12 @@ public class Slot_stackableSBoxesMixin {
             value = "INVOKE",
             target = "Lnet/minecraft/screen/slot/Slot;getMaxItemCount(Lnet/minecraft/item/ItemStack;)I"
     ))
-    private int getMaxCountForSboxesInSlot(Slot slot, ItemStack stack)
-    {
+    private int getMaxCountForSboxesInSlot(Slot slot, ItemStack stack) {
         if (CarpetSettings.stackableShulkerBoxes &&
                 stack.getItem() instanceof BlockItem &&
                 ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
                 !InventoryHelper.shulkerBoxHasItems(stack)
-        )
-        {
+        ) {
             return CarpetSettings.SHULKER_STACK_SIZE;
         }
         return slot.getMaxStackSize(stack);

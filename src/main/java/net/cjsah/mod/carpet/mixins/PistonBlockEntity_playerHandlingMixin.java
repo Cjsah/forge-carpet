@@ -20,21 +20,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PistonMovingBlockEntity.class)
-public abstract class PistonBlockEntity_playerHandlingMixin
-{
+public abstract class PistonBlockEntity_playerHandlingMixin {
     @Shadow private BlockState pushedBlock;
 
     @Shadow public abstract Direction getMovementDirection();
 
     @Inject(method = "moveEntity", at = @At("HEAD"), cancellable = true)
-    private static void dontPushSpectators(Direction direction, Entity entity, double d, Direction direction2, CallbackInfo ci)
-    {
+    private static void dontPushSpectators(Direction direction, Entity entity, double d, Direction direction2, CallbackInfo ci) {
         if (CarpetSettings.creativeNoClip && entity instanceof Player && (((Player) entity).isCreative()) && ((Player) entity).getAbilities().flying) ci.cancel();
     }
 
     @Redirect(method = "pushEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;setVelocity(DDD)V"))
-    private static void ignoreAccel(Entity entity, double x, double y, double z)
-    {
+    private static void ignoreAccel(Entity entity, double x, double y, double z) {
         if (CarpetSettings.creativeNoClip && entity instanceof Player && (((Player) entity).isCreative()) && ((Player) entity).getAbilities().flying) return;
         entity.setDeltaMovement(x,y,z);
     }
@@ -44,10 +41,8 @@ public abstract class PistonBlockEntity_playerHandlingMixin
             target = "Lnet/minecraft/entity/Entity;getPistonBehavior()Lnet/minecraft/block/piston/PistonBehavior;"
     ))
     private static PushReaction moveFakePlayers(Entity entity,
-        Level world, BlockPos blockPos, float ff, PistonMovingBlockEntity pistonBlockEntity)
-    {
-        if (entity instanceof EntityPlayerMPFake && pistonBlockEntity.getMovedState().is(Blocks.SLIME_BLOCK))
-        {
+        Level world, BlockPos blockPos, float ff, PistonMovingBlockEntity pistonBlockEntity) {
+        if (entity instanceof EntityPlayerMPFake && pistonBlockEntity.getMovedState().is(Blocks.SLIME_BLOCK)) {
             Vec3 vec3d = entity.getDeltaMovement();
             double e = vec3d.x;
             double f = vec3d.y;

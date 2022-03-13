@@ -23,10 +23,8 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class TickCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class TickCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = literal("tick").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandTick)).
                 then(literal("rate").
@@ -70,95 +68,77 @@ public class TickCommand
     }
 
 
-    private static int setTps(CommandSourceStack source, float tps)
-    {
+    private static int setTps(CommandSourceStack source, float tps) {
         TickSpeed.tickrate(tps, true);
         queryTps(source);
         return (int)tps;
     }
 
-    private static int queryTps(CommandSourceStack source)
-    {
+    private static int queryTps(CommandSourceStack source) {
         Messenger.m(source, "w Current tps is: ",String.format("wb %.1f", TickSpeed.tickrate));
         return (int)TickSpeed.tickrate;
     }
 
-    private static int setWarp(CommandSourceStack source, int advance, String tail_command)
-    {
+    private static int setWarp(CommandSourceStack source, int advance, String tail_command) {
         ServerPlayer player = null;
-        try
-        {
+        try {
             player = source.getPlayerOrException();
         }
-        catch (CommandSyntaxException ignored)
-        {
+        catch (CommandSyntaxException ignored) {
         }
         BaseComponent message = TickSpeed.tickrate_advance(player, advance, tail_command, source);
         source.sendSuccess(message, false);
         return 1;
     }
 
-    private static int freezeStatus(CommandSourceStack source)
-    {
-        if(TickSpeed.isPaused())
-        {
+    private static int freezeStatus(CommandSourceStack source) {
+        if(TickSpeed.isPaused()) {
             Messenger.m(source, "gi Freeze Status: Game is "+(TickSpeed.deeplyFrozen()?"deeply ":"")+"frozen");
         }
-        else
-        {
+        else {
             Messenger.m(source, "gi Freeze Status: Game runs normally");
         }
         return 1;
     }
 
-    private static int setFreeze(CommandSourceStack source, boolean isDeep, boolean freeze)
-    {
+    private static int setFreeze(CommandSourceStack source, boolean isDeep, boolean freeze) {
         TickSpeed.setFrozenState(freeze, isDeep);
-        if (TickSpeed.isPaused())
-        {
+        if (TickSpeed.isPaused()) {
             Messenger.m(source, "gi Game is "+(isDeep?"deeply ":"")+"frozen");
         }
-        else
-        {
+        else {
             Messenger.m(source, "gi Game runs normally");
         }
         return 1;
     }
 
-    private static int toggleFreeze(CommandSourceStack source, boolean isDeep)
-    {
+    private static int toggleFreeze(CommandSourceStack source, boolean isDeep) {
         return setFreeze(source, isDeep, !TickSpeed.isPaused());
     }
 
-    private static int step(int advance)
-    {
+    private static int step(int advance) {
         TickSpeed.add_ticks_to_run_in_pause(advance);
         return 1;
     }
 
-    private static int toggleSuperHot(CommandSourceStack source)
-    {
+    private static int toggleSuperHot(CommandSourceStack source) {
         TickSpeed.is_superHot = !TickSpeed.is_superHot;
         ServerNetworkHandler.updateSuperHotStateToConnectedPlayers();
-        if (TickSpeed.is_superHot)
-        {
+        if (TickSpeed.is_superHot) {
             Messenger.m(source, "gi Superhot enabled");
         }
-        else
-        {
+        else {
             Messenger.m(source, "gi Superhot disabled");
         }
         return 1;
     }
 
-    public static int healthReport(CommandSourceStack source, int ticks)
-    {
+    public static int healthReport(CommandSourceStack source, int ticks) {
         CarpetProfiler.prepare_tick_report(source, ticks);
         return 1;
     }
 
-    public static int healthEntities(CommandSourceStack source, int ticks)
-    {
+    public static int healthEntities(CommandSourceStack source, int ticks) {
         CarpetProfiler.prepare_entity_report(source, ticks);
         return 1;
     }

@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(BiomeArray.class)
-public class BiomeArray_getBiomeArrayMixin implements BiomeArrayInterface
-{
+public class BiomeArray_getBiomeArrayMixin implements BiomeArrayInterface {
 
     @Shadow @Final private static int HORIZONTAL_SECTION_COUNT;
 
@@ -28,8 +27,7 @@ public class BiomeArray_getBiomeArrayMixin implements BiomeArrayInterface
     @Shadow @Final private int field_28127;
 
     @Override
-    public void setBiomeAtIndex(BlockPos pos, Level world, Biome what)
-    {
+    public void setBiomeAtIndex(BlockPos pos, Level world, Biome what) {
         int int_4 = QuartPos.fromBlock(pos.getX()) & HORIZONTAL_BIT_MASK;
         int int_5 = Mth.clamp(QuartPos.fromBlock(pos.getY())-field_28126, 0, field_28127);
         int int_6 = QuartPos.fromBlock(pos.getZ()) & HORIZONTAL_BIT_MASK;

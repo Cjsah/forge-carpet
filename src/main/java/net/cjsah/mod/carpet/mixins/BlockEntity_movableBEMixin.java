@@ -9,13 +9,11 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(BlockEntity.class)
-public abstract class BlockEntity_movableBEMixin implements BlockEntityInterface
-{
+public abstract class BlockEntity_movableBEMixin implements BlockEntityInterface {
     @Mutable
     @Shadow @Final protected BlockPos pos;
 
-    public void setCMPos(BlockPos newPos)
-    {
+    public void setCMPos(BlockPos newPos) {
         pos = newPos;
     };
 }

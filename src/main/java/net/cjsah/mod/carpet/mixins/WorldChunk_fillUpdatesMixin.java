@@ -10,15 +10,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LevelChunk.class)
-public class WorldChunk_fillUpdatesMixin
-{
+public class WorldChunk_fillUpdatesMixin {
     // todo onStateReplaced needs a bit more love since it removes be which is needed
     @Redirect(method = "setBlockState", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/block/BlockState;onBlockAdded(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)V"
     ))
-    private void onAdded(BlockState blockState, Level world_1, BlockPos blockPos_1, BlockState blockState_1, boolean boolean_1)
-    {
+    private void onAdded(BlockState blockState, Level world_1, BlockPos blockPos_1, BlockState blockState_1, boolean boolean_1) {
         if (!CarpetSettings.impendingFillSkipUpdates.get())
             blockState.onPlace(world_1, blockPos_1, blockState_1, boolean_1);
     }
@@ -27,17 +25,13 @@ public class WorldChunk_fillUpdatesMixin
             value = "INVOKE",
             target = "Lnet/minecraft/block/BlockState;onStateReplaced(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)V"
     ))
-    private void onRemovedBlock(BlockState blockState, Level world, BlockPos pos, BlockState state, boolean moved)
-    {
-        if (CarpetSettings.impendingFillSkipUpdates.get()) // doing due dilligence from AbstractBlock onStateReplaced
-        {
-            if (blockState.hasBlockEntity() && !blockState.is(state.getBlock()))
-            {
+    private void onRemovedBlock(BlockState blockState, Level world, BlockPos pos, BlockState state, boolean moved) {
+        if (CarpetSettings.impendingFillSkipUpdates.get()) // doing due dilligence from AbstractBlock onStateReplaced {
+            if (blockState.hasBlockEntity() && !blockState.is(state.getBlock())) {
                 world.removeBlockEntity(pos);
             }
         }
-        else
-        {
+        else {
             blockState.onRemove(world, pos, state, moved);
         }
     }

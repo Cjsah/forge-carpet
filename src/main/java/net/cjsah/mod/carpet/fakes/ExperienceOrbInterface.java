@@ -1,7 +1,6 @@
 package net.cjsah.mod.carpet.fakes;
 
-public interface ExperienceOrbInterface
-{
+public interface ExperienceOrbInterface {
     int getCombineDelay();
     void setCombineDelay(int what);
     void setAmount(int what);

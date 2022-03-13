@@ -49,8 +49,7 @@ import net.cjsah.mod.carpet.script.value.Value;
 @Documented
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface ScarpetFunction
-{
+public @interface ScarpetFunction {
     /**
      * <p>If the function can accept a variable number of parameters, either by declaring its last parameter as a varargs parameter or by having one
      * of their parameters use a converter that consumes a variable number of arguments, this must define the maximum number of parameters this
