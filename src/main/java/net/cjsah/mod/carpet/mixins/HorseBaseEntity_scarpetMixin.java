@@ -8,12 +8,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(AbstractHorse.class)
-public class HorseBaseEntity_scarpetMixin implements InventoryBearerInterface {
+public class HorseBaseEntity_scarpetMixin implements InventoryBearerInterface
+{
 
-    @Shadow protected SimpleContainer items;
+    @Shadow protected SimpleContainer inventory;
 
     @Override
-    public Container getCMInventory() {
-        return items;
+    public Container getCMInventory()
+    {
+        return inventory;
     }
 }

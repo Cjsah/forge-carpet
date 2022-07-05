@@ -19,10 +19,10 @@ import java.util.function.BooleanSupplier;
 public class MinecraftServer_updateSuppressionCrashFixMixin {
 
     @Redirect(
-            method = "tickWorlds",
+            method = "tickChildren",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;tick(Ljava/util/function/BooleanSupplier;)V"
+                    target = "Lnet/minecraft/server/level/ServerLevel;tick(Ljava/util/function/BooleanSupplier;)V"
             ),
             require = 0
     )

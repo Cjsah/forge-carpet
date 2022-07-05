@@ -5,23 +5,26 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-@SuppressWarnings("NullableProblems")
-public class NetHandlerPlayServerFake extends ServerGamePacketListenerImpl {
-    public NetHandlerPlayServerFake(MinecraftServer server, Connection cc, ServerPlayer playerIn) {
+public class NetHandlerPlayServerFake extends ServerGamePacketListenerImpl
+{
+    public NetHandlerPlayServerFake(MinecraftServer server, Connection cc, EntityPlayerMPFake playerIn)
+    {
         super(server, cc, playerIn);
     }
 
     @Override
-    public void send(final Packet<?> packetIn) {
+    public void send(final Packet<?> packetIn)
+    {
     }
 
     @Override
-    public void disconnect(Component message) {
-        if (player instanceof EntityPlayerMPFake && message instanceof TranslatableComponent && ((TranslatableComponent) message).getKey().equals("multiplayer.disconnect.idling")) {
-            ((EntityPlayerMPFake) player).kill(new TranslatableComponent(((TranslatableComponent) message).getKey()));
+    public void disconnect(Component message)
+    {
+        if (message instanceof TranslatableComponent text && (text.getKey().equals("multiplayer.disconnect.idling") || text.getKey().equals("multiplayer.disconnect.duplicate_login")))
+        {
+            ((EntityPlayerMPFake) player).kill(message);
         }
     }
 }

@@ -12,13 +12,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FallingBlockEntity.class)
-public abstract class FallingBlockEntity_scarpetEventsMixin extends Entity {
-    public FallingBlockEntity_scarpetEventsMixin(EntityType<?> type, Level world) {
+public abstract class FallingBlockEntity_scarpetEventsMixin extends Entity
+{
+    public FallingBlockEntity_scarpetEventsMixin(EntityType<?> type, Level world)
+    {
         super(type, world);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void onTickCall(CallbackInfo ci) {
+    private void onTickCall(CallbackInfo ci)
+    {
         // calling extra on_tick because falling blocks do not fall back to super tick call
         ((EntityInterface)this).getEventContainer().onEvent(EntityEventsGroup.Event.ON_TICK);
     }

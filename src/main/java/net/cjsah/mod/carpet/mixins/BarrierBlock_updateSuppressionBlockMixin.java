@@ -1,9 +1,6 @@
 package net.cjsah.mod.carpet.mixins;
 
 import net.cjsah.mod.carpet.CarpetSettings;
-import org.spongepowered.asm.mixin.Mixin;
-
-import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +11,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.spongepowered.asm.mixin.Mixin;
+
+import java.util.Random;
 
 @Mixin(BarrierBlock.class)
 public class BarrierBlock_updateSuppressionBlockMixin extends Block {
@@ -33,7 +33,7 @@ public class BarrierBlock_updateSuppressionBlockMixin extends Block {
                 BlockState stateAbove = world.getBlockState(fromPos);
                 if (stateAbove.is(Blocks.ACTIVATOR_RAIL) && !stateAbove.getValue(PoweredRailBlock.POWERED)) {
                     if (CarpetSettings.updateSuppressionBlockSetting > 0) {
-                        world.getBlockTicks().schedule(pos, this, CarpetSettings.updateSuppressionBlockSetting);
+                        world.scheduleTick(pos, this, CarpetSettings.updateSuppressionBlockSetting);
                     }
                     throw new StackOverflowError("updateSuppressionBlock");
                 }

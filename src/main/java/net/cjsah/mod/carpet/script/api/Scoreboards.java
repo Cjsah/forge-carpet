@@ -1,8 +1,9 @@
 package net.cjsah.mod.carpet.script.api;
 
-import net.cjsah.mod.carpet.mixins.ScoreboardObjective_scarpetMixin;
+import com.google.common.collect.Lists;
+import net.cjsah.mod.carpet.mixins.Objective_scarpetMixin;
+import net.cjsah.mod.carpet.mixins.PlayerTeam_scarpetMixin;
 import net.cjsah.mod.carpet.mixins.Scoreboard_scarpetMixin;
-import net.cjsah.mod.carpet.mixins.Team_scarpetMixin;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.Expression;
 import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
@@ -11,17 +12,11 @@ import net.cjsah.mod.carpet.script.exception.Throwables;
 import net.cjsah.mod.carpet.script.utils.InputValidator;
 import net.cjsah.mod.carpet.script.value.BooleanValue;
 import net.cjsah.mod.carpet.script.value.EntityValue;
+import net.cjsah.mod.carpet.script.value.FormattedTextValue;
 import net.cjsah.mod.carpet.script.value.ListValue;
-import net.cjsah.mod.carpet.script.value.NullValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
 import net.cjsah.mod.carpet.script.value.StringValue;
-import net.cjsah.mod.carpet.script.value.FormattedTextValue;
 import net.cjsah.mod.carpet.script.value.Value;
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -40,26 +35,37 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Scoreboards {
-    private static String getScoreboardKeyFromValue(Value keyValue) {
-        if (keyValue instanceof EntityValue) {
+    private static String getScoreboardKeyFromValue(Value keyValue)
+    {
+        if (keyValue instanceof EntityValue)
+        {
             Entity e = ((EntityValue) keyValue).getEntity();
-            if (e instanceof Player) {
+            if (e instanceof Player)
+            {
                 return e.getName().getString();
             }
-            else {
+            else
+            {
                 return e.getStringUUID();
             }
         }
-        else {
+        else
+        {
             return keyValue.getString();
         }
     }
 
-    public static void apply(Expression expression) {
+    public static void apply(Expression expression)
+    {
         // scoreboard(player,'objective')
         // scoreboard(player, objective, newValue)
-        expression.addContextFunction("scoreboard", -1, (c, t, lv) -> {
+        expression.addContextFunction("scoreboard", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             Scoreboard scoreboard =  cc.s.getServer().getScoreboard();
             if (lv.size()==0)
@@ -70,7 +76,8 @@ public class Scoreboards {
             if (lv.size()==1)
                 return ListValue.wrap(scoreboard.getPlayerScores(objective).stream().map(s -> new StringValue(s.getOwner())).collect(Collectors.toList()));
             String key = getScoreboardKeyFromValue(lv.get(1));
-            if(lv.size()==2) {
+            if(lv.size()==2)
+            {
                 if(!scoreboard.hasPlayerScore(key, objective)) return Value.NULL;
                 return NumericValue.of(scoreboard.getOrCreatePlayerScore(key,objective).getScore());
             }
@@ -89,14 +96,16 @@ public class Scoreboards {
             throw new InternalExpressionException("'scoreboard' requires a number or null as the third parameter");
         });
 
-        expression.addContextFunction("scoreboard_remove", -1, (c, t, lv)-> {
+        expression.addContextFunction("scoreboard_remove", -1, (c, t, lv)->
+        {
             if (lv.size()==0) throw new InternalExpressionException("'scoreboard_remove' requires at least one parameter");
             CarpetContext cc = (CarpetContext)c;
             Scoreboard scoreboard =  cc.s.getServer().getScoreboard();
             String objectiveName = lv.get(0).getString();
             Objective objective = scoreboard.getOrCreateObjective(objectiveName);
             if (objective == null) return Value.FALSE;
-            if (lv.size() == 1) {
+            if (lv.size() == 1)
+            {
                 scoreboard.removeObjective(objective);
                 return Value.TRUE;
             }
@@ -111,19 +120,23 @@ public class Scoreboards {
         // objective_add('lvl','level')
         // objective_add('counter')
 
-        expression.addContextFunction("scoreboard_add", -1, (c, t, lv)-> {
+        expression.addContextFunction("scoreboard_add", -1, (c, t, lv)->
+        {
             CarpetContext cc = (CarpetContext)c;
             Scoreboard scoreboard =  cc.s.getServer().getScoreboard();
             if (lv.size() == 0 || lv.size()>2) throw new InternalExpressionException("'scoreboard_add' should have one or two parameters");
             String objectiveName = lv.get(0).getString();
             ObjectiveCriteria criterion;
-            if (lv.size() == 1 ) {
+            if (lv.size() == 1 )
+            {
                 criterion = ObjectiveCriteria.DUMMY;
             }
-            else {
+            else
+            {
                 String critetionName = lv.get(1).getString();
                 criterion = ObjectiveCriteria.byName(critetionName).orElse(null);
-                if (criterion==null) {
+                if (criterion==null)
+                {
                     throw new ThrowStatement(critetionName, Throwables.UNKNOWN_CRITERION);
                 }
             }
@@ -134,7 +147,7 @@ public class Scoreboards {
                 if(lv.size() == 1) return StringValue.of(objective.getCriteria().getName());
                 if(objective.getCriteria().equals(criterion) || lv.size() == 1) return Value.NULL;
                 ((Scoreboard_scarpetMixin)scoreboard).getObjectivesByCriterion().get(objective.getCriteria()).remove(objective);
-                ((ScoreboardObjective_scarpetMixin) objective).setCriterion(criterion);
+                ((Objective_scarpetMixin) objective).setCriterion(criterion);
                 (((Scoreboard_scarpetMixin)scoreboard).getObjectivesByCriterion().computeIfAbsent(criterion, (criterion1) -> Lists.newArrayList())).add(objective);
                 scoreboard.onObjectiveAdded(objective);
                 return Value.FALSE;
@@ -144,7 +157,8 @@ public class Scoreboards {
             return Value.TRUE;
         });
 
-        expression.addContextFunction("scoreboard_property", -1, (c, t, lv) -> {
+        expression.addContextFunction("scoreboard_property", -1, (c, t, lv) ->
+        {
             if(lv.size() < 2) throw new InternalExpressionException("'scoreboard_property' requires at least two parameters");
             CarpetContext cc = (CarpetContext)c;
             Scoreboard scoreboard =  cc.s.getServer().getScoreboard();
@@ -164,7 +178,7 @@ public class Scoreboards {
                         if (criterion==null) throw new InternalExpressionException("Unknown scoreboard criterion: "+ setValue.getString());
                         if(objective.getCriteria().equals(criterion) || lv.size() == 1) return Value.FALSE;
                         ((Scoreboard_scarpetMixin)scoreboard).getObjectivesByCriterion().get(objective.getCriteria()).remove(objective);
-                        ((ScoreboardObjective_scarpetMixin) objective).setCriterion(criterion);
+                        ((Objective_scarpetMixin) objective).setCriterion(criterion);
                         (((Scoreboard_scarpetMixin)scoreboard).getObjectivesByCriterion().computeIfAbsent(criterion, (criterion1) -> Lists.newArrayList())).add(objective);
                         scoreboard.onObjectiveAdded(objective);
                         return Value.TRUE;
@@ -209,14 +223,16 @@ public class Scoreboards {
             }
         });
 
-        expression.addContextFunction("scoreboard_display", 2, (c, t, lv) -> {
+        expression.addContextFunction("scoreboard_display", 2, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             Scoreboard scoreboard =  cc.s.getServer().getScoreboard();
             String location = lv.get(0).getString();
             int slot = Scoreboard.getDisplaySlotByName(location);
             if (slot < 0) throw new InternalExpressionException("Invalid objective slot: "+location);
             Value target = lv.get(1);
-            if (target instanceof NullValue) {
+            if (target.isNull())
+            {
                 scoreboard.setDisplayObjective(slot, null);
                 return new NumericValue(slot);
             }
@@ -227,7 +243,8 @@ public class Scoreboards {
             return new NumericValue(slot);
         });
 
-        expression.addContextFunction("team_list", -1, (c, t, lv) -> {
+        expression.addContextFunction("team_list", -1, (c, t, lv) ->
+        {
             if(lv.size() > 1) throw new InternalExpressionException("'team_list' requires zero or one parameters");
             CarpetContext cc = (CarpetContext)c;
             ServerScoreboard scoreboard = cc.s.getServer().getScoreboard();
@@ -240,14 +257,16 @@ public class Scoreboards {
         });
 
 
-        expression.addContextFunction("team_add", -1, (c, t, lv) -> {
+        expression.addContextFunction("team_add", -1, (c, t, lv) ->
+        {
             if(!(lv.size() < 3 && lv.size() > 0)) throw new InternalExpressionException("'team_add' requires one or two parameters");
 
             CarpetContext cc = (CarpetContext)c;
             ServerScoreboard scoreboard = cc.s.getServer().getScoreboard();
             String teamName = lv.get(0).getString();
 
-            if(lv.size() == 1) {
+            if(lv.size() == 1)
+            {
                 if (scoreboard.getPlayerTeam(teamName) != null) return Value.NULL;
                 scoreboard.addPlayerTeam(teamName);
                 return new StringValue(teamName);
@@ -263,7 +282,8 @@ public class Scoreboards {
             return Value.TRUE;
         });
 
-        expression.addContextFunction("team_remove", 1, (c, t, lv) -> {
+        expression.addContextFunction("team_remove", 1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             ServerScoreboard scoreboard = cc.s.getServer().getScoreboard();
             Value teamVal = lv.get(0);
@@ -274,7 +294,8 @@ public class Scoreboards {
         });
 
 
-        expression.addContextFunction("team_leave", 1, (c, t, lv) -> {
+        expression.addContextFunction("team_leave", 1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             ServerScoreboard scoreboard = cc.s.getServer().getScoreboard();
             Value playerVal = lv.get(0);
@@ -283,7 +304,8 @@ public class Scoreboards {
             return BooleanValue.of(scoreboard.removePlayerFromTeam(player));
         });
 
-        expression.addContextFunction("team_property", -1, (c, t, lv) -> {
+        expression.addContextFunction("team_property", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             ServerScoreboard scoreboard = cc.s.getServer().getScoreboard();
 
@@ -294,7 +316,8 @@ public class Scoreboards {
 
             Value settingVal = null;
             boolean modifying = false;
-            if(lv.size() == 3) {
+            if(lv.size() == 3)
+            {
                 modifying = true;
                 settingVal = lv.get(2);
             }
@@ -313,7 +336,7 @@ public class Scoreboards {
                     team.setCollisionRule(collisionRule);
                     break;
                 case "color":
-                    if(!modifying) return new StringValue(((Team_scarpetMixin) team).getColor().getName());
+                    if(!modifying) return new StringValue(((PlayerTeam_scarpetMixin) team).getColor().getName());
                     if(!(settingVal instanceof StringValue)) throw new InternalExpressionException("'team_property' requires a string as the third argument for the property " + propertyVal.getString());
                     ChatFormatting color = ChatFormatting.getByName(settingVal.getString().toUpperCase());
                     if(color == null || !color.isColor()) throw new InternalExpressionException("Unknown value for property " + propertyVal.getString() + ": " + settingVal.getString());
@@ -373,7 +396,8 @@ public class Scoreboards {
             return Value.TRUE;
         });
 
-        expression.addContextFunction("bossbar", -1, (c, t, lv) -> {
+        expression.addContextFunction("bossbar", -1, (c, t, lv) ->
+        {
             CustomBossEvents bossBarManager = ((CarpetContext)c).s.getServer().getCustomBossEvents();
             if(lv.size() > 3) throw new InternalExpressionException("'bossbar' accepts max three arguments");
 
@@ -383,7 +407,8 @@ public class Scoreboards {
             ResourceLocation identifier;
             identifier = InputValidator.identifierOf(id);
 
-            if(lv.size() == 1) {
+            if(lv.size() == 1)
+            {
                 if(bossBarManager.get(identifier) != null) return Value.FALSE;
                 return StringValue.of(bossBarManager.create(identifier,new TextComponent(id)).getTextId().toString());
             }
@@ -437,7 +462,8 @@ public class Scoreboards {
                     return Value.FALSE;
                 case "players":
                     if (propertyValue == null) return ListValue.wrap(bossBar.getPlayers().stream().map(EntityValue::new).collect(Collectors.toList()));
-                    if(propertyValue instanceof ListValue) {
+                    if(propertyValue instanceof ListValue)
+                    {
                         bossBar.removeAllPlayers();
                         ((ListValue) propertyValue).getItems().forEach((v) -> {
                             ServerPlayer p = EntityValue.getPlayerByValue(((CarpetContext) c).s.getServer(), v);

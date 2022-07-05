@@ -1,8 +1,10 @@
 package net.cjsah.mod.carpet.script.argument;
 
-public abstract class Argument {
+public abstract class Argument
+{
     public int offset;
-    protected Argument(int offset) {
+    protected Argument(int offset)
+    {
         this.offset = offset;
     }
 }

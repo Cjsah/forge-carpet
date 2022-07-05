@@ -1,6 +1,7 @@
 package net.cjsah.mod.carpet.settings;
 
-public class RuleCategory {
+public class RuleCategory
+{
     public static final String BUGFIX = "bugfix";
     public static final String SURVIVAL = "survival";
     public static final String CREATIVE = "creative";

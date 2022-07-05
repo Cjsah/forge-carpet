@@ -1,5 +1,6 @@
 package net.cjsah.mod.carpet.fakes;
 
-public interface PlayerListHudInterface {
+public interface PlayerListHudInterface
+{
     boolean hasFooterOrHeader();
 }

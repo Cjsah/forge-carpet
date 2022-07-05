@@ -12,9 +12,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DispenserBlock.class)
-public abstract class DispenserBlock_cactusMixin {
-    @Inject(method = "getBehaviorForItem", at = @At("HEAD"), cancellable = true)
-    private void registerCarpetBehaviors(ItemStack stack, CallbackInfoReturnable<DispenseItemBehavior> cir) {
+public abstract class DispenserBlock_cactusMixin
+{
+    @Inject(method = "getDispenseMethod", at = @At("HEAD"), cancellable = true)
+    private void registerCarpetBehaviors(ItemStack stack, CallbackInfoReturnable<DispenseItemBehavior> cir)
+    {
         Item item = stack.getItem();
         if (item == Items.CACTUS)
             cir.setReturnValue(new BlockRotator.CactusDispenserBehaviour());

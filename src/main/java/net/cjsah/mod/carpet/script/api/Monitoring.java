@@ -1,6 +1,6 @@
 package net.cjsah.mod.carpet.script.api;
 
-import net.cjsah.mod.carpet.fakes.SpawnHelperInnerInterface;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.Expression;
 import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
@@ -11,21 +11,23 @@ import net.cjsah.mod.carpet.script.value.NumericValue;
 import net.cjsah.mod.carpet.script.value.StringValue;
 import net.cjsah.mod.carpet.script.value.Value;
 import net.cjsah.mod.carpet.utils.SpawnReporter;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.NaturalSpawner;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 public class Monitoring {
 
-    public static void apply(Expression expression) {
-        expression.addContextFunction("system_info", -1, (c, t, lv) -> {
-            if (lv.size() == 0) {
-                return SystemInfo.getAll((CarpetContext) c);
+    public static void apply(Expression expression)
+    {
+        expression.addContextFunction("system_info", -1, (c, t, lv) ->
+        {
+            if (lv.size() == 0)
+            {
+                return SystemInfo.getAll();
             }
             if (lv.size() == 1) {
                 String what = lv.get(0).getString();
@@ -36,17 +38,20 @@ public class Monitoring {
             throw new InternalExpressionException("'system_info' requires one or no parameters");
         });
         // game processed snooper functions
-        expression.addContextFunction("get_mob_counts", -1, (c, t, lv) -> {
+        expression.addContextFunction("get_mob_counts", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             ServerLevel world = cc.s.getLevel();
             NaturalSpawner.SpawnState info = world.getChunkSource().getLastSpawnState();
             if (info == null) return Value.NULL;
             Object2IntMap<MobCategory> mobcounts = info.getMobCategoryCounts();
-            int chunks = ((SpawnHelperInnerInterface)info).cmGetChunkCount();
-            if (lv.size() == 0) {
+            int chunks = info.getSpawnableChunkCount();
+            if (lv.size() == 0)
+            {
                 Map<Value, Value> retDict = new HashMap<>();
-                for (MobCategory category: mobcounts.keySet()) {
-                    int currentCap = (int)(category.getMaxInstancesPerChunk() * chunks / SpawnReporter.currentMagicNumber()); // MAGIC_NUMBER
+                for (MobCategory category: mobcounts.keySet())
+                {
+                    int currentCap = (int)(category.getMaxInstancesPerChunk() * chunks / SpawnReporter.MAGIC_NUMBER);
                     retDict.put(
                             new StringValue(category.getSerializedName().toLowerCase(Locale.ROOT)),
                             ListValue.of(
@@ -61,7 +66,7 @@ public class Monitoring {
             if (cat == null) throw new InternalExpressionException("Unreconized mob category: "+catString);
             return ListValue.of(
                     new NumericValue(mobcounts.getInt(cat)),
-                    new NumericValue((int)(cat.getMaxInstancesPerChunk() * chunks / SpawnReporter.currentMagicNumber()))
+                    new NumericValue((int)(cat.getMaxInstancesPerChunk() * chunks / SpawnReporter.MAGIC_NUMBER))
             );
         });
     }

@@ -14,23 +14,29 @@ public class Arithmetic {
     public static final Value euler = new NumericValue(
             "2.71828182845904523536028747135266249775724709369995957496696762772407663");
 
-    public static void apply(Expression expression) {
+    public static void apply(Expression expression)
+    {
         expression.addTypedContextFunction("not", 1, Context.Type.BOOLEAN, (c, t, lv) -> BooleanValue.of(lv.get(0).getBoolean()) );
-        expression.addUnaryFunction("fact", (v) -> {
+        expression.addUnaryFunction("fact", (v) ->
+        {
             long number = NumericValue.asNumber(v).getLong();
-            if (number < 21) {
+            if (number < 21)
+            {
                 long factorial = 1;
-                for (int i = 1; i <= number; i++) {
+                for (int i = 1; i <= number; i++)
+                {
                     factorial = factorial * i;
                 }
                 return new NumericValue(factorial);
             }
-            else if (number > 170) {
+            else if (number > 170)
+            {
                 return NumericValue.of(Double.MAX_VALUE);
             }
             // values over 21 will exceed long limits
             double factorial = 1.0;
-            for (int i = 1; i <= number; i++) {
+            for (int i = 1; i <= number; i++)
+            {
                 factorial = factorial * i;
             }
             return new NumericValue(factorial);
@@ -55,7 +61,8 @@ public class Arithmetic {
         expression.addMathematicalUnaryFunction("coth",   (d) ->  1.0 / Math.tanh(d) );                // Formula: coth(x) = 1 / tanh(x)
         expression.addMathematicalUnaryFunction("asinh",  (d) ->  Math.log(d + (Math.sqrt(Math.pow(d, 2) + 1))));  // Formula: asinh(x) = ln(x + sqrt(x^2 + 1))
         expression.addMathematicalUnaryFunction("acosh",  (d) ->  Math.log(d + (Math.sqrt(Math.pow(d, 2) - 1))));  // Formula: acosh(x) = ln(x + sqrt(x^2 - 1))
-        expression.addMathematicalUnaryFunction("atanh",  (d) ->                                       // Formula: atanh(x) = 0.5*ln((1 + x)/(1 - x)) {
+        expression.addMathematicalUnaryFunction("atanh",  (d) ->                                       // Formula: atanh(x) = 0.5*ln((1 + x)/(1 - x))
+        {
             if (Math.abs(d) > 1 || Math.abs(d) == 1)
                 throw new InternalExpressionException("Number must be |x| < 1");
             return 0.5 * Math.log((1 + d) / (1 - d));
@@ -80,7 +87,8 @@ public class Arithmetic {
             double a = 0.0D;
             double b = 0.0D;
             long iter = 0;
-            while(a*a+b*b<4 && iter < maxiter) {
+            while(a*a+b*b<4 && iter < maxiter)
+            {
                 double temp = a*a-b*b+a0;
                 b = 2*a*b+b0;
                 a = temp;
@@ -90,25 +98,29 @@ public class Arithmetic {
             return new NumericValue(iFinal);
         });
 
-        expression.addFunction("max", (lv) -> {
+        expression.addFunction("max", (lv) ->
+        {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'max' requires at least one parameter");
             Value max = null;
             if (lv.size()==1 && lv.get(0) instanceof ListValue)
                 lv = ((ListValue) lv.get(0)).getItems();
-            for (Value parameter : lv) {
+            for (Value parameter : lv)
+            {
                 if (max == null || parameter.compareTo(max) > 0) max = parameter;
             }
             return max;
         });
 
-        expression.addFunction("min", (lv) -> {
+        expression.addFunction("min", (lv) ->
+        {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'min' requires at least one parameter");
             Value min = null;
             if (lv.size()==1 && lv.get(0) instanceof ListValue)
                 lv = ((ListValue) lv.get(0)).getItems();
-            for (Value parameter : lv) {
+            for (Value parameter : lv)
+            {
                 if (min == null || parameter.compareTo(min) < 0) min = parameter;
             }
             return min;

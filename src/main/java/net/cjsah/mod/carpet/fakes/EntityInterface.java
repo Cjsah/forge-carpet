@@ -2,7 +2,8 @@ package net.cjsah.mod.carpet.fakes;
 
 import net.cjsah.mod.carpet.script.EntityEventsGroup;
 
-public interface EntityInterface {
+public interface EntityInterface
+{
     float getMainYaw(float partialTicks);
 
     EntityEventsGroup getEventContainer();

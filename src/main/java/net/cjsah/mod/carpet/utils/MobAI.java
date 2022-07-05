@@ -1,13 +1,7 @@
 package net.cjsah.mod.carpet.utils;
 
-import net.cjsah.mod.carpet.Carpet;
 import com.google.common.collect.Sets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import net.cjsah.mod.carpet.CarpetServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.server.level.ServerLevel;
@@ -16,14 +10,24 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
-public class MobAI {
-    private static Map<EntityType,Set<TrackingType>> aiTrackers = new HashMap<>();
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-    public static void resetTrackers() {
+public class MobAI
+{
+    private static Map<EntityType<?>, Set<TrackingType>> aiTrackers = new HashMap<>();
+
+    public static void resetTrackers()
+    {
         aiTrackers.clear();
     }
 
-    public static boolean isTracking(Entity e, TrackingType type) {
+    public static boolean isTracking(Entity e, TrackingType type)
+    {
         if (e.getCommandSenderWorld().isClientSide())
             return false;
         Set<TrackingType> currentTrackers = aiTrackers.get(e.getType());
@@ -32,49 +36,59 @@ public class MobAI {
         return currentTrackers.contains(type);
     }
 
-    public static void clearTracking(EntityType<? extends Entity> etype) {
+    public static void clearTracking(EntityType<? extends Entity> etype)
+    {
         aiTrackers.remove(etype);
-        for(ServerLevel world : Carpet.minecraft_server.getAllLevels() ) {
-            for (Entity e: world.getEntities(etype, Entity::hasCustomName)) {
+        for(ServerLevel world : CarpetServer.minecraft_server.getAllLevels() )
+        {
+            for (Entity e: world.getEntities(etype, Entity::hasCustomName))
+            {
                 e.setCustomNameVisible(false);
                 e.setCustomName(null);
             }
         }
     }
 
-    public static void startTracking(EntityType e, TrackingType type) {
+    public static void startTracking(EntityType<?> e, TrackingType type)
+    {
         aiTrackers.putIfAbsent(e,Sets.newHashSet());
         aiTrackers.get(e).add(type);
     }
 
-    public static List<String> availbleTypes() {
-        Set<EntityType> types = new HashSet<>();
-        for (TrackingType type: TrackingType.values()) {
+    public static List<String> availbleTypes()
+    {
+        Set<EntityType<?>> types = new HashSet<>();
+        for (TrackingType type: TrackingType.values())
+        {
             types.addAll(type.types);
         }
         return types.stream().map(t -> Registry.ENTITY_TYPE.getKey(t).getPath()).collect(Collectors.toList());
     }
 
-    public static List<String> availableFor(EntityType<?> entityType) {
+    public static List<String> availableFor(EntityType<?> entityType)
+    {
         Set<TrackingType> availableOptions = new HashSet<>();
         for (TrackingType type: TrackingType.values())
-            for (EntityType etype: type.types)
+            for (EntityType<?> etype: type.types)
                 if (etype == entityType)
                     availableOptions.add(type);
         return availableOptions.stream().map(t -> t.name).collect(Collectors.toList());
     }
 
-    public enum TrackingType {
+    public enum TrackingType
+    {
         IRON_GOLEM_SPAWNING("iron_golem_spawning", Sets.newHashSet(EntityType.VILLAGER)),
         VILLAGER_BREEDING("breeding", Sets.newHashSet(EntityType.VILLAGER));
-        public Set<EntityType> types;
-        public String name;
-        TrackingType(String name, Set<EntityType> applicableTypes) {
+        public final Set<EntityType<?>> types;
+        public final String name;
+        TrackingType(String name, Set<EntityType<?>> applicableTypes)
+        {
             this.name = name;
             types = applicableTypes;
         }
 
-        public static TrackingType byName(String aspect) {
+        public static TrackingType byName(String aspect)
+        {
             for (TrackingType type: values())
                 if (type.name.equalsIgnoreCase(aspect))
                     return type;
@@ -86,7 +100,8 @@ public class MobAI {
      * Not a replacement for living entity jump() - this barely is to allow other entities that can't jump in vanilla to 'jump'
      * @param e
      */
-    public static void genericJump(Entity e) {
+    public static void genericJump(Entity e)
+    {
         if (!e.isOnGround() && !e.isInWaterOrBubble() && !e.isInLava()) return;
         float m = e.level.getBlockState(e.blockPosition()).getBlock().getJumpFactor();
         float g = e.level.getBlockState(new BlockPos(e.getX(), e.getBoundingBox().minY - 0.5000001D, e.getZ())).getBlock().getJumpFactor();
@@ -94,7 +109,8 @@ public class MobAI {
         float jumpStrength = (0.42F * jumpVelocityMultiplier);
         Vec3 vec3d = e.getDeltaMovement();
         e.setDeltaMovement(vec3d.x, jumpStrength, vec3d.z);
-        if (e.isSprinting()) {
+        if (e.isSprinting())
+        {
             float u = e.getYRot() * 0.017453292F; // yaw
             e.setDeltaMovement(e.getDeltaMovement().add((-Mth.sin(g) * 0.2F), 0.0D, (Mth.cos(u) * 0.2F)));
         }

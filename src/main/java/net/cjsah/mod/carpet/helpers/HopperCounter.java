@@ -1,12 +1,12 @@
 package net.cjsah.mod.carpet.helpers;
 
+import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import net.cjsah.mod.carpet.CarpetServer;
 import net.cjsah.mod.carpet.fakes.IngredientInterface;
 import net.cjsah.mod.carpet.fakes.RecipeManagerInterface;
-import net.cjsah.mod.carpet.utils.WoolTool;
 import net.cjsah.mod.carpet.utils.Messenger;
-import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import net.cjsah.mod.carpet.utils.WoolTool;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.BaseComponent;
@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.BeaconBeamBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.MaterialColor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +47,8 @@ import static java.util.Map.entry;
  * colour in MC.
  */
 
-public class HopperCounter {
+public class HopperCounter
+{
     /**
      * A map of all the {@link HopperCounter} counters.
      */
@@ -58,9 +60,11 @@ public class HopperCounter {
 
     public static final TextColor WHITE = TextColor.fromLegacyFormat(ChatFormatting.WHITE);
 
-    static {
+    static
+    {
         EnumMap<DyeColor, HopperCounter> counterMap = new EnumMap<>(DyeColor.class);
-        for (DyeColor color : DyeColor.values()) {
+        for (DyeColor color : DyeColor.values())
+        {
             counterMap.put(color, new HopperCounter(color));
         }
         COUNTERS = Collections.unmodifiableMap(counterMap);
@@ -92,7 +96,8 @@ public class HopperCounter {
     private long startMillis;
     // private PubSubInfoProvider<Long> pubSubProvider;
 
-    private HopperCounter(DyeColor color) {
+    private HopperCounter(DyeColor color)
+    {
         startTick = -1;
         this.color = color;
         this.prettyColour = WoolTool.Material2DyeName.getOrDefault(color.getMaterialColor(),"w ") + color.getName();
@@ -103,8 +108,10 @@ public class HopperCounter {
      * {@link HopperCounter#startMillis} variables are initialised, so you can place the counters and then start the farm
      * after all the collection is sorted out.
      */
-    public void add(MinecraftServer server, ItemStack stack) {
-        if (startTick < 0) {
+    public void add(MinecraftServer server, ItemStack stack)
+    {
+        if (startTick < 0)
+        {
             startTick = server.getLevel(Level.OVERWORLD).getGameTime();  //OW
             startMillis = System.currentTimeMillis();
         }
@@ -116,7 +123,8 @@ public class HopperCounter {
     /**
      * Resets the counter, clearing its items but keeping the clock running.
      */
-    public void reset(MinecraftServer server) {
+    public void reset(MinecraftServer server)
+    {
         counter.clear();
         startTick = server.getLevel(Level.OVERWORLD).getGameTime();  //OW
         startMillis = System.currentTimeMillis();
@@ -127,8 +135,10 @@ public class HopperCounter {
      * Resets all counters, clearing their items.
      * @param fresh Whether or not to start the clocks going immediately or later.
      */
-    public static void resetAll(MinecraftServer server, boolean fresh) {
-        for (HopperCounter counter : COUNTERS.values()) {
+    public static void resetAll(MinecraftServer server, boolean fresh)
+    {
+        for (HopperCounter counter : COUNTERS.values())
+        {
             counter.reset(server);
             if (fresh) counter.startTick = -1;
         }
@@ -137,17 +147,21 @@ public class HopperCounter {
     /**
      * Prints all the counters to chat, nicely formatted, and you can choose whether to diplay in in game time or IRL time
      */
-    public static List<BaseComponent> formatAll(MinecraftServer server, boolean realtime) {
+    public static List<BaseComponent> formatAll(MinecraftServer server, boolean realtime)
+    {
         List<BaseComponent> text = new ArrayList<>();
 
-        for (HopperCounter counter : COUNTERS.values()) {
+        for (HopperCounter counter : COUNTERS.values())
+        {
             List<BaseComponent> temp = counter.format(server, realtime, false);
-            if (temp.size() > 1) {
+            if (temp.size() > 1)
+            {
                 if (!text.isEmpty()) text.add(Messenger.s(""));
                 text.addAll(temp);
             }
         }
-        if (text.isEmpty()) {
+        if (text.isEmpty())
+        {
             text.add(Messenger.s("No items have been counted yet."));
         }
         return text;
@@ -157,24 +171,30 @@ public class HopperCounter {
      * Prints a single counter's contents and timings to chat, with the option to keep it short (so no item breakdown,
      * only rates). Again, realtime displays IRL time as opposed to in game time.
      */
-    public List<BaseComponent> format(MinecraftServer server, boolean realTime, boolean brief) {
+    public List<BaseComponent> format(MinecraftServer server, boolean realTime, boolean brief)
+    {
         long ticks = Math.max(realTime ? (System.currentTimeMillis() - startMillis) / 50 : server.getLevel(Level.OVERWORLD).getGameTime() - startTick, 1);  //OW
-        if (startTick < 0 || ticks == 0) {
-            if (brief) {
+        if (startTick < 0 || ticks == 0)
+        {
+            if (brief)
+            {
                 return Collections.singletonList(Messenger.c("b"+prettyColour,"w : ","gi -, -/h, - min "));
             }
             return Collections.singletonList(Messenger.c(prettyColour, "w  hasn't started counting yet"));
         }
         long total = getTotalItems();
-        if (total == 0) {
-            if (brief) {
+        if (total == 0)
+        {
+            if (brief)
+            {
                 return Collections.singletonList(Messenger.c("b"+prettyColour,"w : ","wb 0","w , ","wb 0","w /h, ", String.format("wb %.1f ", ticks / (20.0 * 60.0)), "w min"));
             }
             return Collections.singletonList(Messenger.c("w No items for ", prettyColour, String.format("w  yet (%.2f min.%s)",
                     ticks / (20.0 * 60.0), (realTime ? " - real time" : "")),
                     "nb  [X]", "^g reset", "!/counter " + color.getName() +" reset"));
         }
-        if (brief) {
+        if (brief)
+        {
             return Collections.singletonList(Messenger.c("b"+prettyColour,"w : ",
                     "wb "+total,"w , ",
                     "wb "+(total * (20 * 60 * 60) / ticks),"w /h, ",
@@ -187,7 +207,8 @@ public class HopperCounter {
                 "w total: ", "wb "+total, "w , (",String.format("wb %.1f",total*1.0*(20*60*60)/ticks),"w /h):",
                 "nb [X]", "^g reset", "!/counter "+color+" reset"
         ));
-        items.addAll(counter.object2LongEntrySet().stream().sorted((e, f) -> Long.compare(f.getLongValue(), e.getLongValue())).map(e -> {
+        items.addAll(counter.object2LongEntrySet().stream().sorted((e, f) -> Long.compare(f.getLongValue(), e.getLongValue())).map(e ->
+        {
             Item item = e.getKey();
             BaseComponent itemName = new TranslatableComponent(item.getDescriptionId());
             Style itemStyle = itemName.getStyle();
@@ -206,7 +227,8 @@ public class HopperCounter {
      * Converts a colour to have a low brightness and uniform colour, so when it prints the items in different colours
      * it's not too flashy and bright, but enough that it's not dull to look at.
      */
-    public static int appropriateColor(int color) {
+    public static int appropriateColor(int color)
+    {
         if (color == 0) return MaterialColor.SNOW.col;
         int r = (color >> 16 & 255);
         int g = (color >> 8 & 255);
@@ -310,18 +332,22 @@ public class HopperCounter {
     /**
      * Gets the colour to print an item in when printing its count in a hopper counter.
      */
-    public static TextColor fromItem(Item item) {
+    public static TextColor fromItem(Item item)
+    {
         if (DEFAULTS.containsKey(item)) return TextColor.fromRgb(appropriateColor(DEFAULTS.get(item).defaultMaterialColor().col));
         if (item instanceof DyeItem) return TextColor.fromRgb(appropriateColor(((DyeItem) item).getDyeColor().getMaterialColor().col));
         Block block = null;
         ResourceLocation id = Registry.ITEM.getKey(item);
-        if (item instanceof BlockItem) {
+        if (item instanceof BlockItem)
+        {
             block = ((BlockItem) item).getBlock();
         }
-        else if (Registry.BLOCK.getOptional(id).isPresent()) {
+        else if (Registry.BLOCK.getOptional(id).isPresent())
+        {
             block = Registry.BLOCK.get(id);
         }
-        if (block != null) {
+        if (block != null)
+        {
             if (block instanceof AbstractBannerBlock) return TextColor.fromRgb(appropriateColor(((AbstractBannerBlock) block).getColor().getMaterialColor().col));
             if (block instanceof BeaconBeamBlock) return TextColor.fromRgb(appropriateColor( ((BeaconBeamBlock) block).getColor().getMaterialColor().col));
             return TextColor.fromRgb(appropriateColor( block.defaultMaterialColor().col));
@@ -333,16 +359,22 @@ public class HopperCounter {
      * Guesses the item's colour from the item itself. It first calls {@link HopperCounter#fromItem} to see if it has a
      * valid colour there, if not just makes a guess, and if that fails just returns null
      */
-    public static TextColor guessColor(Item item) {
+    public static TextColor guessColor(Item item)
+    {
         TextColor direct = fromItem(item);
         if (direct != null) return direct;
         if (CarpetServer.minecraft_server == null) return WHITE;
         ResourceLocation id = Registry.ITEM.getKey(item);
-        for (RecipeType<?> type: Registry.RECIPE_TYPE) {
-            for (Recipe<?> r: ((RecipeManagerInterface) CarpetServer.minecraft_server.getRecipeManager()).getAllMatching(type, id)) {
-                for (Ingredient ingredient: r.getIngredients()) {
-                    for (Collection<ItemStack> stacks : ((IngredientInterface) (Object) ingredient).getRecipeStacks()) {
-                        for (ItemStack iStak : stacks) {
+        for (RecipeType<?> type: Registry.RECIPE_TYPE)
+        {
+            for (Recipe<?> r: ((RecipeManagerInterface) CarpetServer.minecraft_server.getRecipeManager()).getAllMatching(type, id))
+            {
+                for (Ingredient ingredient: r.getIngredients())
+                {
+                    for (Collection<ItemStack> stacks : ((IngredientInterface) (Object) ingredient).getRecipeStacks())
+                    {
+                        for (ItemStack iStak : stacks)
+                        {
                             TextColor cand = fromItem(iStak.getItem());
                             if (cand != null)
                                 return cand;
@@ -357,12 +389,15 @@ public class HopperCounter {
     /**
      * Returns the hopper counter from the colour name, if not null
      */
-    public static HopperCounter getCounter(String color) {
-        try {
+    public static HopperCounter getCounter(String color)
+    {
+        try
+        {
             DyeColor colorEnum = DyeColor.valueOf(color.toUpperCase(Locale.ROOT));
             return COUNTERS.get(colorEnum);
         }
-        catch (IllegalArgumentException e) {
+        catch (IllegalArgumentException e)
+        {
             return null;
         }
     }
@@ -370,7 +405,8 @@ public class HopperCounter {
     /**
      * The total number of items in the counter
      */
-    public long getTotalItems() {
+    public long getTotalItems()
+    {
         return counter.isEmpty()?0:counter.values().stream().mapToLong(Long::longValue).sum();
     }
 }

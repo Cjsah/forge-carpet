@@ -3,7 +3,8 @@ package net.cjsah.mod.carpet.helpers;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
-public class InventoryHelper {
+public class InventoryHelper
+{
     // From nbt/NbtElement.java createTag()
     public static final int TAG_END         = 0;
     public static final int TAG_BYTE        = 1;
@@ -19,7 +20,8 @@ public class InventoryHelper {
     public static final int TAG_INTARRAY    = 11;
     public static final int TAG_LONGARRAY   = 12;
 
-    public static boolean cleanUpShulkerBoxTag(ItemStack stack) {
+    public static boolean cleanUpShulkerBoxTag(ItemStack stack)
+    {
         boolean changed = false;
         CompoundTag tag = stack.getTag();
 
@@ -27,23 +29,27 @@ public class InventoryHelper {
             return false;
 
         CompoundTag bet = tag.getCompound("BlockEntityTag");
-        if (bet.contains("Items", TAG_LIST) && bet.getList("Items", TAG_COMPOUND).isEmpty()) {
+        if (bet.contains("Items", TAG_LIST) && bet.getList("Items", TAG_COMPOUND).isEmpty())
+        {
             bet.remove("Items");
             changed = true;
         }
 
-        if (bet.isEmpty()) {
+        if (bet.isEmpty())
+        {
             tag.remove("BlockEntityTag");
             changed = true;
         }
-        if (tag.isEmpty()) {
+        if (tag.isEmpty())
+        {
             stack.setTag(null);
             changed = true;
         }
         return changed;
     }
 
-    public static boolean shulkerBoxHasItems(ItemStack stack) {
+    public static boolean shulkerBoxHasItems(ItemStack stack)
+    {
         CompoundTag tag = stack.getTag();
 
         if (tag == null || !tag.contains("BlockEntityTag", TAG_COMPOUND))

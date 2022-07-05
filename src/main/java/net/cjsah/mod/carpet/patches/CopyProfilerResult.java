@@ -1,15 +1,17 @@
 package net.cjsah.mod.carpet.patches;
 
+import net.minecraft.util.profiling.ProfileResults;
+import net.minecraft.util.profiling.ResultField;
+
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.util.profiling.ProfileResults;
-import net.minecraft.util.profiling.ResultField;
 
 public class CopyProfilerResult implements ProfileResults {
     int startI, endI;
     long startL, endL;
-    public CopyProfilerResult(int startI, long startL, int endI, long endL) {
+    public CopyProfilerResult(int startI, long startL, int endI, long endL)
+    {
         this.startI = startI;
         this.startL = startL;
         this.endI = endI;

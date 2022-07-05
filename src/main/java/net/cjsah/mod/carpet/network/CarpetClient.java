@@ -10,7 +10,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class CarpetClient {
+public class CarpetClient
+{
     public static final Object sync = new Object();
     public static final int HI = 69;
     public static final int HELLO = 420;
@@ -22,8 +23,10 @@ public class CarpetClient {
     public static String serverCarpetVersion;
     public static final ResourceLocation CARPET_CHANNEL = new ResourceLocation("carpet:hello");
 
-    public static void gameJoined(LocalPlayer player) {
-        synchronized (sync) {
+    public static void gameJoined(LocalPlayer player)
+    {
+        synchronized (sync)
+        {
             clientPlayer = player;
             // client didn't say hi back yet
             if (isServerCarpet)
@@ -32,43 +35,52 @@ public class CarpetClient {
         }
     }
 
-    public static void disconnect() {
-        if (isServerCarpet) // multiplayer connection {
+    public static void disconnect()
+    {
+        if (isServerCarpet) // multiplayer connection
+        {
             isServerCarpet = false;
             clientPlayer = null;
             CarpetServer.onServerClosed(null);
             CarpetServer.onServerDoneClosing(null);
         }
-        else // singleplayer disconnect {
+        else // singleplayer disconnect
+        {
             CarpetServer.clientPreClosing();
         }
     }
 
-    public static void setCarpet() {
+    public static void setCarpet()
+    {
         isServerCarpet = true;
     }
 
-    public static LocalPlayer getPlayer() {
+    public static LocalPlayer getPlayer()
+    {
         return clientPlayer;
     }
 
-    public static boolean isCarpet() {
+    public static boolean isCarpet()
+    {
         return isServerCarpet;
     }
 
-    public static boolean sendClientCommand(String command) {
+    public static boolean sendClientCommand(String command)
+    {
         if (!isServerCarpet && CarpetServer.minecraft_server == null) return false;
         ClientNetworkHandler.clientCommand(command);
         return true;
     }
 
-    public static void onClientCommand(Tag t) {
+    public static void onClientCommand(Tag t)
+    {
         CarpetSettings.LOG.info("Server Response:");
         CompoundTag tag = (CompoundTag)t;
         CarpetSettings.LOG.info(" - id: "+tag.getString("id"));
         CarpetSettings.LOG.info(" - code: "+tag.getInt("code"));
         if (tag.contains("error")) CarpetSettings.LOG.warn(" - error: "+tag.getString("error"));
-        if (tag.contains("output")) {
+        if (tag.contains("output"))
+        {
             ListTag outputTag = (ListTag) tag.get("output");
             for (int i = 0; i < outputTag.size(); i++)
                 CarpetSettings.LOG.info(" - response: " + Component.Serializer.fromJson(outputTag.getString(i)).getString());

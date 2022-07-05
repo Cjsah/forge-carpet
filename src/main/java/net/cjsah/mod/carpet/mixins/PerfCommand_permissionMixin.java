@@ -9,10 +9,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PerfCommand.class)
-public class PerfCommand_permissionMixin {
+public class PerfCommand_permissionMixin
+{
     @SuppressWarnings("UnresolvedMixinReference")
-    @Inject(method = "method_37340(Lnet/minecraft/server/command/ServerCommandSource;)Z", at = @At("HEAD"), cancellable = true)
-    private static void canRun(CommandSourceStack source, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "lambda$register$0", at = @At("HEAD"), cancellable = true)
+    private static void canRun(CommandSourceStack source, CallbackInfoReturnable<Boolean> cir)
+    {
         cir.setReturnValue(source.hasPermission(CarpetSettings.perfPermissionLevel));
     }
 

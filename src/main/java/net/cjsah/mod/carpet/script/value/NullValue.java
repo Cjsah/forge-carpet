@@ -1,37 +1,48 @@
 package net.cjsah.mod.carpet.script.value;
 
-import java.util.ArrayList;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 
-public class NullValue extends NumericValue // TODO check nonsingleton code {
+import java.util.ArrayList;
+
+public class NullValue extends NumericValue // TODO check nonsingleton code
+{
     public static final NullValue NULL = new NullValue();
     @Override
-    public String getString() {
+    public String getString()
+    {
         return "null";
     }
 
     @Override
-    public String getPrettyString() {
+    public String getPrettyString()
+    {
         return "null";
     }
 
     @Override
-    public boolean getBoolean() {
+    public boolean getBoolean()
+    {
         return false;
     }
 
     @Override
-    public Value clone() {
+    public Value clone()
+    {
         return new NullValue();
     }
-    private NullValue() {super(0);}
+    protected NullValue() {super(0);}
 
     @Override
-    public boolean equals(final Object o) {
-        return o instanceof NullValue;
+    public boolean equals(final Object o)
+    {
+        if (o instanceof Value value)
+        {
+            return value.isNull();
+        }
+        return false;
     }
 
     @Override
@@ -50,8 +61,9 @@ public class NullValue extends NumericValue // TODO check nonsingleton code {
     }
 
     @Override
-    public int compareTo(Value o) {
-        return  o instanceof NullValue ? 0 : -1;
+    public int compareTo(Value o)
+    {
+        return  o.isNull() ? 0 : -1;
     }
 
     @Override
@@ -60,17 +72,20 @@ public class NullValue extends NumericValue // TODO check nonsingleton code {
     }
 
     @Override
-    public String getTypeString() {
+    public String getTypeString()
+    {
         return "null";
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return 0;
     }
 
     @Override
-    public Tag toTag(boolean force) {
+    public Tag toTag(boolean force)
+    {
         if (!force) throw new NBTSerializableValue.IncompatibleTypeException(this);
         return StringTag.valueOf("null");
     }
@@ -81,7 +96,8 @@ public class NullValue extends NumericValue // TODO check nonsingleton code {
     }
 
     @Override
-    public JsonElement toJson() {
+    public JsonElement toJson()
+    {
         return JsonNull.INSTANCE;
     }
 

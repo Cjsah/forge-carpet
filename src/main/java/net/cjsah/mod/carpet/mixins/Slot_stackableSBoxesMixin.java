@@ -12,17 +12,19 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Slot.class)
 public class Slot_stackableSBoxesMixin {
-    @Redirect(method = "insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;", at = @At(
+    @Redirect(method = "safeInsert(Lnet/minecraft/world/item/ItemStack;I)Lnet/minecraft/world/item/ItemStack;", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/screen/slot/Slot;getMaxItemCount(Lnet/minecraft/item/ItemStack;)I"
+            target = "Lnet/minecraft/world/inventory/Slot;getMaxStackSize(Lnet/minecraft/world/item/ItemStack;)I"
     ))
-    private int getMaxCountForSboxesInSlot(Slot slot, ItemStack stack) {
-        if (CarpetSettings.stackableShulkerBoxes &&
+    private int getMaxCountForSboxesInSlot(Slot slot, ItemStack stack)
+    {
+        if (CarpetSettings.shulkerBoxStackSize > 1 &&
                 stack.getItem() instanceof BlockItem &&
                 ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
                 !InventoryHelper.shulkerBoxHasItems(stack)
-        ) {
-            return CarpetSettings.SHULKER_STACK_SIZE;
+        )
+        {
+            return CarpetSettings.shulkerBoxStackSize;
         }
         return slot.getMaxStackSize(stack);
     }

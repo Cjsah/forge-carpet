@@ -2,15 +2,18 @@ package net.cjsah.mod.carpet.script.utils;
 
 import java.util.function.Supplier;
 
-public class GlocalFlag extends ThreadLocal<Boolean> {
+public class GlocalFlag extends ThreadLocal<Boolean>
+{
     private final boolean initial;
 
-    public GlocalFlag(boolean initial) {
+    public GlocalFlag(boolean initial)
+    {
         this.initial = initial;
     }
 
     @Override
-    public Boolean initialValue() {
+    public Boolean initialValue()
+    {
         return initial;
     }
 
@@ -20,35 +23,44 @@ public class GlocalFlag extends ThreadLocal<Boolean> {
      * @param <T> - returned value of that action, whatever that might be
      * @return result of the action
      */
-    public <T> T getWhileDisabled(Supplier<T> action) {
+    public <T> T getWhileDisabled(Supplier<T> action)
+    {
         return whileValueReturn(!initial, action);
     }
 
-    private <T> T whileValueReturn(boolean what, Supplier<T> action) {
+    private <T> T whileValueReturn(boolean what, Supplier<T> action)
+    {
         T result;
         boolean previous;
-        synchronized (this) {
+        synchronized (this)
+        {
             previous = get();
             set(what);
         }
-        try {
+        try
+        {
             result = action.get();
         }
-        finally {
+        finally
+        {
             set(previous);
         }
         return result;
     }
 
-    public boolean runIfEnabled(Runnable action) {
-        synchronized (this) {
+    public boolean runIfEnabled(Runnable action)
+    {
+        synchronized (this)
+        {
             if (get() != initial) return false;
             set(!initial);
         }
-        try {
+        try
+        {
             action.run();
         }
-        finally {
+        finally
+        {
             set(initial);
         }
         return true;

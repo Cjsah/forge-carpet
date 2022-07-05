@@ -6,7 +6,8 @@ import net.cjsah.mod.carpet.script.Tokenizer.Token;
 import net.cjsah.mod.carpet.script.value.StringValue;
 import net.cjsah.mod.carpet.script.value.Value;
 
-public class ThrowStatement extends InternalExpressionException {
+public class ThrowStatement extends InternalExpressionException
+{
     private final Throwables type;
     private final Value data;
     
@@ -16,13 +17,15 @@ public class ThrowStatement extends InternalExpressionException {
      * @param data The value to pass
      * @param type Exception type
      */
-    public ThrowStatement(Value data, Throwables type) {
+    public ThrowStatement(Value data, Throwables type)
+    {
         super(type.getId());
         this.data = data;
         this.type = type;
     }
 
-    public ThrowStatement(Value data, Throwables parent, String subtype) {
+    public ThrowStatement(Value data, Throwables parent, String subtype)
+    {
         super(subtype);
         this.data = data;
         this.type = new Throwables(subtype, parent);
@@ -37,7 +40,8 @@ public class ThrowStatement extends InternalExpressionException {
      *                  for this exception. When throwing from Java,
      *                  those exceptions should be pre-registered.
      */
-    public ThrowStatement(String message, Throwables type) {
+    public ThrowStatement(String message, Throwables type)
+    {
         super(type.getId());
         this.data = StringValue.of(message);
         this.type = type;

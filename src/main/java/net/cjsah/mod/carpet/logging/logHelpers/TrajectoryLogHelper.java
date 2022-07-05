@@ -3,15 +3,17 @@ package net.cjsah.mod.carpet.logging.logHelpers;
 import net.cjsah.mod.carpet.logging.Logger;
 import net.cjsah.mod.carpet.logging.LoggerRegistry;
 import net.cjsah.mod.carpet.utils.Messenger;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A generic log helper for logging the trajectory of things like blocks and throwables.
  */
-public class TrajectoryLogHelper {
+public class TrajectoryLogHelper
+{
     private static final int MAX_TICKS_PER_LINE = 20;
 
     private boolean doLog;
@@ -20,33 +22,39 @@ public class TrajectoryLogHelper {
     private ArrayList<Vec3> positions = new ArrayList<>();
     private ArrayList<Vec3> motions = new ArrayList<>();
 
-    public TrajectoryLogHelper(String logName) {
+    public TrajectoryLogHelper(String logName)
+    {
         this.logger = LoggerRegistry.getLogger(logName);
         this.doLog = this.logger.hasOnlineSubscribers();
     }
 
-    public void onTick(double x, double y, double z, Vec3 velocity) {
+    public void onTick(double x, double y, double z, Vec3 velocity)
+    {
         if (!doLog) return;
         positions.add(new Vec3(x, y, z));
         motions.add(velocity);
     }
 
-    public void onFinish() {
+    public void onFinish()
+    {
         if (!doLog) return;
         logger.log( (option) -> {
             List<BaseComponent> comp = new ArrayList<>();
-            switch (option) {
+            switch (option)
+            {
                 case "brief":
                     comp.add(Messenger.s(""));
                     List<String> line = new ArrayList<>();
 
-                    for (int i = 0; i < positions.size(); i++) {
+                    for (int i = 0; i < positions.size(); i++)
+                    {
                         Vec3 pos = positions.get(i);
                         Vec3 mot = motions.get(i);
                         line.add("w  x");
                         line.add(String.format("^w Tick: %d\nx: %f\ny: %f\nz: %f\n------------\nmx: %f\nmy: %f\nmz: %f",
                                 i, pos.x, pos.y, pos.z, mot.x, mot.y, mot.z));
-                        if ((((i+1) % MAX_TICKS_PER_LINE)==0) || i == positions.size()-1) {
+                        if ((((i+1) % MAX_TICKS_PER_LINE)==0) || i == positions.size()-1)
+                        {
                             comp.add(Messenger.c(line.toArray(new Object[0])));
                             line.clear();
                         }
@@ -54,7 +62,8 @@ public class TrajectoryLogHelper {
                     break;
                 case "full":
                     comp.add(Messenger.c("w ---------"));
-                    for (int i = 0; i < positions.size(); i++) {
+                    for (int i = 0; i < positions.size(); i++)
+                    {
                         Vec3 pos = positions.get(i);
                         Vec3 mot = motions.get(i);
                         comp.add(Messenger.c(

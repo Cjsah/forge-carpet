@@ -26,7 +26,7 @@ public class BuddingAmethystBlock_movableAmethystMixin extends Block {
         super(settings);
     }
 
-    @Inject(at = @At("HEAD"), method = "getPistonBehavior(Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/piston/PistonBehavior;", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "getPistonPushReaction(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/material/PushReaction;", cancellable = true)
     void getPistonBehavior(BlockState state, CallbackInfoReturnable<PushReaction> cir) {
         if (CarpetSettings.movableAmethyst) cir.setReturnValue(PushReaction.NORMAL);
     }

@@ -1,18 +1,20 @@
 package net.cjsah.mod.carpet.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.cjsah.mod.carpet.CarpetSettings;
 import net.cjsah.mod.carpet.settings.SettingsManager;
 import net.cjsah.mod.carpet.utils.DistanceCalculator;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-public class DistanceCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+public class DistanceCommand
+{
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
+    {
         LiteralArgumentBuilder<CommandSourceStack> command = literal("distance").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandDistance)).
                 then(literal("from").

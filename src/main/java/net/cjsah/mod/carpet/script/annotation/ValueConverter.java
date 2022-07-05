@@ -1,5 +1,11 @@
 package net.cjsah.mod.carpet.script.annotation;
 
+import net.cjsah.mod.carpet.script.Context;
+import net.cjsah.mod.carpet.script.annotation.Param.Params;
+import net.cjsah.mod.carpet.script.value.Value;
+import org.apache.commons.lang3.ClassUtils;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.util.Iterator;
@@ -8,20 +14,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.lang3.ClassUtils;
-import org.jetbrains.annotations.Nullable;
-
-import net.cjsah.mod.carpet.script.Context;
-import net.cjsah.mod.carpet.script.annotation.Param.Params;
-import net.cjsah.mod.carpet.script.value.Value;
-
 /**
  * <p>Classes implementing this interface are able to convert {@link Value} instances into {@code <R>}, in order to easily use them in parameters for
  * Scarpet functions created using the {@link ScarpetFunction} annotation.</p>
  *
  * @param <R> The result type that the passed {@link Value}s will be converted to
  */
-public interface ValueConverter<R> {
+public interface ValueConverter<R>
+{
     /**
      * <p>Returns the the user-friendly name of the result this {@link ValueConverter} converts to, without {@code a} or {@code an}, and without
      * capitalizing the first letter.</p>
@@ -71,7 +71,8 @@ public interface ValueConverter<R> {
      * @implNote The default implementation returns {@code false}
      * @see #valueConsumption()
      */
-    default public boolean consumesVariableArgs() {
+    default public boolean consumesVariableArgs()
+    {
         return false;
     }
 
@@ -85,7 +86,8 @@ public interface ValueConverter<R> {
      * @implNote The default implementation returns {@code 1}
      * 
      */
-    default public int valueConsumption() {
+    default public int valueConsumption()
+    {
         return 1;
     }
 
@@ -104,7 +106,8 @@ public interface ValueConverter<R> {
      * @return A usable {@link ValueConverter} to convert from a {@link Value} to {@code <R>}
      */
     @SuppressWarnings("unchecked")
-    public static <R> ValueConverter<R> fromAnnotatedType(AnnotatedType annoType) {
+    public static <R> ValueConverter<R> fromAnnotatedType(AnnotatedType annoType)
+    {
         Class<R> type = annoType.getType() instanceof ParameterizedType ? // We are defining R here.
                 (Class<R>) ((ParameterizedType) annoType.getType()).getRawType() :
                 (Class<R>) annoType.getType();
@@ -122,7 +125,8 @@ public interface ValueConverter<R> {
             return (ValueConverter<R>) MapConverter.fromAnnotatedType(annoType); // Already checked that type is Map
         if (type == Optional.class)
             return (ValueConverter<R>) OptionalConverter.fromAnnotatedType(annoType);
-        if (annoType.getDeclaredAnnotations().length != 0) {
+        if (annoType.getDeclaredAnnotations().length != 0)
+        {
             if (annoType.isAnnotationPresent(Param.Custom.class))
                 return Param.Params.getCustomConverter(annoType, type); // Throws if incorrect usage
             if (annoType.isAnnotationPresent(Param.Strict.class))
@@ -157,13 +161,14 @@ public interface ValueConverter<R> {
      *           constraints as {@link #convert(Value)}</p>
      * @param valueIterator An {@link Iterator} holding the {@link Value} to convert in next position
      * @param context       The {@link Context} this function has been called with. This was used when this passed lazy values instead in order to
-     *                      evaluate, now it's used to get the context. It is now ignored by the default implementation
-     * @param theLazyT      The {@code t} that the original function was called with. It is ignored by the default implementation.
+     *                      evaluate, now it's used to get the context
+     * @param contextType   The {@link Context.Type} that the original function was called with
      * @return The next {@link Value} (s) converted to the type {@code <R>} of this {@link ValueConverter}
      * @implNote This method's default implementation runs the {@link #convert(Value)} function in the next {@link Value} ignoring {@link Context} and
      *           {@code theLazyT}.
      */
-    default public R checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT) {
+    default public R checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type contextType)
+    {
         if (!valueIterator.hasNext())
             return null;
         return convert(valueIterator.next());

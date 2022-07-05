@@ -1,22 +1,15 @@
 package net.cjsah.mod.carpet.script.value;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
 import net.cjsah.mod.carpet.script.exception.ThrowStatement;
 import net.cjsah.mod.carpet.script.exception.Throwables;
-
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
@@ -35,7 +28,17 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class BlockValue extends Value {
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static net.cjsah.mod.carpet.script.value.NBTSerializableValue.nameFromRegistryId;
+
+public class BlockValue extends Value
+{
     public static final BlockValue AIR = new BlockValue(Blocks.AIR.defaultBlockState(), null, BlockPos.ZERO);
     public static final BlockValue NULL = new BlockValue(null, null, null);
     private BlockState blockState;
@@ -43,18 +46,22 @@ public class BlockValue extends Value {
     private final ServerLevel world;
     private CompoundTag data;
 
-    public static BlockValue fromCoords(CarpetContext c, int x, int y, int z) {
+    public static BlockValue fromCoords(CarpetContext c, int x, int y, int z)
+    {
         BlockPos pos = locateBlockPos(c, x,y,z);
         return new BlockValue(null, c.s.getLevel(), pos);
     }
 
     private static final Map<String, BlockValue> bvCache= new HashMap<>();
-    public static BlockValue fromString(String str) {
-        try {
+    public static BlockValue fromString(String str)
+    {
+        try
+        {
             BlockValue bv = bvCache.get(str);
             if (bv != null) return bv;
             BlockStateParser blockstateparser = (new BlockStateParser(new StringReader(str), false)).parse(true);
-            if (blockstateparser.getState() != null) {
+            if (blockstateparser.getState() != null)
+            {
                 CompoundTag bd = blockstateparser.getNbt();
                 if (bd == null)
                     bd = new CompoundTag();
@@ -65,27 +72,33 @@ public class BlockValue extends Value {
                 return bv;
             }
         }
-        catch (CommandSyntaxException ignored) {
+        catch (CommandSyntaxException ignored)
+        {
         }
         throw new ThrowStatement(str, Throwables.UNKNOWN_BLOCK);
     }
 
-    public static BlockPos locateBlockPos(CarpetContext c, int xpos, int ypos, int zpos) {
+    public static BlockPos locateBlockPos(CarpetContext c, int xpos, int ypos, int zpos)
+    {
         return new BlockPos(c.origin.getX() + xpos, c.origin.getY() + ypos, c.origin.getZ() + zpos);
     }
 
-    public BlockState getBlockState() {
-        if (blockState != null) {
+    public BlockState getBlockState()
+    {
+        if (blockState != null)
+        {
             return blockState;
         }
-        if (world != null && pos != null) {
+        if (world != null && pos != null)
+        {
             blockState = world.getBlockState(pos);
             return blockState;
         }
         throw new InternalExpressionException("Attempted to fetch block state without world or stored block state");
     }
 
-    public static BlockEntity getBlockEntity(ServerLevel world, BlockPos pos) {
+    public static BlockEntity getBlockEntity(ServerLevel world, BlockPos pos)
+    {
         if (world.getServer().isSameThread())
             return world.getBlockEntity(pos);
         else
@@ -93,34 +106,39 @@ public class BlockValue extends Value {
     }
 
 
-    public CompoundTag getData() {
-        if (data != null) {
+    public CompoundTag getData()
+    {
+        if (data != null)
+        {
             if (data.isEmpty())
                 return null;
             return data;
         }
-        if (world != null && pos != null) {
+        if (world != null && pos != null)
+        {
             BlockEntity be = getBlockEntity(world, pos);
-            CompoundTag tag = new CompoundTag();
-            if (be == null) {
-                data = tag;
+            if (be == null)
+            {
+                data = new CompoundTag();
                 return null;
             }
-            data = be.saveAdditional(tag);
+            data = be.saveWithoutMetadata();
             return data;
         }
         return null;
     }
 
 
-    public BlockValue(BlockState state, ServerLevel world, BlockPos position) {
+    public BlockValue(BlockState state, ServerLevel world, BlockPos position)
+    {
         this.world = world;
         blockState = state;
         pos = position;
         data = null;
     }
 
-    public BlockValue(BlockState state, ServerLevel world, BlockPos position, CompoundTag nbt) {
+    public BlockValue(BlockState state, ServerLevel world, BlockPos position, CompoundTag nbt)
+    {
         this.world = world;
         blockState = state;
         pos = position;
@@ -129,40 +147,47 @@ public class BlockValue extends Value {
 
 
     @Override
-    public String getString() {
-        return NBTSerializableValue.nameFromRegistryId(Registry.BLOCK.getKey(getBlockState().getBlock()));
+    public String getString()
+    {
+        return nameFromRegistryId(Registry.BLOCK.getKey(getBlockState().getBlock()));
     }
 
     @Override
-    public boolean getBoolean() {
+    public boolean getBoolean()
+    {
         return this != NULL && !getBlockState().isAir();
     }
 
     @Override
-    public String getTypeString() {
+    public String getTypeString()
+    {
         return "block";
     }
 
     @Override
-    public Value clone() {
+    public Value clone()
+    {
         return new BlockValue(blockState, world, pos, data);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         if (world != null && pos != null )
             return GlobalPos.of(world.dimension() , pos).hashCode(); //getDimension().getType()
         return ("b"+getString()).hashCode();
     }
 
-    public BlockPos getPos() {
+    public BlockPos getPos()
+    {
         return pos;
     }
 
     public ServerLevel getWorld() { return world;}
 
     @Override
-    public Tag toTag(boolean force) {
+    public Tag toTag(boolean force)
+    {
         if (!force) throw new NBTSerializableValue.IncompatibleTypeException(this);
         // follows falling block convertion
         CompoundTag tag =  new CompoundTag();
@@ -170,16 +195,19 @@ public class BlockValue extends Value {
         BlockState s = getBlockState();
         state.put("Name", StringTag.valueOf(Registry.BLOCK.getKey(s.getBlock()).toString()));
         Collection<Property<?>> properties = s.getProperties();
-        if (!properties.isEmpty()) {
+        if (!properties.isEmpty())
+        {
             CompoundTag props = new CompoundTag();
-            for (Property<?> p: properties) {
+            for (Property<?> p: properties)
+            {
                 props.put(p.getName(), StringTag.valueOf(s.getValue(p).toString().toLowerCase(Locale.ROOT)));
             }
             state.put("Properties", props);
         }
         tag.put("BlockState", state);
         CompoundTag dataTag = getData();
-        if (dataTag != null) {
+        if (dataTag != null)
+        {
             tag.put("TileEntityData", dataTag);
         }
         return tag;
@@ -218,12 +246,14 @@ public class BlockValue extends Value {
         private static final Map<String, SpecificDirection> DIRECTION_MAP = Arrays.stream(values()).collect(Collectors.toMap(SpecificDirection::getName, d -> d));
 
 
-        SpecificDirection(String name, double hitx, double hity, double hitz, Direction blockFacing) {
+        SpecificDirection(String name, double hitx, double hity, double hitz, Direction blockFacing)
+        {
             this.name = name;
             this.hitOffset = new Vec3(hitx, hity, hitz);
             this.facing = blockFacing;
         }
-        private String getName() {
+        private String getName()
+        {
             return name;
         }
     }
@@ -232,7 +262,8 @@ public class BlockValue extends Value {
         private final Direction facing;
         private final boolean sneakPlace;
 
-        public static PlacementContext from(Level world, BlockPos pos, String direction, boolean sneakPlace, ItemStack itemStack) {
+        public static PlacementContext from(Level world, BlockPos pos, String direction, boolean sneakPlace, ItemStack itemStack)
+        {
             SpecificDirection dir = SpecificDirection.DIRECTION_MAP.get(direction);
             if (dir == null)
                 throw new InternalExpressionException("unknown block placement direction: "+direction);
@@ -280,7 +311,12 @@ public class BlockValue extends Value {
 
         @Override
         public Direction getHorizontalDirection() {
-            return this.facing.getAxis() == Direction.Axis.Y ? Direction.NORTH : this.facing;
+            return this.facing.getAxis() == Axis.Y ? Direction.NORTH : this.facing;
+        }
+
+        @Override
+        public Direction getNearestLookingVerticalDirection() {
+            return facing.getAxis() == Axis.Y ? facing : Direction.UP;
         }
 
         @Override

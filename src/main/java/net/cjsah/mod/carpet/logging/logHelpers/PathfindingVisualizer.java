@@ -6,17 +6,22 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
-public class PathfindingVisualizer {
-    public static void slowPath(Entity entity, Vec3 target, float miliseconds, boolean successful) {
+public class PathfindingVisualizer
+{
+    public static void slowPath(Entity entity, Vec3 target, float miliseconds, boolean successful)
+    {
         if (!LoggerRegistry.__pathfinding) return;
-        LoggerRegistry.getLogger("pathfinding").log( (option, player)-> {
+        LoggerRegistry.getLogger("pathfinding").log( (option, player)->
+        {
             if (!(player instanceof ServerPlayer))
                 return null;
             int minDuration;
-            try {
+            try
+            {
                 minDuration = Integer.parseInt(option);
             }
-            catch (NumberFormatException ignored) {
+            catch (NumberFormatException ignored)
+            {
                 return  null;
             }
             if (miliseconds < minDuration)

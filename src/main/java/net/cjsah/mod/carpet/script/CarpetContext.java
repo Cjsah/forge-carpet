@@ -4,22 +4,26 @@ import net.cjsah.mod.carpet.script.value.Value;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 
-public class CarpetContext extends Context {
+public class CarpetContext extends Context
+{
     public CommandSourceStack s;
     public final BlockPos origin;
-    public CarpetContext(ScriptHost host, CommandSourceStack source, BlockPos origin) {
+    public CarpetContext(ScriptHost host, CommandSourceStack source, BlockPos origin)
+    {
         super(host);
         s = source;
         this.origin = origin;
     }
 
     @Override
-    public Context duplicate() {
+    public Context duplicate()
+    {
         return new CarpetContext(this.host, this.s, this.origin);
     }
 
     @Override
-    protected void initialize() {
+    protected void initialize()
+    {
         super.initialize();
         variables.put("_x", (c, t) -> Value.ZERO);
         variables.put("_y", (c, t) -> Value.ZERO);

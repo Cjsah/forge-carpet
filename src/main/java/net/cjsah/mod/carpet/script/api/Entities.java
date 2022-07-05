@@ -1,8 +1,11 @@
 package net.cjsah.mod.carpet.script.api;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.CarpetEventServer;
 import net.cjsah.mod.carpet.script.CarpetScriptHost;
+import net.cjsah.mod.carpet.script.Context;
 import net.cjsah.mod.carpet.script.Expression;
 import net.cjsah.mod.carpet.script.argument.FunctionArgument;
 import net.cjsah.mod.carpet.script.argument.Vector3Argument;
@@ -12,17 +15,6 @@ import net.cjsah.mod.carpet.script.value.ListValue;
 import net.cjsah.mod.carpet.script.value.NBTSerializableValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
 import net.cjsah.mod.carpet.script.value.Value;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
@@ -38,12 +30,36 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 public class Entities {
-    public static void apply(Expression expression) {
-        expression.addContextFunction("player", -1, (c, t, lv) -> {
-            if (lv.size() == 0) {
+    private static ListValue getPlayersFromWorldMatching(Context c, Predicate<ServerPlayer> condition) {
+        List<Value> ret = new ArrayList<>();
+        for (ServerPlayer player: ((CarpetContext) c).s.getLevel().players()) {
+            if (condition.test(player)) {
+                ret.add(new EntityValue(player));
+            }
+        }
+        return ListValue.wrap(ret);
+    }
+
+    public static void apply(Expression expression)
+    {
+        expression.addContextFunction("player", -1, (c, t, lv) ->
+        {
+            if (lv.size() == 0)
+            {
                 CarpetContext cc = (CarpetContext)c;
-                if (cc.host.user != null) {
+                if (cc.host.user != null)
+                {
                     ServerPlayer player = cc.s.getServer().getPlayerList().getPlayerByName(cc.host.user);
                     return EntityValue.of(player);
                 }
@@ -54,58 +70,44 @@ public class Entities {
                 return EntityValue.of(closestPlayer);
             }
             String playerName = lv.get(0).getString();
-            Value retval = Value.NULL;
-            if ("all".equalsIgnoreCase(playerName)) {
-                retval = ListValue.wrap(
-                        ((CarpetContext)c).s.getServer().getPlayerList().getPlayers().
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else if ("*".equalsIgnoreCase(playerName)) {
-                retval = ListValue.wrap(
-                        ((CarpetContext)c).s.getLevel().players().
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else if ("survival".equalsIgnoreCase(playerName)) {
-                retval =  ListValue.wrap(
-                        ((CarpetContext)c).s.getLevel().getPlayers((p) -> p.gameMode.isSurvival()).
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else if ("creative".equalsIgnoreCase(playerName)) {
-                retval = ListValue.wrap(
-                        ((CarpetContext)c).s.getLevel().getPlayers(Player::isCreative).
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else if ("spectating".equalsIgnoreCase(playerName)) {
-                retval = ListValue.wrap(
-                        ((CarpetContext)c).s.getLevel().getPlayers(Player::isSpectator).
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else if ("!spectating".equalsIgnoreCase(playerName)) {
-                retval = ListValue.wrap(
-                        ((CarpetContext)c).s.getLevel().getPlayers((p) -> !p.isSpectator()).
-                                stream().map(EntityValue::new).collect(Collectors.toList()));
-            }
-            else {
-                ServerPlayer player = ((CarpetContext) c).s.getServer().getPlayerList().getPlayerByName(playerName);
-                if (player != null)
-                    retval = new EntityValue(player);
-            }
-            return retval;
+            return switch (playerName) {
+                case "all" -> {
+                    List<Value> ret = new ArrayList<>();
+                    for (ServerPlayer player: ((CarpetContext)c).s.getServer().getPlayerList().getPlayers())
+                        ret.add(new EntityValue(player));
+                    yield ListValue.wrap(ret);
+                }
+                case "*" -> getPlayersFromWorldMatching(c, p -> true);
+                case "survival" -> getPlayersFromWorldMatching(c, p -> p.gameMode.isSurvival()); // todo assert correct
+                case "creative" -> getPlayersFromWorldMatching(c, ServerPlayer::isCreative);
+                case "spectating" -> getPlayersFromWorldMatching(c, ServerPlayer::isSpectator);
+                case "!spectating" -> getPlayersFromWorldMatching(c, p -> !p.isSpectator());
+                default -> {
+                    ServerPlayer player = ((CarpetContext) c).s.getServer().getPlayerList().getPlayerByName(playerName);
+                    if (player != null) {
+                        yield new EntityValue(player);
+                    }
+                    yield Value.NULL;
+                }
+            };
         });
 
-        expression.addContextFunction("spawn", -1, (c, t, lv) -> {
+        expression.addContextFunction("spawn", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             if (lv.size() < 2)
                 throw new InternalExpressionException("'spawn' function takes mob name, and position to spawn");
             String entityString = lv.get(0).getString();
             ResourceLocation entityId;
-            try {
+            try
+            {
                 entityId = ResourceLocation.read(new StringReader(entityString));
                 EntityType<? extends Entity> type = Registry.ENTITY_TYPE.getOptional(entityId).orElse(null);
                 if (type == null || !type.canSummon())
                     return Value.NULL;
             }
-            catch (CommandSyntaxException exception) {
+            catch (CommandSyntaxException exception)
+            {
                  return Value.NULL;
             }
 
@@ -114,7 +116,8 @@ public class Entities {
                 position.vec = position.vec.subtract(0, 0.5, 0);
             CompoundTag tag = new CompoundTag();
             boolean hasTag = false;
-            if (lv.size() > position.offset) {
+            if (lv.size() > position.offset)
+            {
                 Value nbt = lv.get(position.offset);
                 NBTSerializableValue v = (nbt instanceof NBTSerializableValue) ? (NBTSerializableValue) nbt
                         : NBTSerializableValue.parseString(nbt.getString(), true);
@@ -140,14 +143,16 @@ public class Entities {
             }
         });
 
-        expression.addContextFunction("entity_id", 1, (c, t, lv) -> {
+        expression.addContextFunction("entity_id", 1, (c, t, lv) ->
+        {
             Value who = lv.get(0);
             if (who instanceof NumericValue)
                 return EntityValue.of(((CarpetContext)c).s.getLevel().getEntity((int)((NumericValue) who).getLong()));
             return EntityValue.of(((CarpetContext)c).s.getLevel().getEntity(UUID.fromString(who.getString())));
         });
 
-        expression.addContextFunction("entity_list", 1, (c, t, lv) -> {
+        expression.addContextFunction("entity_list", 1, (c, t, lv) ->
+        {
             String who = lv.get(0).getString();
             CommandSourceStack source = ((CarpetContext)c).s;
             EntityValue.EntityClassDescriptor eDesc = EntityValue.getEntityDescriptor(who, source.getServer());
@@ -155,17 +160,20 @@ public class Entities {
             return ListValue.wrap(entityList.stream().map(EntityValue::new).collect(Collectors.toList()));
         });
 
-        expression.addContextFunction("entity_area", -1, (c, t, lv) -> {
+        expression.addContextFunction("entity_area", -1, (c, t, lv) ->
+        {
             if (lv.size()<3) throw new InternalExpressionException("'entity_area' requires entity type, center and range arguments");
             String who = lv.get(0).getString();
             CarpetContext cc = (CarpetContext)c;
             Vector3Argument centerLocator = Vector3Argument.findIn(lv, 1, false, true);
 
             AABB centerBox;
-            if (centerLocator.entity != null) {
+            if (centerLocator.entity != null)
+            {
                 centerBox = centerLocator.entity.getBoundingBox();
             }
-            else {
+            else
+            {
                 Vec3 center = centerLocator.vec;
                 if (centerLocator.fromBlock) center.add(0.5, 0.5, 0.5);
                 centerBox = new AABB(center, center);
@@ -180,17 +188,21 @@ public class Entities {
             return ListValue.wrap(entityList.stream().map(EntityValue::new).collect(Collectors.toList()));
         });
 
-        expression.addContextFunction("entity_selector", -1, (c, t, lv) -> {
+        expression.addContextFunction("entity_selector", -1, (c, t, lv) ->
+        {
             String selector = lv.get(0).getString();
             List<Value> retlist = new ArrayList<>();
-            for (Entity e: EntityValue.getEntitiesFromSelector(((CarpetContext)c).s, selector)) {
+            for (Entity e: EntityValue.getEntitiesFromSelector(((CarpetContext)c).s, selector))
+            {
                 retlist.add(new EntityValue(e));
             }
             return ListValue.wrap(retlist);
         });
 
-        expression.addContextFunction("query", -1, (c, t, lv) -> {
-            if (lv.size()<2) {
+        expression.addContextFunction("query", -1, (c, t, lv) ->
+        {
+            if (lv.size()<2)
+            {
                 throw new InternalExpressionException("'query' takes entity as a first argument, and queried feature as a second");
             }
             Value v = lv.get(0);
@@ -210,8 +222,10 @@ public class Entities {
         });
 
         // or update
-        expression.addContextFunction("modify", -1, (c, t, lv) -> {
-            if (lv.size()<2) {
+        expression.addContextFunction("modify", -1, (c, t, lv) ->
+        {
+            if (lv.size()<2)
+            {
                 throw new InternalExpressionException("'modify' takes entity as a first argument, and queried feature as a second");
             }
             Value v = lv.get(0);
@@ -227,13 +241,15 @@ public class Entities {
             return v;
         });
 
-        expression.addContextFunction("entity_types", -1, (c, t, lv) -> {
+        expression.addContextFunction("entity_types", -1, (c, t, lv) ->
+        {
             if (lv.size() > 1) throw new InternalExpressionException("'entity_types' requires one or no arguments");
             String desc = (lv.size() == 1)?lv.get(0).getString():"*";
             return EntityValue.getEntityDescriptor(desc, ((CarpetContext) c).s.getServer()).listValue;
         });
 
-        expression.addContextFunction("entity_load_handler", -1, (c, t, lv) -> {
+        expression.addContextFunction("entity_load_handler", -1, (c, t, lv) ->
+        {
             if (lv.size() < 2) throw new InternalExpressionException("'entity_load_handler' required the entity type, and a function to call");
             Value entityValue = lv.get(0);
             List<String> descriptors = (entityValue instanceof ListValue)
@@ -243,18 +259,22 @@ public class Entities {
             descriptors.forEach(s -> types.addAll(EntityValue.getEntityDescriptor(s, ((CarpetContext) c).s.getServer()).typeList));
             FunctionArgument funArg = FunctionArgument.findIn(c, expression.module, lv, 1, true, false);
             CarpetEventServer events = ((CarpetScriptHost)c.host).getScriptServer().events;
-            if (funArg.function == null) {
+            if (funArg.function == null)
+            {
                 types.forEach(et -> events.removeBuiltInEvent(CarpetEventServer.Event.getEntityLoadEventName(et), (CarpetScriptHost) c.host));
                 types.forEach(et -> events.removeBuiltInEvent(CarpetEventServer.Event.getEntityHandlerEventName(et), (CarpetScriptHost) c.host));
             }
-            else {
+            else
+            {
                 ///compat
                 int argno = funArg.function.getArguments().size() - funArg.args.size();
-                if (argno == 1) {
+                if (argno == 1)
+                {
                     c.host.issueDeprecation("entity_load_handler() with single argument callback");
                     types.forEach(et -> events.addBuiltInEvent(CarpetEventServer.Event.getEntityLoadEventName(et), c.host, funArg.function, funArg.args));
                 }
-                else {
+                else
+                {
                     types.forEach(et -> events.addBuiltInEvent(CarpetEventServer.Event.getEntityHandlerEventName(et), c.host, funArg.function, funArg.args));
                 }
             }
@@ -262,7 +282,8 @@ public class Entities {
         });
 
         // or update
-        expression.addContextFunction("entity_event", -1, (c, t, lv) -> {
+        expression.addContextFunction("entity_event", -1, (c, t, lv) ->
+        {
             if (lv.size()<3)
                 throw new InternalExpressionException("'entity_event' requires at least 3 arguments, entity, event to be handled, and function name, with optional arguments");
             Value v = lv.get(0);

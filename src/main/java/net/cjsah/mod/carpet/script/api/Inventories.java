@@ -1,35 +1,36 @@
 package net.cjsah.mod.carpet.script.api;
 
+import com.google.common.collect.Sets;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.cjsah.mod.carpet.fakes.IngredientInterface;
 import net.cjsah.mod.carpet.fakes.RecipeManagerInterface;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.Expression;
+import net.cjsah.mod.carpet.script.argument.FunctionArgument;
 import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
 import net.cjsah.mod.carpet.script.exception.ThrowStatement;
 import net.cjsah.mod.carpet.script.exception.Throwables;
 import net.cjsah.mod.carpet.script.utils.InputValidator;
 import net.cjsah.mod.carpet.script.value.BooleanValue;
+import net.cjsah.mod.carpet.script.value.EntityValue;
+import net.cjsah.mod.carpet.script.value.FormattedTextValue;
+import net.cjsah.mod.carpet.script.value.FunctionValue;
 import net.cjsah.mod.carpet.script.value.ListValue;
 import net.cjsah.mod.carpet.script.value.NBTSerializableValue;
-import net.cjsah.mod.carpet.script.value.NullValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
+import net.cjsah.mod.carpet.script.value.ScreenValue;
 import net.cjsah.mod.carpet.script.value.StringValue;
 import net.cjsah.mod.carpet.script.value.Value;
 import net.cjsah.mod.carpet.script.value.ValueConversions;
-import com.google.common.collect.Sets;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagContainer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -45,30 +46,64 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 public class Inventories {
-    public static void apply(Expression expression) {
+    public static void apply(Expression expression)
+    {
         expression.addUnaryFunction("stack_limit", v ->
                 new NumericValue(NBTSerializableValue.parseItem(v.getString()).getItem().getMaxStackSize()));
 
-        expression.addUnaryFunction("item_category", v -> {
+        expression.addUnaryFunction("item_category", v ->
+        {
             ItemInput item = NBTSerializableValue.parseItem(v.getString());
             CreativeModeTab ig = item.getItem().getItemCategory();
-            return (ig==null)? Value.NULL:new StringValue(ig.getRecipeFolderName());
+            return (ig==null)?Value.NULL:new StringValue(ig.getRecipeFolderName());
         });
 
-        expression.addContextFunction("item_list", -1, (c, t, lv) -> {
+        expression.addContextFunction("item_list", -1, (c, t, lv) ->
+        {
             if (lv.size() == 0)
                 return ListValue.wrap(Registry.ITEM.keySet().stream().map(ValueConversions::of).collect(Collectors.toList()));
             CarpetContext cc = (CarpetContext)c;
-            TagContainer tagManager = cc.s.getServer().getTags();
+            Registry<Item> items = cc.s.getServer().registryAccess().registryOrThrow(Registry.ITEM_REGISTRY);
+            String tag = lv.get(0).getString();
+            Optional<HolderSet.Named<Item>> itemTag = items.getTag(TagKey.create(Registry.ITEM_REGISTRY, InputValidator.identifierOf(tag)));
+            if (itemTag.isEmpty()) return Value.NULL;
+            return ListValue.wrap(itemTag.get().stream().map(b -> ValueConversions.of(items.getKey(b.value()))).collect(Collectors.toList()));
+            /*
+            TagContainer tagManager = cc.s.getServer(). getTags();
             String tag = lv.get(0).getString();
             net.minecraft.tags.Tag<Item> itemTag = tagManager.getOrEmpty(Registry.ITEM_REGISTRY).getTag(InputValidator.identifierOf(tag));
             if (itemTag == null) return Value.NULL;
             return ListValue.wrap(itemTag.getValues().stream().map(b -> ValueConversions.of(Registry.ITEM.getKey(b))).collect(Collectors.toList()));
+            */
         });
 
-        expression.addContextFunction("item_tags", -1, (c, t, lv) -> {
+        expression.addContextFunction("item_tags", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
+
+            Registry<Item> blocks = cc.s.getServer().registryAccess().registryOrThrow(Registry.ITEM_REGISTRY);
+            if (lv.size() == 0)
+                return ListValue.wrap(blocks.getTagNames().map(ValueConversions::of).collect(Collectors.toList()));
+            Item item = NBTSerializableValue.parseItem(lv.get(0).getString()).getItem();
+            if (lv.size() == 1)
+            {
+                return ListValue.wrap( blocks.getTags().filter(e -> e.getSecond().stream().anyMatch(h -> (h.value() == item))).map(e -> ValueConversions.of(e.getFirst())).collect(Collectors.toList()));
+            }
+            String tag = lv.get(1).getString();
+            Optional<HolderSet.Named<Item>> tagSet = blocks.getTag(TagKey.create(Registry.ITEM_REGISTRY, InputValidator.identifierOf(tag)));
+            if (tagSet.isEmpty()) return Value.NULL;
+
+            //return BooleanValue.of(tagSet.get().contains(item.builtInRegistryHolder()));
+            return BooleanValue.of(tagSet.get().stream().anyMatch(h -> h.value() == item));
+
+            /*
             TagContainer tagManager = cc.s.getServer().getTags();
             if (lv.size() == 0)
                 return ListValue.wrap(tagManager.getOrEmpty(Registry.ITEM_REGISTRY).getAvailableTags().stream().map(ValueConversions::of).collect(Collectors.toList()));
@@ -79,14 +114,17 @@ public class Inventories {
             net.minecraft.tags.Tag<Item> itemTag = tagManager.getOrEmpty(Registry.ITEM_REGISTRY).getTag(InputValidator.identifierOf(tag));
             if (itemTag == null) return Value.NULL;
             return BooleanValue.of(itemTag.contains(item));
+            */
         });
 
-        expression.addContextFunction("recipe_data", -1, (c, t, lv) -> {
+        expression.addContextFunction("recipe_data", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext)c;
             if (lv.size() < 1) throw new InternalExpressionException("'recipe_data' requires at least one argument");
             String recipeName = lv.get(0).getString();
             RecipeType<?> type = RecipeType.CRAFTING;
-            if (lv.size() > 1) {
+            if (lv.size() > 1)
+            {
                 String recipeType = lv.get(1).getString();
                 type = Registry.RECIPE_TYPE.get(InputValidator.identifierOf(recipeType));
             }
@@ -95,19 +133,23 @@ public class Inventories {
             if (recipes.isEmpty())
                 return Value.NULL;
             List<Value> recipesOutput = new ArrayList<>();
-            for (Recipe<?> recipe: recipes) {
+            for (Recipe<?> recipe: recipes)
+            {
                 ItemStack result = recipe.getResultItem();
                 List<Value> ingredientValue = new ArrayList<>();
                 recipe.getIngredients().forEach(
-                        ingredient -> {
+                        ingredient ->
+                        {
                             // I am flattening ingredient lists per slot.
                             // consider recipe_data('wooden_sword','crafting') and ('iron_nugget', 'blasting') and notice difference
                             // in depths of lists.
                             List<Collection<ItemStack>> stacks = ((IngredientInterface) (Object) ingredient).getRecipeStacks();
-                            if (stacks.isEmpty()) {
+                            if (stacks.isEmpty())
+                            {
                                 ingredientValue.add(Value.NULL);
                             }
-                            else {
+                            else
+                            {
                                 List<Value> alternatives = new ArrayList<>();
                                 stacks.forEach(col -> col.stream().map(ValueConversions::of).forEach(alternatives::add));
                                 ingredientValue.add(ListValue.wrap(alternatives));
@@ -115,30 +157,36 @@ public class Inventories {
                         }
                 );
                 Value recipeSpec;
-                if (recipe instanceof ShapedRecipe) {
+                if (recipe instanceof ShapedRecipe)
+                {
                     recipeSpec = ListValue.of(
                             new StringValue("shaped"),
                             new NumericValue(((ShapedRecipe) recipe).getWidth()),
                             new NumericValue(((ShapedRecipe) recipe).getHeight())
                     );
                 }
-                else if (recipe instanceof ShapelessRecipe) {
+                else if (recipe instanceof ShapelessRecipe)
+                {
                     recipeSpec = ListValue.of(new StringValue("shapeless"));
                 }
-                else if (recipe instanceof AbstractCookingRecipe) {
+                else if (recipe instanceof AbstractCookingRecipe)
+                {
                     recipeSpec = ListValue.of(
                             new StringValue("smelting"),
                             new NumericValue(((AbstractCookingRecipe) recipe).getCookingTime()),
                             new NumericValue(((AbstractCookingRecipe) recipe).getExperience())
                     );
                 }
-                else if (recipe instanceof SingleItemRecipe) {
+                else if (recipe instanceof SingleItemRecipe)
+                {
                     recipeSpec = ListValue.of(new StringValue("cutting"));
                 }
-                else if (recipe instanceof CustomRecipe) {
+                else if (recipe instanceof CustomRecipe)
+                {
                     recipeSpec = ListValue.of(new StringValue("special"));
                 }
-                else {
+                else
+                {
                     recipeSpec = ListValue.of(new StringValue("custom"));
                 }
 
@@ -147,7 +195,8 @@ public class Inventories {
             return ListValue.wrap(recipesOutput);
         });
 
-        expression.addUnaryFunction("crafting_remaining_item", v -> {
+        expression.addUnaryFunction("crafting_remaining_item", v ->
+        {
             String itemStr = v.getString();
             Item item;
             ResourceLocation id = InputValidator.identifierOf(itemStr);
@@ -156,14 +205,16 @@ public class Inventories {
             return new StringValue(NBTSerializableValue.nameFromRegistryId(Registry.ITEM.getKey(item.getCraftingRemainingItem())));
         });
 
-        expression.addContextFunction("inventory_size", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_size", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
             return new NumericValue(inventoryLocator.inventory().getContainerSize());
         });
 
-        expression.addContextFunction("inventory_has_items", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_has_items", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
@@ -171,11 +222,13 @@ public class Inventories {
         });
 
         //inventory_get(<b, e>, <n>) -> item_triple
-        expression.addContextFunction("inventory_get", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_get", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
-            if (lv.size() == inventoryLocator.offset()) {
+            if (lv.size() == inventoryLocator.offset())
+            {
                 List<Value> fullInventory = new ArrayList<>();
                 for (int i = 0, maxi = inventoryLocator.inventory().getContainerSize(); i < maxi; i++)
                     fullInventory.add(ValueConversions.of(inventoryLocator.inventory().getItem(i)));
@@ -188,7 +241,8 @@ public class Inventories {
         });
 
         //inventory_set(<b,e>, <n>, <count>, <item>, <nbt>)
-        expression.addContextFunction("inventory_set", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_set", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
@@ -198,14 +252,16 @@ public class Inventories {
             slot = NBTSerializableValue.validateSlot(slot, inventoryLocator.inventory());
             if (slot == inventoryLocator.inventory().getContainerSize()) return Value.NULL;
             int count = (int) NumericValue.asNumber(lv.get(inventoryLocator.offset()+1)).getLong();
-            if (count == 0) {
+            if (count == 0)
+            {
                 // clear slot
                 ItemStack removedStack = inventoryLocator.inventory().removeItemNoUpdate(slot);
                 syncPlayerInventory(inventoryLocator, slot);
                 //Value res = ListValue.fromItemStack(removedStack); // that tuple will be read only but cheaper if noone cares
                 return ValueConversions.of(removedStack);
             }
-            if (lv.size() < inventoryLocator.offset()+3) {
+            if (lv.size() < inventoryLocator.offset()+3)
+            {
                 ItemStack previousStack = inventoryLocator.inventory().getItem(slot);
                 ItemStack newStack = previousStack.copy();
                 newStack.setCount(count);
@@ -214,44 +270,51 @@ public class Inventories {
                 return ValueConversions.of(previousStack);
             }
             CompoundTag nbt = null; // skipping one argument
-            if (lv.size() > inventoryLocator.offset()+3) {
+            if (lv.size() > inventoryLocator.offset()+3)
+            {
                 Value nbtValue = lv.get(inventoryLocator.offset()+3);
                 if (nbtValue instanceof NBTSerializableValue)
                     nbt = ((NBTSerializableValue)nbtValue).getCompoundTag();
-                else if (nbtValue instanceof NullValue)
+                else if (nbtValue.isNull())
                     nbt = null;
                 else
                     nbt = new NBTSerializableValue(nbtValue.getString()).getCompoundTag();
             }
             ItemInput newitem = NBTSerializableValue.parseItem(lv.get(inventoryLocator.offset()+2).getString(), nbt);
             ItemStack previousStack = inventoryLocator.inventory().getItem(slot);
-            try {
+            try
+            {
                 inventoryLocator.inventory().setItem(slot, newitem.createItemStack(count, false));
                 syncPlayerInventory(inventoryLocator, slot);
             }
-            catch (CommandSyntaxException e) {
+            catch (CommandSyntaxException e)
+            {
                 throw new InternalExpressionException(e.getMessage());
             }
             return ValueConversions.of(previousStack);
         });
 
         //inventory_find(<b, e>, <item> or null (first empty slot), <start_from=0> ) -> <N> or null
-        expression.addContextFunction("inventory_find", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_find", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
             ItemInput itemArg = null;
-            if (lv.size() > inventoryLocator.offset()) {
+            if (lv.size() > inventoryLocator.offset())
+            {
                 Value secondArg = lv.get(inventoryLocator.offset()+0);
-                if (!(secondArg instanceof NullValue))
+                if (!secondArg.isNull())
                     itemArg = NBTSerializableValue.parseItem(secondArg.getString());
             }
             int startIndex = 0;
-            if (lv.size() > inventoryLocator.offset()+1) {
+            if (lv.size() > inventoryLocator.offset()+1)
+            {
                 startIndex = (int) NumericValue.asNumber(lv.get(inventoryLocator.offset()+1)).getLong();
             }
             startIndex = NBTSerializableValue.validateSlot(startIndex, inventoryLocator.inventory());
-            for (int i = startIndex, maxi = inventoryLocator.inventory().getContainerSize(); i < maxi; i++) {
+            for (int i = startIndex, maxi = inventoryLocator.inventory().getContainerSize(); i < maxi; i++)
+            {
                 ItemStack stack = inventoryLocator.inventory().getItem(i);
                 if ( (itemArg == null && stack.isEmpty()) || (itemArg != null && itemArg.getItem().equals(stack.getItem())) )
                     return new NumericValue(i);
@@ -260,7 +323,8 @@ public class Inventories {
         });
 
         //inventory_remove(<b, e>, <item>, <amount=1>) -> bool
-        expression.addContextFunction("inventory_remove", -1, (c, t, lv) -> {
+        expression.addContextFunction("inventory_remove", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
@@ -273,20 +337,23 @@ public class Inventories {
             // not enough
             if (((amount == 1) && (!inventoryLocator.inventory().hasAnyOf(Sets.newHashSet(searchItem.getItem()))))
                     || (inventoryLocator.inventory().countItem(searchItem.getItem()) < amount)) return Value.FALSE;
-            for (int i = 0, maxi = inventoryLocator.inventory().getContainerSize(); i < maxi; i++) {
+            for (int i = 0, maxi = inventoryLocator.inventory().getContainerSize(); i < maxi; i++)
+            {
                 ItemStack stack = inventoryLocator.inventory().getItem(i);
                 if (stack.isEmpty())
                     continue;
                 if (!stack.getItem().equals(searchItem.getItem()))
                     continue;
                 int left = stack.getCount()-amount;
-                if (left > 0) {
+                if (left > 0)
+                {
                     stack.setCount(left);
                     inventoryLocator.inventory().setItem(i, stack);
                     syncPlayerInventory(inventoryLocator, i);
                     return Value.TRUE;
                 }
-                else {
+                else
+                {
                     inventoryLocator.inventory().removeItemNoUpdate(i);
                     syncPlayerInventory(inventoryLocator, i);
                     amount -= stack.getCount();
@@ -298,7 +365,8 @@ public class Inventories {
         });
 
         //inventory_drop(<b, e>, <n>, <amount=1, 0-whatever's there>) -> entity_item (and sets slot) or null if cannot
-        expression.addContextFunction("drop_item", -1, (c, t, lv) -> {
+        expression.addContextFunction("drop_item", -1, (c, t, lv) ->
+        {
             CarpetContext cc = (CarpetContext) c;
             NBTSerializableValue.InventoryLocator inventoryLocator = NBTSerializableValue.locateInventory(cc, lv, 0);
             if (inventoryLocator == null) return Value.NULL;
@@ -319,10 +387,12 @@ public class Inventories {
             if (droppedStack.isEmpty()) return Value.ZERO;
             Object owner = inventoryLocator.owner();
             ItemEntity item;
-            if (owner instanceof Player) {
+            if (owner instanceof Player)
+            {
                 item = ((Player) owner).drop(droppedStack, false, true);
             }
-            else if (owner instanceof LivingEntity villager) {
+            else if (owner instanceof LivingEntity villager)
+            {
                 // stolen from LookTargetUtil.give((VillagerEntity)owner, droppedStack, (LivingEntity) owner);
                 double double_1 = villager.getY() - 0.30000001192092896D + (double)villager.getEyeHeight();
                 item = new ItemEntity(villager.level, villager.getX(), double_1, villager.getZ(), droppedStack);
@@ -331,7 +401,8 @@ public class Inventories {
                 item.setDefaultPickUpDelay();
                 cc.s.getLevel().addFreshEntity(item);
             }
-            else {
+            else
+            {
                 Vec3 point = Vec3.atCenterOf(inventoryLocator.position()); //pos+0.5v
                 item = new ItemEntity(cc.s.getLevel(), point.x, point.y, point.z, droppedStack);
                 item.setDefaultPickUpDelay();
@@ -339,10 +410,51 @@ public class Inventories {
             }
             return new NumericValue(item.getItem().getCount());
         });
+
+        expression.addContextFunction("create_screen",-1, (c, t, lv) ->
+        {
+            if(lv.size() < 3) throw new InternalExpressionException("'create_screen' requires at least three arguments");
+            Value playerValue = lv.get(0);
+            ServerPlayer player = EntityValue.getPlayerByValue(((CarpetContext) c).s.getServer(), playerValue);
+            if(player == null) throw new InternalExpressionException("'create_screen' requires a valid online player as the first argument.");
+            String type = lv.get(1).getString();
+            Component name = FormattedTextValue.getTextByValue(lv.get(2));
+            FunctionValue function = null;
+            if(lv.size() > 3)
+                function = FunctionArgument.findIn(c, expression.module, lv, 3, true, false).function;
+
+            return new ScreenValue(player,type,name,function,c);
+        });
+
+        expression.addContextFunction("close_screen",1, (c, t, lv) ->
+        {
+            Value value = lv.get(0);
+            if(!(value instanceof ScreenValue screenValue)) throw new InternalExpressionException("'close_screen' requires a screen value as the first argument.");
+            if(!screenValue.isOpen()) return Value.FALSE;
+            screenValue.close();
+            return Value.TRUE;
+        });
+
+        expression.addContextFunction("screen_property",-1, (c, t, lv) ->
+        {
+            if(lv.size()<2) throw new InternalExpressionException("'screen_property' requires at least a screen and a property name");
+            if(!(lv.get(0) instanceof ScreenValue screenValue)) throw new InternalExpressionException("'screen_property' requires a screen value as the first argument");
+            String propertyName = lv.get(1).getString();
+            if(lv.size()>=3)
+            {
+                return screenValue.modifyProperty(propertyName,lv.subList(2,lv.size()));
+            }
+            else
+            {
+                return screenValue.queryProperty(propertyName);
+            }
+        });
     }
 
-    private static void syncPlayerInventory(NBTSerializableValue.InventoryLocator inventory, int int_1) {
-        if (inventory.owner() instanceof ServerPlayer player && !inventory.isEnder()) {
+    private static void syncPlayerInventory(NBTSerializableValue.InventoryLocator inventory, int int_1)
+    {
+        if (inventory.owner() instanceof ServerPlayer player && !inventory.isEnder() && !(inventory.inventory() instanceof ScreenValue.ScreenHandlerInventory))
+        {
             player.connection.send(new ClientboundContainerSetSlotPacket(
                     -2, 0, // resolve mystery argument
                     int_1,

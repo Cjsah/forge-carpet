@@ -1,11 +1,12 @@
 package net.cjsah.mod.carpet;
 
+import com.mojang.brigadier.CommandDispatcher;
 import net.cjsah.mod.carpet.script.CarpetExpression;
 import net.cjsah.mod.carpet.settings.SettingsManager;
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+
 import java.util.Map;
 
 public interface CarpetExtension

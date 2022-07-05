@@ -1,20 +1,20 @@
 package net.cjsah.mod.carpet.script.annotation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.cjsah.mod.carpet.CarpetServer;
+import net.cjsah.mod.carpet.script.exception.InternalExpressionException;
 import net.cjsah.mod.carpet.script.value.EntityValue;
 import net.cjsah.mod.carpet.script.value.FormattedTextValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
 import net.cjsah.mod.carpet.script.value.Value;
 import net.cjsah.mod.carpet.script.value.ValueConversions;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * <p>A simple {@link ValueConverter} implementation that converts from a specified subclass of {@link Value} into {@code <R>} by using a given
@@ -27,9 +27,11 @@ import net.cjsah.mod.carpet.script.value.ValueConversions;
  * @param <T> The type of the required input {@link Value}
  * @param <R> The type that this converter converts to
  */
-public final class SimpleTypeConverter<T extends Value, R> implements ValueConverter<R> {
+public final class SimpleTypeConverter<T extends Value, R> implements ValueConverter<R>
+{
     private static final Map<Class<?>, SimpleTypeConverter<? extends Value, ?>> byResult = new HashMap<>();
-    static {
+    static
+    {
         registerType(Value.class, ServerPlayer.class, val -> EntityValue.getPlayerByValue(CarpetServer.minecraft_server, val), "online player");
         registerType(EntityValue.class, Entity.class, EntityValue::getEntity, "entity");
         registerType(Value.class, Level.class, val -> ValueConversions.dimFromValue(val, CarpetServer.minecraft_server), "dimension");
@@ -57,14 +59,16 @@ public final class SimpleTypeConverter<T extends Value, R> implements ValueConve
      * @param inputType The required type for the input {@link Value}
      * @param converter The function to convert an instance of inputType into R.
      */
-    public SimpleTypeConverter(Class<T> inputType, Function<T, R> converter, String typeName) {
+    public SimpleTypeConverter(Class<T> inputType, Function<T, R> converter, String typeName)
+    {
         this.converter = converter;
         this.valueClass = inputType;
         this.typeName = typeName;
     }
 
     @Override
-    public String getTypeName() {
+    public String getTypeName()
+    {
         return typeName;
     }
 
@@ -76,13 +80,16 @@ public final class SimpleTypeConverter<T extends Value, R> implements ValueConve
      * @return The {@link SimpleTypeConverter} for the specified outputType
      */
     @SuppressWarnings("unchecked") // T always extends Value, R is always the same as map's key, since map is private.
-    static <R> SimpleTypeConverter<Value, R> get(Class<R> outputType) {
+    static <R> SimpleTypeConverter<Value, R> get(Class<R> outputType)
+    {
         return (SimpleTypeConverter<Value, R>) byResult.get(outputType);
     }
 
     @Override
-    public R convert(Value value) {
-        return valueClass.isInstance(value) ? converter.apply(valueClass.cast(value)) : null;
+    @SuppressWarnings("unchecked") // more than checked. not using class.cast because then "method is too big" for inlining, because javac is useless
+    public R convert(Value value)                                                          // and adds millions of casts. This one is even removed
+    {
+        return valueClass.isInstance(value) ? converter.apply((T)value) : null;
     }
 
     /**
@@ -98,7 +105,8 @@ public final class SimpleTypeConverter<T extends Value, R> implements ValueConve
      * @param typeName The name of the type, following the conventions of {@link ValueConverter#getTypeName()}
      */
     public static <T extends Value, R> void registerType(Class<T> requiredInputType, Class<R> outputType,
-            Function<T, R> converter, String typeName) {
+            Function<T, R> converter, String typeName)
+    {
         SimpleTypeConverter<T, R> type = new SimpleTypeConverter<>(requiredInputType, converter, typeName);
         byResult.put(outputType, type);
     }

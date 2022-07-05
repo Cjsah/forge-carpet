@@ -1,8 +1,14 @@
 package net.cjsah.mod.carpet.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.cjsah.mod.carpet.CarpetServer;
 import net.cjsah.mod.carpet.CarpetSettings;
-import net.cjsah.mod.carpet.script.utils.AppStoreManager;
 import net.cjsah.mod.carpet.script.CarpetEventServer;
 import net.cjsah.mod.carpet.script.CarpetExpression;
 import net.cjsah.mod.carpet.script.CarpetScriptHost;
@@ -11,18 +17,24 @@ import net.cjsah.mod.carpet.script.LazyValue;
 import net.cjsah.mod.carpet.script.ScriptHost;
 import net.cjsah.mod.carpet.script.Tokenizer;
 import net.cjsah.mod.carpet.script.exception.CarpetExpressionException;
+import net.cjsah.mod.carpet.script.utils.AppStoreManager;
 import net.cjsah.mod.carpet.script.value.FunctionValue;
 import net.cjsah.mod.carpet.script.value.Value;
 import net.cjsah.mod.carpet.settings.SettingsManager;
 import net.cjsah.mod.carpet.utils.CarpetProfiler;
 import net.cjsah.mod.carpet.utils.Messenger;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.blocks.BlockInput;
+import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
+import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -37,33 +49,24 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.blocks.BlockInput;
-import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
-import net.minecraft.commands.arguments.blocks.BlockStateArgument;
-import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Clearable;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class ScriptCommand {
+public class ScriptCommand
+{
     private static final TreeSet<String> scarpetFunctions;
     private static final TreeSet<String> APIFunctions;
-    static {
+    static
+    {
         Set<String> allFunctions = (new CarpetExpression(null, "null", null, null)).getExpr().getFunctionNames();
         scarpetFunctions = new TreeSet<>(Expression.none.getFunctionNames());
         APIFunctions = allFunctions.stream().filter(s -> !scarpetFunctions.contains(s)).collect(Collectors.toCollection(TreeSet::new));
     }
 
-    public static List<String> suggestFunctions(ScriptHost host, String previous, String prefix) {
+    public static List<String> suggestFunctions(ScriptHost host, String previous, String prefix)
+    {
         previous = previous.replace("\\'", "");
         int quoteCount = StringUtils.countMatches(previous,'\'');
         if (quoteCount % 2 == 1)
@@ -85,12 +88,14 @@ public class ScriptCommand {
     private static CompletableFuture<Suggestions> suggestCode(
             CommandContext<CommandSourceStack> context,
             SuggestionsBuilder suggestionsBuilder
-    ) throws CommandSyntaxException {
+    ) throws CommandSyntaxException
+    {
         CarpetScriptHost currentHost = getHost(context);
         String previous = suggestionsBuilder.getRemaining().toLowerCase(Locale.ROOT);
         int strlen = previous.length();
         StringBuilder lastToken = new StringBuilder();
-        for (int idx = strlen-1; idx >=0; idx--) {
+        for (int idx = strlen-1; idx >=0; idx--)
+        {
             char ch = previous.charAt(idx);
             if (Character.isLetterOrDigit(ch) || ch == '_') lastToken.append(ch); else break;
         }
@@ -116,14 +121,16 @@ public class ScriptCommand {
             try {
                 AppStoreManager.suggestionsFromPath(previous).forEach(suggestionsBuilder::suggest);
             }
-            catch (IOException e) {
+            catch (IOException e)
+            {
                 CarpetSettings.LOG.warn("Exception when fetching app store structure", e);
             }
             return suggestionsBuilder.build();
         });
     }
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
+    {
         LiteralArgumentBuilder<CommandSourceStack> b = literal("globals").
                 executes(context -> listGlobals(context, false)).
                 then(literal("all").executes(context -> listGlobals(context, true)));
@@ -261,12 +268,14 @@ public class ScriptCommand {
         LiteralArgumentBuilder<CommandSourceStack> a = literal("load").requires( (player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandScriptACE) ).
                 then(argument("app", StringArgumentType.word()).
                         suggests( (cc, bb) -> suggest(CarpetServer.scriptServer.listAvailableModules(true),bb)).
-                        executes((cc) -> {
+                        executes((cc) ->
+                        {
                             boolean success = CarpetServer.scriptServer.addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, true, false, false, null);
                             return success?1:0;
                         }).
                         then(literal("global").
-                                executes((cc) -> {
+                                executes((cc) ->
+                                {
                                     boolean success = CarpetServer.scriptServer.addScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), null, false, false, false, null);
                                     return success?1:0;
                                 }
@@ -276,7 +285,8 @@ public class ScriptCommand {
         LiteralArgumentBuilder<CommandSourceStack> f = literal("unload").requires( (player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandScriptACE) ).
                 then(argument("app", StringArgumentType.word()).
                         suggests( (cc, bb) -> suggest(CarpetServer.scriptServer.unloadableModules,bb)).
-                        executes((cc) -> {
+                        executes((cc) ->
+                        {
                             boolean success =CarpetServer.scriptServer.removeScriptHost(cc.getSource(), StringArgumentType.getString(cc, "app"), true, false);
                             return success?1:0;
                         }));
@@ -323,7 +333,8 @@ public class ScriptCommand {
         LiteralArgumentBuilder<CommandSourceStack> r = literal("remove").requires( (player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandScriptACE) ).
                 then(argument("app", StringArgumentType.word()).
                         suggests( (cc, bb) -> suggest(CarpetServer.scriptServer.unloadableModules,bb)).
-                        executes((cc) -> {
+                        executes((cc) ->
+                        {
                             boolean success =CarpetServer.scriptServer.uninstallApp(cc.getSource(), StringArgumentType.getString(cc, "app"));
                             return success?1:0;
                         }));
@@ -338,29 +349,37 @@ public class ScriptCommand {
                                 suggests( (cc, bb) -> suggest(CarpetServer.scriptServer.modules.keySet(), bb)).
                                 then(b).then(u).then(o).then(l).then(s).then(c).then(h).then(i).then(e).then(t))));
     }
-    private static CarpetScriptHost getHost(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static CarpetScriptHost getHost(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
         CarpetScriptHost host;
-        try {
+        try
+        {
             String name = StringArgumentType.getString(context, "app").toLowerCase(Locale.ROOT);
             CarpetScriptHost parentHost = CarpetServer.scriptServer.modules.getOrDefault(name, CarpetServer.scriptServer.globalHost);
             host =  parentHost.retrieveOwnForExecution(context.getSource());
         }
-        catch (IllegalArgumentException ignored) {
+        catch (IllegalArgumentException ignored)
+        {
             host =  CarpetServer.scriptServer.globalHost;
         }
         host.setChatErrorSnooper(context.getSource());
         return host;
     }
-    private static Collection<String> suggestFunctionCalls(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+    private static Collection<String> suggestFunctionCalls(CommandContext<CommandSourceStack> c) throws CommandSyntaxException
+    {
         CarpetScriptHost host = getHost(c);
         return host.globalFunctionNames(host.main, s ->  !s.startsWith("_")).sorted().collect(Collectors.toList());
     }
-    private static int listEvents(CommandSourceStack source) {
+    private static int listEvents(CommandSourceStack source)
+    {
         Messenger.m(source, "w Lists ALL event handlers:");
-        for (CarpetEventServer.Event event: CarpetEventServer.Event.getAllEvents(CarpetServer.scriptServer, null)) {
+        for (CarpetEventServer.Event event: CarpetEventServer.Event.getAllEvents(CarpetServer.scriptServer, null))
+        {
             boolean shownEvent = false;
-            for (CarpetEventServer.Callback c: event.handler.inspectCurrentCalls()) {
-                if (!shownEvent) {
+            for (CarpetEventServer.Callback c: event.handler.inspectCurrentCalls())
+            {
+                if (!shownEvent)
+                {
                     Messenger.m(source, "w Handlers for "+event.name+": ");
                     shownEvent = true;
                 }
@@ -369,14 +388,16 @@ public class ScriptCommand {
         }
         return 1;
     }
-    private static int listGlobals(CommandContext<CommandSourceStack> context, boolean all) throws CommandSyntaxException {
+    private static int listGlobals(CommandContext<CommandSourceStack> context, boolean all) throws CommandSyntaxException
+    {
         CarpetScriptHost host = getHost(context);
         CommandSourceStack source = context.getSource();
 
         Messenger.m(source, "lb Stored functions"+((host == CarpetServer.scriptServer.globalHost)?":":" in "+host.getName()+":"));
         host.globalFunctionNames(host.main, (str) -> all || !str.startsWith("__")).sorted().forEach( (s) -> {
             FunctionValue fun = host.getFunction(s);
-            if (fun == null) {
+            if (fun == null)
+            {
                 Messenger.m(source, "gb "+s, "g  - unused import");
                 Messenger.m(source, "gi ----------------");
                 return;
@@ -385,7 +406,8 @@ public class ScriptCommand {
             Tokenizer.Token tok = fun.getToken();
             List<String> snippet = expr.getExpressionSnippet(tok);
             Messenger.m(source, "wb "+fun.fullName(),"t  defined at: line "+(tok.lineno+1)+" pos "+(tok.linepos+1));
-            for (String snippetLine: snippet) {
+            for (String snippetLine: snippet)
+            {
                 Messenger.m(source, "w "+snippetLine);
             }
             Messenger.m(source, "gi ----------------");
@@ -395,29 +417,35 @@ public class ScriptCommand {
         Messenger.m(source, "lb Global variables"+((host == CarpetServer.scriptServer.globalHost)?":":" in "+host.getName()+":"));
         host.globalVariableNames(host.main, (s) -> s.startsWith("global_")).sorted().forEach( (s) -> {
             LazyValue variable = host.getGlobalVariable(s);
-            if (variable == null) {
+            if (variable == null)
+            {
                 Messenger.m(source, "gb "+s, "g  - unused import");
             }
-            else {
+            else
+            {
                 Messenger.m(source, "wb "+s+": ", "w "+ variable.evalValue(null).getPrettyString());
             }
         });
         return 1;
     }
 
-    public static int handleCall(CommandSourceStack source, CarpetScriptHost host, Supplier<Value> call) {
-        try {
+    public static int handleCall(CommandSourceStack source, CarpetScriptHost host, Supplier<Value> call)
+    {
+        try
+        {
             CarpetProfiler.ProfilerToken currentSection = CarpetProfiler.start_section(null, "Scarpet run", CarpetProfiler.TYPE.GENERAL);
             host.setChatErrorSnooper(source);
             long start = System.nanoTime();
             Value result = call.get();
             long time = ((System.nanoTime()-start)/1000);
             String metric = "\u00B5s";
-            if (time > 5000) {
+            if (time > 5000)
+            {
                 time /= 1000;
                 metric = "ms";
             }
-            if (time > 10000) {
+            if (time > 10000)
+            {
                 time /= 1000;
                 metric = "s";
             }
@@ -426,33 +454,40 @@ public class ScriptCommand {
             CarpetProfiler.end_current_section(currentSection);
             return intres;
         }
-        catch (CarpetExpressionException e) {
+        catch (CarpetExpressionException e)
+        {
             host.handleErrorWithStack("Error while evaluating expression", e);
         }
-        catch (ArithmeticException ae) {
+        catch (ArithmeticException ae)
+        {
             host.handleErrorWithStack("Math doesn't compute", ae);
         }
-        catch (StackOverflowError soe) {
+        catch (StackOverflowError soe)
+        {
             host.handleErrorWithStack("Your thoughts are too deep", soe);
         }
         return 0;
         //host.resetErrorSnooper();  // lets say no need to reset the snooper in case something happens on the way
     }
 
-    private static int invoke(CommandContext<CommandSourceStack> context, String call, BlockPos pos1, BlockPos pos2,  String args) throws CommandSyntaxException {
+    private static int invoke(CommandContext<CommandSourceStack> context, String call, BlockPos pos1, BlockPos pos2,  String args) throws CommandSyntaxException
+    {
         CommandSourceStack source = context.getSource();
         CarpetScriptHost host = getHost(context);
-        if (call.startsWith("__")) {
+        if (call.startsWith("__"))
+        {
             Messenger.m(source, "r Hidden functions are only callable in scripts");
             return 0;
         }
         List<Integer> positions = new ArrayList<>();
-        if (pos1 != null) {
+        if (pos1 != null)
+        {
             positions.add(pos1.getX());
             positions.add(pos1.getY());
             positions.add(pos1.getZ());
         }
-        if (pos2 != null) {
+        if (pos2 != null)
+        {
             positions.add(pos2.getX());
             positions.add(pos2.getY());
             positions.add(pos2.getZ());
@@ -463,7 +498,8 @@ public class ScriptCommand {
     }
 
 
-    private static int compute(CommandContext<CommandSourceStack> context, String expr) throws CommandSyntaxException {
+    private static int compute(CommandContext<CommandSourceStack> context, String expr) throws CommandSyntaxException
+    {
         CommandSourceStack source = context.getSource();
         CarpetScriptHost host = getHost(context);
         return handleCall(source, host, () -> {
@@ -472,36 +508,46 @@ public class ScriptCommand {
         });
     }
 
-    private static int scriptScan(CommandContext<CommandSourceStack> context, BlockPos origin, BlockPos a, BlockPos b, String expr) throws CommandSyntaxException {
+    private static int scriptScan(CommandContext<CommandSourceStack> context, BlockPos origin, BlockPos a, BlockPos b, String expr) throws CommandSyntaxException
+    {
         CommandSourceStack source = context.getSource();
         CarpetScriptHost host = getHost(context);
         BoundingBox area = BoundingBox.fromCorners(a, b);
         CarpetExpression cexpr = new CarpetExpression(host.main, expr, source, origin);
         int int_1 = area.getXSpan() * area.getYSpan() * area.getZSpan(); // X Y Z
-        if (int_1 > CarpetSettings.fillLimit) {
+        if (int_1 > CarpetSettings.fillLimit)
+        {
             Messenger.m(source, "r too many blocks to evaluate: " + int_1);
             return 1;
         }
         int successCount = 0;
         CarpetSettings.impendingFillSkipUpdates.set(!CarpetSettings.fillUpdates);
-        try {
-            for (int x = area.minX(); x <= area.maxX(); x++) {
-                for (int y = area.minY(); y <= area.maxY(); y++) {
-                    for (int z = area.minZ(); z <= area.maxZ(); z++) {
-                        try {
+        try
+        {
+            for (int x = area.minX(); x <= area.maxX(); x++)
+            {
+                for (int y = area.minY(); y <= area.maxY(); y++)
+                {
+                    for (int z = area.minZ(); z <= area.maxZ(); z++)
+                    {
+                        try
+                        {
                             if (cexpr.fillAndScanCommand(host, x, y, z)) successCount++;
                         }
-                        catch (ArithmeticException ignored) {
+                        catch (ArithmeticException ignored)
+                        {
                         }
                     }
                 }
             }
         }
-        catch (CarpetExpressionException exc) {
+        catch (CarpetExpressionException exc)
+        {
             host.handleErrorWithStack("Error while processing command", exc);
             return 0;
         }
-        finally {
+        finally
+        {
             CarpetSettings.impendingFillSkipUpdates.set(false);
         }
         Messenger.m(source, "w Expression successful in " + successCount + " out of " + int_1 + " blocks");
@@ -511,13 +557,15 @@ public class ScriptCommand {
 
 
     private static int scriptFill(CommandContext<CommandSourceStack> context, BlockPos origin, BlockPos a, BlockPos b, String expr,
-                                BlockInput block, Predicate<BlockInWorld> replacement, String mode) throws CommandSyntaxException {
+                                BlockInput block, Predicate<BlockInWorld> replacement, String mode) throws CommandSyntaxException
+    {
         CommandSourceStack source = context.getSource();
         CarpetScriptHost host = getHost(context);
         BoundingBox area = BoundingBox.fromCorners(a, b);
         CarpetExpression cexpr = new CarpetExpression(host.main, expr, source, origin);
         int int_1 = area.getXSpan() * area.getYSpan() * area.getZSpan();
-        if (int_1 > CarpetSettings.fillLimit) {
+        if (int_1 > CarpetSettings.fillLimit)
+        {
             Messenger.m(source, "r too many blocks to evaluate: "+ int_1);
             return 1;
         }
@@ -527,19 +575,26 @@ public class ScriptCommand {
         BlockPos.MutableBlockPos mbpos = origin.mutable();
         ServerLevel world = source.getLevel();
 
-        for (int x = area.minX(); x <= area.maxX(); x++) {
-            for (int y = area.minY(); y <= area.maxY(); y++) {
-                for (int z = area.minZ(); z <= area.maxZ(); z++) {
-                    try {
-                        if (cexpr.fillAndScanCommand(host, x, y, z)) {
+        for (int x = area.minX(); x <= area.maxX(); x++)
+        {
+            for (int y = area.minY(); y <= area.maxY(); y++)
+            {
+                for (int z = area.minZ(); z <= area.maxZ(); z++)
+                {
+                    try
+                    {
+                        if (cexpr.fillAndScanCommand(host, x, y, z))
+                        {
                             volume[x-area.minX()][y-area.minY()][z-area.minZ()]=true;
                         }
                     }
-                    catch (CarpetExpressionException e) {
+                    catch (CarpetExpressionException e)
+                    {
                         host.handleErrorWithStack("Exception while filling the area", e);
                         return 0;
                     }
-                    catch (ArithmeticException e) {
+                    catch (ArithmeticException e)
+                    {
                     }
                 }
             }
@@ -547,19 +602,25 @@ public class ScriptCommand {
         final int maxx = area.getXSpan()-1;
         final int maxy = area.getYSpan()-1;
         final int maxz = area.getZSpan()-1;
-        if ("outline".equalsIgnoreCase(mode)) {
+        if ("outline".equalsIgnoreCase(mode))
+        {
             boolean[][][] newVolume = new boolean[area.getXSpan()][area.getYSpan()][area.getZSpan()];
-            for (int x = 0; x <= maxx; x++) {
-                for (int y = 0; y <= maxy; y++) {
-                    for (int z = 0; z <= maxz; z++) {
-                        if (volume[x][y][z]) {
+            for (int x = 0; x <= maxx; x++)
+            {
+                for (int y = 0; y <= maxy; y++)
+                {
+                    for (int z = 0; z <= maxz; z++)
+                    {
+                        if (volume[x][y][z])
+                        {
                             if ( (  (x != 0    && !volume[x-1][y  ][z  ]) ||
                                     (x != maxx && !volume[x+1][y  ][z  ]) ||
                                     (y != 0    && !volume[x  ][y-1][z  ]) ||
                                     (y != maxy && !volume[x  ][y+1][z  ]) ||
                                     (z != 0    && !volume[x  ][y  ][z-1]) ||
                                     (z != maxz && !volume[x  ][y  ][z+1])
-                            )) {
+                            ))
+                            {
                                 newVolume[x][y][z] = true;
                             }
                         }
@@ -571,17 +632,23 @@ public class ScriptCommand {
         int affected = 0;
 
         CarpetSettings.impendingFillSkipUpdates.set(!CarpetSettings.fillUpdates);
-        for (int x = 0; x <= maxx; x++) {
-            for (int y = 0; y <= maxy; y++) {
-                for (int z = 0; z <= maxz; z++) {
-                    if (volume[x][y][z]) {
+        for (int x = 0; x <= maxx; x++)
+        {
+            for (int y = 0; y <= maxy; y++)
+            {
+                for (int z = 0; z <= maxz; z++)
+                {
+                    if (volume[x][y][z])
+                    {
                         mbpos.set(x+area.minX(), y+area.minY(), z+area.minZ());
                         if (replacement == null || replacement.test(
-                                new BlockInWorld( world, mbpos, true))) {
+                                new BlockInWorld( world, mbpos, true)))
+                        {
                             BlockEntity tileentity = world.getBlockEntity(mbpos);
                             Clearable.tryClear(tileentity);
                             
-                            if (block.place(world, mbpos,2)) {
+                            if (block.place(world, mbpos,2))
+                            {
                                 ++affected;
                             }
                         }
@@ -591,11 +658,16 @@ public class ScriptCommand {
         }
         CarpetSettings.impendingFillSkipUpdates.set(false);
 
-        if (CarpetSettings.fillUpdates && block != null) {
-            for (int x = 0; x <= maxx; x++) {
-                for (int y = 0; y <= maxy; y++) {
-                    for (int z = 0; z <= maxz; z++) {
-                        if (volume[x][y][z]) {
+        if (CarpetSettings.fillUpdates && block != null)
+        {
+            for (int x = 0; x <= maxx; x++)
+            {
+                for (int y = 0; y <= maxy; y++)
+                {
+                    for (int z = 0; z <= maxz; z++)
+                    {
+                        if (volume[x][y][z])
+                        {
                             mbpos.set(x+area.minX(), y+area.minY(), z+area.minZ());
                             Block blokc = world.getBlockState(mbpos).getBlock();
                             world.blockUpdated(mbpos, blokc);

@@ -5,16 +5,16 @@ import net.cjsah.mod.carpet.settings.ParsedRule;
 import net.cjsah.mod.carpet.settings.Rule;
 import net.cjsah.mod.carpet.settings.SettingsManager;
 import net.cjsah.mod.carpet.settings.Validator;
-import net.cjsah.mod.carpet.utils.Translations;
 import net.cjsah.mod.carpet.utils.Messenger;
 import net.cjsah.mod.carpet.utils.SpawnChunks;
-import net.cjsah.mod.carpet.settings.*;
+import net.cjsah.mod.carpet.utils.Translations;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -22,16 +22,20 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Optional;
 
+import static net.cjsah.mod.carpet.settings.RuleCategory.*;
+
 @SuppressWarnings("CanBeFinal")
-public class CarpetSettings {
-    public static final String carpetVersion = "1.4.56+v211130";
-    public static final Logger LOG = LogManager.getLogger("carpet");
+public class CarpetSettings
+{
+    public static final String carpetVersion = "1.4.69+v220331";
+    public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
@@ -43,10 +47,12 @@ public class CarpetSettings {
 
     private static class LanguageValidator extends Validator<String> {
         @Override public String validate(CommandSourceStack source, ParsedRule<String> currentRule, String newValue, String string) {
-            if (currentRule.get().equals(newValue) || source == null) {
+            if (currentRule.get().equals(newValue) || source == null)
+            {
                 return newValue;
             }
-            if (!Translations.isValidLanguage(newValue)) {
+            if (!Translations.isValidLanguage(newValue))
+            {
                 Messenger.m(source, "r "+newValue+" is not a valid language");
                 return null;
             }
@@ -57,7 +63,7 @@ public class CarpetSettings {
     }
     @Rule(
             desc = "sets the language for carpet",
-            category = RuleCategory.FEATURE,
+            category = FEATURE,
             options = {"none", "zh_cn", "zh_tw"},
             strict = false,
             validate = LanguageValidator.class
@@ -120,13 +126,14 @@ public class CarpetSettings {
         }
 
         @Override
-        public String description() {
+        public String description()
+        {
             return "This setting can only be set by admins with op level 4";
         }
     }
     @Rule(
             desc = "Carpet command permission level. Can only be set via .conf file",
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             validate = CarpetPermissionLevel.class,
             options = {"ops", "2", "4"}
     )
@@ -134,13 +141,13 @@ public class CarpetSettings {
 
 
 
-    @Rule(desc = "Gbhs sgnf sadsgras fhskdpri!!!", category = RuleCategory.EXPERIMENTAL)
+    @Rule(desc = "Gbhs sgnf sadsgras fhskdpri!!!", category = EXPERIMENTAL)
     public static boolean superSecretSetting = false;
 
     @Rule(
             desc = "Amount of delay ticks to use a nether portal in creative",
             options = {"1", "40", "80", "72000"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = OneHourMaxDelayLimit.class
     )
@@ -149,7 +156,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Amount of delay ticks to use a nether portal in survival",
             options = {"1", "40", "80", "72000"},
-            category = RuleCategory.SURVIVAL,
+            category = SURVIVAL,
             strict = false,
             validate = OneHourMaxDelayLimit.class
     )
@@ -164,10 +171,10 @@ public class CarpetSettings {
         public String description() { return "You must choose a value from 1 to 72000";}
     }
 
-    @Rule(desc = "Dropping entire stacks works also from on the crafting UI result slot", category = {RuleCategory.BUGFIX, RuleCategory.SURVIVAL})
+    @Rule(desc = "Dropping entire stacks works also from on the crafting UI result slot", category = {BUGFIX, SURVIVAL})
     public static boolean ctrlQCraftingFix = false;
 
-    @Rule(desc = "Parrots don't get of your shoulders until you receive proper damage", category = {RuleCategory.SURVIVAL, RuleCategory.FEATURE})
+    @Rule(desc = "Parrots don't get of your shoulders until you receive proper damage", category = {SURVIVAL, FEATURE})
     public static boolean persistentParrots = false;
 
     /*@Rule(
@@ -186,27 +193,61 @@ public class CarpetSettings {
     public static boolean reloadSuffocationFix = false;
     */
 
-    @Rule( desc = "Players absorb XP instantly, without delay", category = RuleCategory.CREATIVE )
+    @Rule( desc = "Players absorb XP instantly, without delay", category = CREATIVE )
     public static boolean xpNoCooldown = false;
 
-    @Rule(
-            desc = "Empty shulker boxes can stack to 64 when dropped on the ground",
-            extra = ".. or when manipulated inside the inventories",
-            category = {RuleCategory.SURVIVAL, RuleCategory.FEATURE}
-    )
-    public static boolean stackableShulkerBoxes = false;
-    public static final int SHULKER_STACK_SIZE = 64;
+    public static class StackableShulkerBoxValidator extends Validator<String> 
+    {
+        @Override
+        public String validate(CommandSourceStack source, ParsedRule<String> currentRule, String newValue, String string)
+        {
+            if (newValue.matches("^[0-9]+$")) {
+                int value = Integer.parseInt(newValue);
+                if (value <= 64 && value >= 2) {
+                    shulkerBoxStackSize = value;
+                    return newValue;
+                }
+            }
+            if (newValue.equalsIgnoreCase("false")) {
+                shulkerBoxStackSize = 1;
+                return newValue;
+            }
+            if (newValue.equalsIgnoreCase("true")) {
+                shulkerBoxStackSize = 64;
+                return newValue;
+            }
+            return null;
+        }
 
-    @Rule( desc = "Explosions won't destroy blocks", category = {RuleCategory.CREATIVE, RuleCategory.TNT} )
+        @Override
+        public String description()
+        {
+            return "Value must either be true, false, or a number between 2-64";
+        }
+    }
+
+    @Rule(
+            desc = "Empty shulker boxes can stack when thrown on the ground.",
+            extra = ".. or when manipulated inside the inventories",
+            validate = StackableShulkerBoxValidator.class,
+            options = {"false", "true", "16"},
+            strict = false,
+            category = {SURVIVAL, FEATURE}
+    )
+    public static String stackableShulkerBoxes = "false";
+    public static int shulkerBoxStackSize = 1;
+
+    @Rule( desc = "Explosions won't destroy blocks", category = {CREATIVE, TNT} )
     public static boolean explosionNoBlockDamage = false;
 
-    @Rule( desc = "Removes random TNT momentum when primed", category = {RuleCategory.CREATIVE, RuleCategory.TNT} )
+    @Rule( desc = "Removes random TNT momentum when primed", category = {CREATIVE, TNT} )
     public static boolean tntPrimerMomentumRemoved = false;
 
-    @Rule( desc = "TNT causes less lag when exploding in the same spot and in liquids", category = RuleCategory.TNT)
+    @Rule( desc = "TNT causes less lag when exploding in the same spot and in liquids", category = TNT)
     public static boolean optimizedTNT = false;
 
-    private static class CheckOptimizedTntEnabledValidator<T> extends Validator<T> {
+    private static class CheckOptimizedTntEnabledValidator<T> extends Validator<T>
+    {
         @Override
         public T validate(CommandSourceStack source, ParsedRule<T> currentRule, T newValue, String string) {
             return optimizedTNT || currentRule.defaultValue.equals(newValue) ? newValue : null;
@@ -218,7 +259,7 @@ public class CarpetSettings {
         }
     }
 
-    @Rule( desc = "Sets the tnt random explosion range to a fixed value", category = RuleCategory.TNT, options = "-1", strict = false,
+    @Rule( desc = "Sets the tnt random explosion range to a fixed value", category = TNT, options = "-1", strict = false,
             validate = {CheckOptimizedTntEnabledValidator.class, TNTRandomRangeValidator.class}, extra = "Set to -1 for default behavior")
     public static double tntRandomRange = -1;
 
@@ -234,7 +275,7 @@ public class CarpetSettings {
         }
     }
 
-    @Rule( desc = "Sets the horizontal random angle on TNT for debugging of TNT contraptions", category = RuleCategory.TNT, options = "-1", strict = false,
+    @Rule( desc = "Sets the horizontal random angle on TNT for debugging of TNT contraptions", category = TNT, options = "-1", strict = false,
             validate = TNTAngleValidator.class, extra = "Set to -1 for default behavior")
     public static double hardcodeTNTangle = -1.0D;
 
@@ -250,7 +291,7 @@ public class CarpetSettings {
         }
     }
 
-    @Rule( desc = "Merges stationary primed TNT entities", category = RuleCategory.TNT )
+    @Rule( desc = "Merges stationary primed TNT entities", category = TNT )
     public static boolean mergeTNT = false;
 
     @Rule(
@@ -260,24 +301,24 @@ public class CarpetSettings {
                     ".. also fixes some locational behaviours or vanilla redstone MC-11193",
                     "so behaviour of locational vanilla contraptions is not guaranteed"
             },
-            category = {RuleCategory.EXPERIMENTAL, RuleCategory.OPTIMIZATION}
+            category = {EXPERIMENTAL, OPTIMIZATION}
     )
     public static boolean fastRedstoneDust = false;
 
-    @Rule(desc = "Only husks spawn in desert temples", category = RuleCategory.FEATURE)
+    @Rule(desc = "Only husks spawn in desert temples", category = FEATURE)
     public static boolean huskSpawningInTemples = false;
 
-    @Rule( desc = "Shulkers will respawn in end cities", category = RuleCategory.FEATURE )
+    @Rule( desc = "Shulkers will respawn in end cities", category = FEATURE )
     public static boolean shulkerSpawningInEndCities = false;
 
     @Rule(
             desc = "Piglins will respawn in bastion remnants",
             extra = "Includes piglins, brutes, and a few hoglins",
-            category = RuleCategory.FEATURE
+            category = FEATURE
     )
     public static boolean piglinsSpawningInBastions = false;
 
-    @Rule( desc = "TNT doesn't update when placed against a power source", category = {RuleCategory.CREATIVE, RuleCategory.TNT} )
+    @Rule( desc = "TNT doesn't update when placed against a power source", category = {CREATIVE, TNT} )
     public static boolean tntDoNotUpdate = false;
 
     @Rule(
@@ -286,11 +327,11 @@ public class CarpetSettings {
                     "Puts more trust in clients positioning",
                     "Increases player allowed mining distance to 32 blocks"
             },
-            category = {RuleCategory.CREATIVE, RuleCategory.SURVIVAL}
+            category = {CREATIVE, SURVIVAL}
     )
     public static boolean antiCheatDisabled = false;
 
-    @Rule(desc = "Pistons, droppers and dispensers react if block above them is powered", category = RuleCategory.CREATIVE)
+    @Rule(desc = "Pistons, droppers and dispensers react if block above them is powered", category = CREATIVE)
     public static boolean quasiConnectivity = true;
 
     @Rule(
@@ -299,7 +340,7 @@ public class CarpetSettings {
                     "Doesn't cause block updates when rotated/flipped",
                     "Applies to pistons, observers, droppers, repeaters, stairs, glazed terracotta etc..."
             },
-            category = {RuleCategory.CREATIVE, RuleCategory.SURVIVAL, RuleCategory.FEATURE}
+            category = {CREATIVE, SURVIVAL, FEATURE}
     )
     public static boolean flippinCactus = false;
 
@@ -312,7 +353,7 @@ public class CarpetSettings {
                     "Counters are global and shared between players, 16 channels available",
                     "Items counted are destroyed, count up to one stack per tick per hopper"
             },
-            category = {RuleCategory.COMMAND, RuleCategory.CREATIVE, RuleCategory.FEATURE}
+            category = {COMMAND, CREATIVE, FEATURE}
     )
     public static boolean hopperCounters = false;
 
@@ -322,14 +363,14 @@ public class CarpetSettings {
                     "Allow for them to be moved by pistons",
                     "as well as adds extra drop when mining with silk touch pickaxe"
             },
-            category = RuleCategory.FEATURE
+            category = FEATURE
     )
     public static boolean movableAmethyst = false;
 
-    @Rule( desc = "Guardians turn into Elder Guardian when struck by lightning", category = RuleCategory.FEATURE )
+    @Rule( desc = "Guardians turn into Elder Guardian when struck by lightning", category = FEATURE )
     public static boolean renewableSponges = false;
 
-    @Rule( desc = "Pistons can push block entities, like hoppers, chests etc.", category = {RuleCategory.EXPERIMENTAL, RuleCategory.FEATURE} )
+    @Rule( desc = "Pistons can push block entities, like hoppers, chests etc.", category = {EXPERIMENTAL, FEATURE} )
     public static boolean movableBlockEntities = false;
 
 
@@ -348,48 +389,48 @@ public class CarpetSettings {
                     "and will stick to other blocks that connect to them directly.",
                     "With stick_to_all: it will stick even if not visually connected"
             },
-            category = {RuleCategory.EXPERIMENTAL, RuleCategory.FEATURE},
+            category = {EXPERIMENTAL, FEATURE},
             options = {"true", "false", "stick_to_all"},
             validate = ChainStoneSetting.class
     )
     public static String chainStone = "false";
 
-    @Rule( desc = "Saplings turn into dead shrubs in hot climates and no water access", category = RuleCategory.FEATURE )
+    @Rule( desc = "Saplings turn into dead shrubs in hot climates and no water access", category = FEATURE )
     public static boolean desertShrubs = false;
 
-    @Rule( desc = "Silverfish drop a gravel item when breaking out of a block", category = RuleCategory.FEATURE )
+    @Rule( desc = "Silverfish drop a gravel item when breaking out of a block", category = FEATURE )
     public static boolean silverFishDropGravel = false;
 
-    @Rule( desc = "summoning a lightning bolt has all the side effects of natural lightning", category = RuleCategory.CREATIVE )
+    @Rule( desc = "summoning a lightning bolt has all the side effects of natural lightning", category = CREATIVE )
     public static boolean summonNaturalLightning = false;
 
-    @Rule(desc = "Enables /spawn command for spawn tracking", category = RuleCategory.COMMAND)
+    @Rule(desc = "Enables /spawn command for spawn tracking", category = COMMAND)
     public static String commandSpawn = "ops";
 
-    @Rule(desc = "Enables /tick command to control game clocks", category = RuleCategory.COMMAND)
+    @Rule(desc = "Enables /tick command to control game clocks", category = COMMAND)
     public static String commandTick = "ops";
 
     @Rule(
             desc = "Enables /profile command to monitor game performance",
             extra = "subset of /tick command capabilities",
-            category = RuleCategory.COMMAND
+            category = COMMAND
     )
     public static String commandProfile = "true";
 
     @Rule(
             desc = "Required permission level for /perf command",
             options = {"2", "4"},
-            category = RuleCategory.CREATIVE
+            category = CREATIVE
     )
     public static int perfPermissionLevel = 4;
 
-    @Rule(desc = "Enables /log command to monitor events via chat and overlays", category = RuleCategory.COMMAND)
+    @Rule(desc = "Enables /log command to monitor events via chat and overlays", category = COMMAND)
     public static String commandLog = "true";
 
     @Rule(
             desc = "sets these loggers in their default configurations for all new players",
             extra = "use csv, like 'tps,mobcaps' for multiple loggers, none for nothing",
-            category = {RuleCategory.CREATIVE, RuleCategory.SURVIVAL},
+            category = {CREATIVE, SURVIVAL},
             options = {"none", "tps", "mobcaps,tps"},
             strict = false
     )
@@ -398,7 +439,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Enables /distance command to measure in game distance between points",
             extra = "Also enables brown carpet placement action if 'carpets' rule is turned on as well",
-            category = RuleCategory.COMMAND
+            category = COMMAND
     )
     public static String commandDistance = "true";
 
@@ -408,25 +449,25 @@ public class CarpetSettings {
                     "Also enables gray carpet placement action",
                     "if 'carpets' rule is turned on as well"
             },
-            category = RuleCategory.COMMAND
+            category = COMMAND
     )
     public static String commandInfo = "true";
 
     @Rule(
             desc = "Enables /perimeterinfo command",
             extra = "... that scans the area around the block for potential spawnable spots",
-            category = RuleCategory.COMMAND
+            category = COMMAND
     )
     public static String commandPerimeterInfo = "true";
 
-    @Rule(desc = "Enables /draw commands", extra = {"... allows for drawing simple shapes or","other shapes which are sorta difficult to do normally"}, category = RuleCategory.COMMAND)
+    @Rule(desc = "Enables /draw commands", extra = {"... allows for drawing simple shapes or","other shapes which are sorta difficult to do normally"}, category = COMMAND)
     public static String commandDraw = "ops";
 
 
     @Rule(
             desc = "Enables /script command",
             extra = "An in-game scripting API for Scarpet programming language",
-            category = {RuleCategory.COMMAND, RuleCategory.SCARPET}
+            category = {COMMAND, SCARPET}
     )
     public static String commandScript = "true";
 
@@ -436,7 +477,7 @@ public class CarpetSettings {
             if (source != null && !source.hasPermission(permissionLevel))
                 return null;
             CarpetSettings.runPermissionLevel = permissionLevel;
-            Carpet.settingsManager.notifyPlayersCommandsChanged();
+            CarpetServer.settingsManager.notifyPlayersCommandsChanged();
             return newValue;
         }
         @Override
@@ -450,7 +491,7 @@ public class CarpetSettings {
                     "It is also the permission level apps will",
                     "have when running commands with run()"
             },
-            category = {RuleCategory.SCARPET},
+            category = {SCARPET},
             options = {"ops", "0", "1", "2", "3", "4"},
             validate = {Validator._COMMAND_LEVEL_VALIDATOR.class, ModulePermissionLevel.class}
     )
@@ -459,19 +500,19 @@ public class CarpetSettings {
     @Rule(
             desc = "Scarpet script from world files will autoload on server/world start ",
             extra = "if /script is enabled",
-            category = RuleCategory.SCARPET
+            category = SCARPET
     )
     public static boolean scriptsAutoload = true;
 
     @Rule(
             desc = "Enables scripts debugging messages in system log",
-            category = RuleCategory.SCARPET
+            category = SCARPET
     )
     public static boolean scriptsDebugging = false;
 
     @Rule(
             desc = "Enables scripts optimization",
-            category = RuleCategory.SCARPET
+            category = SCARPET
     )
     public static boolean scriptsOptimization = true;
 
@@ -482,44 +523,44 @@ public class CarpetSettings {
                     "Point to any github repo with scarpet apps",
                     "using <user>/<repo>/contents/<path...>"
             },
-            category = RuleCategory.SCARPET,
+            category = SCARPET,
             strict = false,
             validate= AppStoreManager.ScarpetAppStoreValidator.class
     )
     public static String scriptsAppStore = "gnembon/scarpet/contents/programs";
 
 
-    @Rule(desc = "Enables /player command to control/spawn players", category = RuleCategory.COMMAND)
+    @Rule(desc = "Enables /player command to control/spawn players", category = COMMAND)
     public static String commandPlayer = "ops";
 
-    @Rule(desc = "Spawn offline players in online mode if online-mode player with specified name does not exist", category = RuleCategory.COMMAND)
+    @Rule(desc = "Spawn offline players in online mode if online-mode player with specified name does not exist", category = COMMAND)
     public static boolean allowSpawningOfflinePlayers = true;
 
-    @Rule(desc = "Allows to track mobs AI via /track command", category = RuleCategory.COMMAND)
+    @Rule(desc = "Allows to track mobs AI via /track command", category = COMMAND)
     public static String commandTrackAI = "ops";
 
-    @Rule(desc = "Placing carpets may issue carpet commands for non-op players", category = RuleCategory.SURVIVAL)
+    @Rule(desc = "Placing carpets may issue carpet commands for non-op players", category = SURVIVAL)
     public static boolean carpets = false;
 
     @Rule(
             desc = "Glass can be broken faster with pickaxes",
-            category = RuleCategory.SURVIVAL
+            category = SURVIVAL
     )
     public static boolean missingTools = false;
 
-    @Rule(desc = "fill/clone/setblock and structure blocks cause block updates", category = RuleCategory.CREATIVE)
+    @Rule(desc = "fill/clone/setblock and structure blocks cause block updates", category = CREATIVE)
     public static boolean fillUpdates = true;
 
-    @Rule(desc = "placing blocks cause block updates", category = RuleCategory.CREATIVE)
+    @Rule(desc = "placing blocks cause block updates", category = CREATIVE)
     public static boolean interactionUpdates = true;
 
-    @Rule(desc = "Disables breaking of blocks caused by flowing liquids", category = RuleCategory.CREATIVE)
+    @Rule(desc = "Disables breaking of blocks caused by flowing liquids", category = CREATIVE)
     public static boolean liquidDamageDisabled = false;
 
     @Rule(
             desc = "smooth client animations with low tps settings",
             extra = "works only in SP, and will slow down players",
-            category = {RuleCategory.CREATIVE, RuleCategory.SURVIVAL, RuleCategory.CLIENT}
+            category = {CREATIVE, SURVIVAL, CLIENT}
     )
     public static boolean smoothClientAnimations;
 
@@ -540,7 +581,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable piston push limit",
             options = {"10", "12", "14", "100"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = PushLimitLimits.class
     )
@@ -549,7 +590,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable powered rail power range",
             options = {"9", "15", "30"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = PushLimitLimits.class
     )
@@ -565,7 +606,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable fill/clone volume limit",
             options = {"32768", "250000", "1000000"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = FillLimitLimits.class
     )
@@ -575,7 +616,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable forceload chunk limit",
             options = {"256"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = FillLimitLimits.class
     )
@@ -584,7 +625,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable maximal entity collision limits, 0 for no limits",
             options = {"0", "1", "20"},
-            category = RuleCategory.OPTIMIZATION,
+            category = OPTIMIZATION,
             strict = false,
             validate = Validator.NONNEGATIVE_NUMBER.class
     )
@@ -593,7 +634,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Customizable server list ping (Multiplayer menu) playerlist sample limit",
             options = {"0", "12", "20", "40"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = Validator.NONNEGATIVE_NUMBER.class
     )
@@ -613,35 +654,41 @@ public class CarpetSettings {
             extra = "use '_' to use the startup setting from server.properties",
             options = "_",
             strict = false,
-            category = RuleCategory.CREATIVE
+            category = CREATIVE
     )
     public static String customMOTD = "_";
 
     @Rule(
             desc = "Cactus in dispensers rotates blocks.",
             extra = "Rotates block anti-clockwise if possible",
-            category = {RuleCategory.FEATURE, RuleCategory.DISPENSER}
+            category = {FEATURE, DISPENSER}
     )
     public static boolean rotatorBlock = false;
 
-    private static class ViewDistanceValidator extends Validator<Integer> {
-        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
-            if (currentRule.get().equals(newValue) || source == null) {
+    private static class ViewDistanceValidator extends Validator<Integer>
+    {
+        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string)
+        {
+            if (currentRule.get().equals(newValue) || source == null)
+            {
                 return newValue;
             }
-            if (newValue < 0 || newValue > 32) {
+            if (newValue < 0 || newValue > 32)
+            {
                 Messenger.m(source, "r view distance has to be between 0 and 32");
                 return null;
             }
             MinecraftServer server = source.getServer();
 
-            if (server.isDedicatedServer()) {
+            if (server.isDedicatedServer())
+            {
                 int vd = (newValue >= 2)?newValue:((ServerInterface) server).getProperties().viewDistance;
                 if (vd != server.getPlayerList().getViewDistance())
                     server.getPlayerList().setViewDistance(vd);
                 return newValue;
             }
-            else {
+            else
+            {
                 Messenger.m(source, "r view distance can only be changed on a server");
                 return 0;
             }
@@ -653,15 +700,57 @@ public class CarpetSettings {
             desc = "Changes the view distance of the server.",
             extra = "Set to 0 to not override the value in server settings.",
             options = {"0", "12", "16", "32"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             validate = ViewDistanceValidator.class
     )
     public static int viewDistance = 0;
 
+    private static class SimulationDistanceValidator extends Validator<Integer>
+    {
+        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string)
+        {
+            if (currentRule.get().equals(newValue) || source == null)
+            {
+                return newValue;
+            }
+            if (newValue < 0 || newValue > 32)
+            {
+                Messenger.m(source, "r simulation distance has to be between 0 and 32");
+                return null;
+            }
+            MinecraftServer server = source.getServer();
+
+            if (server.isDedicatedServer())
+            {
+                int vd = (newValue >= 2)?newValue:((DedicatedServer) server).getProperties().simulationDistance;
+                if (vd != server.getPlayerList().getSimulationDistance())
+                    server.getPlayerList().setSimulationDistance(vd);
+                return newValue;
+            }
+            else
+            {
+                Messenger.m(source, "r simulation distance can only be changed on a server");
+                return 0;
+            }
+        }
+        @Override
+        public String description() { return "You must choose a value from 0 (use server settings) to 32";}
+    }
+    @Rule(
+            desc = "Changes the simulation distance of the server.",
+            extra = "Set to 0 to not override the value in server settings.",
+            options = {"0", "12", "16", "32"},
+            category = CREATIVE,
+            strict = false,
+            validate = SimulationDistanceValidator.class
+    )
+    public static int simulationDistance = 0;
+
     public static class ChangeSpawnChunksValidator extends Validator<Integer> {
-        public static void changeSpawnSize(int size) {
-            ServerLevel overworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
+        public static void changeSpawnSize(int size)
+        {
+            ServerLevel overworld = CarpetServer.minecraft_server.getLevel(Level.OVERWORLD); // OW
             if (overworld != null) {
                 ChunkPos centerChunk = new ChunkPos(new BlockPos(
                         overworld.getLevelData().getXSpawn(),
@@ -673,17 +762,20 @@ public class CarpetSettings {
         }
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
             if (source == null) return newValue;
-            if (newValue < 0 || newValue > 32) {
+            if (newValue < 0 || newValue > 32)
+            {
                 Messenger.m(source, "r spawn chunk size has to be between 0 and 32");
                 return null;
             }
-            if (currentRule.get().intValue() == newValue.intValue()) {
+            if (currentRule.get().intValue() == newValue.intValue())
+            {
                 //must been some startup thing
                 return newValue;
             }
-            if (Carpet.minecraft_server == null) return newValue;
-            ServerLevel currentOverworld = Carpet.minecraft_server.getLevel(Level.OVERWORLD); // OW
-            if (currentOverworld != null) {
+            if (CarpetServer.minecraft_server == null) return newValue;
+            ServerLevel currentOverworld = CarpetServer.minecraft_server.getLevel(Level.OVERWORLD); // OW
+            if (currentOverworld != null)
+            {
                 changeSpawnSize(newValue);
             }
             return newValue;
@@ -692,7 +784,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Changes size of spawn chunks",
             extra = {"Defines new radius", "setting it to 0 - disables spawn chunks"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             strict = false,
             options = {"0", "11"},
             validate = ChangeSpawnChunksValidator.class
@@ -700,28 +792,37 @@ public class CarpetSettings {
     public static int spawnChunksSize = 11;
 
     public static class LightBatchValidator extends Validator<Integer> {
-        public static void applyLightBatchSizes() {
-            for (ServerLevel serverWorld : Carpet.minecraft_server.getAllLevels()) {
+        public static void applyLightBatchSizes()
+        {
+            Iterator<ServerLevel> iterator = CarpetServer.minecraft_server.getAllLevels().iterator();
+            
+            while (iterator.hasNext()) 
+            {
+                ServerLevel serverWorld = iterator.next();
                 serverWorld.getChunkSource().getLightEngine().setTaskPerBatch(lightEngineMaxBatchSize);
             }
         }
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
             if (source == null) return newValue;
-            if (newValue < 0) {
+            if (newValue < 0)
+            {
                 Messenger.m(source, "r light batch size has to be at least 0");
                 return null;
             }
-            if (currentRule.get().intValue() == newValue.intValue()) {
+            if (currentRule.get().intValue() == newValue.intValue())
+            {
                 //must been some startup thing
                 return newValue;
             }
-            if (Carpet.minecraft_server == null) return newValue;
+            if (CarpetServer.minecraft_server == null) return newValue;
           
             // Set the field before we apply.
-            try {
-                currentRule.field.set(null, newValue);
+            try
+            {
+                currentRule.field.set(null, newValue.intValue());
             }
-            catch (IllegalAccessException e) {
+            catch (IllegalAccessException e)
+            {
                 Messenger.m(source, "r Unable to access setting for  "+currentRule.name);
                 return null;
             }
@@ -735,7 +836,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Changes maximum light tasks batch size",
             extra = {"Allows for a higher light suppression tolerance", "setting it to 5 - Default limit defined by the game"},
-            category = {RuleCategory.EXPERIMENTAL, RuleCategory.OPTIMIZATION},
+            category = {EXPERIMENTAL, OPTIMIZATION},
             strict = false,
             options = {"5", "50", "100", "200"},
             validate = LightBatchValidator.class
@@ -750,40 +851,40 @@ public class CarpetSettings {
     @Rule(
             desc = "Coral structures will grow with bonemeal from coral plants",
             extra = "Expanded also allows growing from coral fans for sustainable farming outside of warm oceans",
-            category = RuleCategory.FEATURE
+            category = FEATURE
     )
     public static RenewableCoralMode renewableCoral = RenewableCoralMode.FALSE;
 
     @Rule(
             desc = "Nether basalt generator without soul sand below ",
             extra = "  .. will convert into blackstone instead",
-            category = RuleCategory.FEATURE
+            category = FEATURE
     )
     public static boolean renewableBlackstone = false;
 
     @Rule(
             desc = "Lava and water generate deepslate and cobbled deepslate instead below Y16",
             extra = "This rule may change Y value to 0 with 1.18",
-            category = RuleCategory.FEATURE
+            category = FEATURE
     )
     public static boolean renewableDeepslate = false;
 
-    @Rule(desc = "fixes block placement rotation issue when player rotates quickly while placing blocks", category = RuleCategory.BUGFIX)
+    @Rule(desc = "fixes block placement rotation issue when player rotates quickly while placing blocks", category = BUGFIX)
     public static boolean placementRotationFix = false;
 
     @Rule(
             desc = "Fixes leads breaking/becoming invisible in unloaded chunks",
             extra = "You may still get visibly broken leash links on the client side, but server side the link is still there.",
-            category = RuleCategory.BUGFIX
+            category = BUGFIX
     )// needs checkfix for 1.15
     public static boolean leadFix = false;
 
-    @Rule(desc = "Spawning requires much less CPU and Memory", category = RuleCategory.OPTIMIZATION)
+    @Rule(desc = "Spawning requires much less CPU and Memory", category = OPTIMIZATION)
     public static boolean lagFreeSpawning = false;
     
     @Rule(
             desc = "Allows structure mobs to spawn in flat worlds",
-            category = {RuleCategory.EXPERIMENTAL, RuleCategory.CREATIVE}
+            category = {EXPERIMENTAL, CREATIVE}
     )
     public static boolean flatWorldStructureSpawning = false;
 
@@ -796,14 +897,14 @@ public class CarpetSettings {
                     "Blaze aggro sensitivity",
                     "Mobs spawned follow range"
             },
-            category = RuleCategory.CREATIVE
+            category = CREATIVE
     )
     public static boolean extremeBehaviours = false;
 
     @Rule(
             desc = "Removes fog from client in the nether and the end",
             extra = "Improves visibility, but looks weird",
-            category = RuleCategory.CLIENT
+            category = CLIENT
     )
     public static boolean fogOff = false;
 
@@ -818,10 +919,11 @@ public class CarpetSettings {
                     "but requires some trapdoor magic to",
                     "allow the player to enter blocks"
             },
-            category = {RuleCategory.CREATIVE, RuleCategory.CLIENT}
+            category = {CREATIVE, CLIENT}
     )
     public static boolean creativeNoClip = false;
-    public static boolean isCreativeFlying(Entity entity) {
+    public static boolean isCreativeFlying(Entity entity)
+    {
         // #todo replace after merger to 1.17
         return CarpetSettings.creativeNoClip && entity instanceof Player && (((Player) entity).isCreative()) && ((Player) entity).getAbilities().flying;
     }
@@ -834,7 +936,7 @@ public class CarpetSettings {
                     "having it set on the decicated server has no effect",
                     "but this also means it will work on vanilla servers as well"
             },
-            category = {RuleCategory.CREATIVE, RuleCategory.CLIENT},
+            category = {CREATIVE, CLIENT},
             strict = false,
             validate = Validator.NONNEGATIVE_NUMBER.class
     )
@@ -850,7 +952,7 @@ public class CarpetSettings {
                     "having it set on the decicated server has no effect",
                     "but this also means it will work on vanilla servers as well"
             },
-            category = {RuleCategory.CREATIVE, RuleCategory.CLIENT},
+            category = {CREATIVE, CLIENT},
             strict = false,
             validate = Validator.PROBABILITY.class
     )
@@ -862,7 +964,7 @@ public class CarpetSettings {
                     "Doesn't display 'Maximum sound pool size 247 reached'",
                     "Which is normal with decent farms and contraptions"
             },
-            category = {RuleCategory.SURVIVAL, RuleCategory.CLIENT}
+            category = {SURVIVAL, CLIENT}
     )
     public static boolean cleanLogs = false;
 
@@ -886,7 +988,7 @@ public class CarpetSettings {
                     "'structureBlockOutlineDistance' may be required for",
                     "correct rendering of long structures."},
             options = {"48", "96", "192", "256"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             validate = StructureBlockLimitValidator.class,
             strict = false
     )
@@ -897,7 +999,7 @@ public class CarpetSettings {
         @Override
         public String validate(CommandSourceStack source, ParsedRule<String> currentRule, String newValue, String string) {
             Optional<Block> ignoredBlock = Registry.BLOCK.getOptional(ResourceLocation.tryParse(newValue));
-            if (ignoredBlock.isEmpty()) {
+            if (!ignoredBlock.isPresent()) {
                 Messenger.m(source, "r Unknown block '" + newValue + "'.");
                 return null;
             }
@@ -908,7 +1010,7 @@ public class CarpetSettings {
     @Rule(
             desc = "Changes the block ignored by the Structure Block",
             options = {"minecraft:structure_void", "minecraft:air"},
-            category = RuleCategory.CREATIVE,
+            category = CREATIVE,
             validate = StructureBlockIgnoredValidator.class,
             strict = false
     )
@@ -918,7 +1020,7 @@ public class CarpetSettings {
             desc = "Customizable Structure Block outline render distance",
             extra = "Required on client to work properly",
             options = {"96", "192", "2048"},
-            category = {RuleCategory.CREATIVE, RuleCategory.CLIENT},
+            category = {CREATIVE, CLIENT},
             strict = false,
             validate = Validator.NONNEGATIVE_NUMBER.class
     )
@@ -927,14 +1029,14 @@ public class CarpetSettings {
     @Rule(
             desc = "Lightning kills the items that drop when lightning kills an entity",
             extra = {"Setting to true will prevent lightning from killing drops", "Fixes [MC-206922](https://bugs.mojang.com/browse/MC-206922)."},
-            category = {RuleCategory.BUGFIX}
+            category = {BUGFIX}
     )
     public static boolean lightningKillsDropsFix = false;
 
     @Rule(
             desc = "Placing an activator rail on top of a barrier block will update suppress when the rail turns off.",
             extra = {"Entering an integer will make the update suppression block auto-reset","Integer entered is the delay in ticks for it to reset"},
-            category = {RuleCategory.CREATIVE, "extras"},
+            category = {CREATIVE, "extras"},
             options = {"false","true","1","6"},
             strict = false,
             validate = updateSuppressionBlockModes.class
@@ -943,7 +1045,7 @@ public class CarpetSettings {
 
     @Rule(
             desc = "Fixes update suppression causing server crashes.",
-            category = {RuleCategory.BUGFIX}
+            category = {BUGFIX}
     )
     public static boolean updateSuppressionCrashFix = false;
 
@@ -980,4 +1082,13 @@ public class CarpetSettings {
             return "Cannot be negative, can be true, false, or # > 0";
         }
     }
+
+    @Rule(
+            desc = "Creative players load chunks, or they don't! Just like spectators!",
+            extra = {"Toggling behaves exactly as if the player is in spectator mode and toggling the gamerule spectatorsGenerateChunks."
+            },
+            category = {CREATIVE, FEATURE}
+    )
+    public static boolean creativePlayersLoadChunks = true;
+
 }

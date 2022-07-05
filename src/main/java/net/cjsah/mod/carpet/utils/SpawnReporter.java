@@ -1,10 +1,11 @@
 package net.cjsah.mod.carpet.utils;
 
-import net.cjsah.mod.carpet.CarpetSettings;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import net.cjsah.mod.carpet.CarpetSettings;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -31,7 +32,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.levelgen.feature.NetherFortressFeature;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -40,7 +41,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public class SpawnReporter {
+public class SpawnReporter
+{
     public static boolean mock_spawns = false;
     
     public static Long track_spawns = 0L;
@@ -68,12 +70,15 @@ public class SpawnReporter {
         reset_spawn_stats(null, true);
     }
 
-    public static void registerSpawn(Mob mob, MobCategory cat, BlockPos pos) {
-        if (lower_spawning_limit != null) {
+    public static void registerSpawn(Mob mob, MobCategory cat, BlockPos pos)
+    {
+        if (lower_spawning_limit != null)
+        {
             if (!( (lower_spawning_limit.getX() <= pos.getX() && pos.getX() <= upper_spawning_limit.getX()) &&
                  (lower_spawning_limit.getY() <= pos.getY() && pos.getY() <= upper_spawning_limit.getY()) && 
                  (lower_spawning_limit.getZ() <= pos.getZ() && pos.getZ() <= upper_spawning_limit.getZ())
-               )) {
+               ))
+            {
                 return;
             }
         }
@@ -81,7 +86,8 @@ public class SpawnReporter {
         long count = spawn_stats.get(key).getOrDefault(mob.getType(), 0L);
         spawn_stats.get(key).put(mob.getType(), count + 1);
         spawned_mobs.get(key).put(Pair.of(mob.getType(), pos));
-        if (!local_spawns.containsKey(cat)) {
+        if (!local_spawns.containsKey(cat))
+        {
             CarpetSettings.LOG.error("Rogue spawn detected for category "+cat.getName()+" for mob "+mob.getType().getDescription().getString()+". If you see this message let carpet peeps know about it on github issues.");
             local_spawns.put(cat, 0L);
         }
@@ -89,11 +95,13 @@ public class SpawnReporter {
     }
 
     public static final int MAGIC_NUMBER = (int)Math.pow(17.0D, 2.0D);
-    public static double currentMagicNumber() {
+    /*public static double currentMagicNumber()
+    {
         return MAGIC_NUMBER / (Math.pow(2.0,(SpawnReporter.mobcap_exponent/4)));
-    }
+    }*/
 
-    public static List<BaseComponent> printMobcapsForDimension(ServerLevel world, boolean multiline) {
+    public static List<BaseComponent> printMobcapsForDimension(ServerLevel world, boolean multiline)
+    {
         ResourceKey<Level> dim = world.dimension();
         String name = dim.location().getPath();
         List<BaseComponent> lst = new ArrayList<>();
@@ -102,37 +110,44 @@ public class SpawnReporter {
         NaturalSpawner.SpawnState lastSpawner = world.getChunkSource().getLastSpawnState();
         Object2IntMap<MobCategory> dimCounts = lastSpawner.getMobCategoryCounts();
         int chunkcount = chunkCounts.getOrDefault(dim, -1);
-        if (dimCounts == null || chunkcount < 0) {
+        if (dimCounts == null || chunkcount < 0)
+        {
             lst.add(Messenger.c("g   --UNAVAILABLE--"));
             return lst;
         }
 
         List<String> shortCodes = new ArrayList<>();
-        for (MobCategory enumcreaturetype : MobCategory.values()) {
+        for (MobCategory enumcreaturetype : MobCategory.values())
+        {
             int cur = dimCounts.getOrDefault(enumcreaturetype, -1);
-            int max = (int)(chunkcount * ((double)enumcreaturetype.getMaxInstancesPerChunk() / currentMagicNumber())); // from ServerChunkManager.CHUNKS_ELIGIBLE_FOR_SPAWNING
+            int max = (int)(chunkcount * ((double)enumcreaturetype.getMaxInstancesPerChunk() / MAGIC_NUMBER)); // from ServerChunkManager.CHUNKS_ELIGIBLE_FOR_SPAWNING
             String color = Messenger.heatmap_color(cur, max);
             String mobColor = Messenger.creatureTypeColor(enumcreaturetype);
-            if (multiline) {
+            if (multiline)
+            {
                 int rounds = spawn_tries.get(enumcreaturetype);
                 lst.add(Messenger.c(String.format("w   %s: ", enumcreaturetype.getName()),
                         (cur < 0) ? "g -" : (color + " " + cur), "g  / ", mobColor + " " + max,
                         (rounds == 1) ? "w " : String.format("gi  (%d rounds/tick)", spawn_tries.get(enumcreaturetype))
                 ));
             }
-            else {
+            else
+            {
                 shortCodes.add(color+" "+((cur<0)?"-":cur));
                 shortCodes.add("g /");
                 shortCodes.add(mobColor+" "+max);
                 shortCodes.add("g ,");
             }
         }
-        if (!multiline) {
-            if (shortCodes.size()>0) {
+        if (!multiline)
+        {
+            if (shortCodes.size()>0)
+            {
                 shortCodes.remove(shortCodes.size() - 1);
                 lst.add(Messenger.c(shortCodes.toArray(new Object[0])));
             }
-            else {
+            else
+            {
                 lst.add(Messenger.c("g   --UNAVAILABLE--"));
             }
 
@@ -140,16 +155,19 @@ public class SpawnReporter {
         return lst;
     }
     
-    public static List<BaseComponent> recent_spawns(Level world, MobCategory creature_type) {
+    public static List<BaseComponent> recent_spawns(Level world, MobCategory creature_type)
+    {
         List<BaseComponent> lst = new ArrayList<>();
-        if ((track_spawns == 0L)) {
+        if ((track_spawns == 0L))
+        {
             lst.add(Messenger.s("Spawn tracking not started"));
             return lst;
         }
         String type_code = creature_type.getName();
         
         lst.add(Messenger.s(String.format("Recent %s spawns:",type_code)));
-        for (Pair<EntityType, BlockPos> pair : spawned_mobs.get(Pair.of(world.dimension(), creature_type)).keySet()) { // getDImTYpe
+        for (Pair<EntityType, BlockPos> pair : spawned_mobs.get(Pair.of(world.dimension(), creature_type)).keySet()) // getDImTYpe
+        {
             lst.add( Messenger.c(
                     "w  - ",
                     Messenger.tp("wb",pair.getRight()),
@@ -157,45 +175,57 @@ public class SpawnReporter {
                     ));
         }
         
-        if (lst.size()==1) {
+        if (lst.size()==1)
+        {
             lst.add(Messenger.s(" - Nothing spawned yet, sorry."));
         }
         return lst;
 
     }
     
-    public static List<BaseComponent> show_mobcaps(BlockPos pos, ServerLevel worldIn) {
+    public static List<BaseComponent> show_mobcaps(BlockPos pos, ServerLevel worldIn)
+    {
         DyeColor under = WoolTool.getWoolColorAtPosition(worldIn, pos.below());
-        if (under == null) {
-            if (track_spawns > 0L) {
+        if (under == null)
+        {
+            if (track_spawns > 0L)
+            {
                 return tracking_report(worldIn);
             }
-            else {
+            else
+            {
                 return printMobcapsForDimension(worldIn, true );
             }
         }
         MobCategory creature_type = get_type_code_from_wool_code(under);
-        if (creature_type != null) {
-            if (track_spawns > 0L) {
+        if (creature_type != null)
+        {
+            if (track_spawns > 0L)
+            {
                 return recent_spawns(worldIn, creature_type);
             }
-            else {
+            else
+            {
                 return printEntitiesByType(creature_type, worldIn, true);
                 
             }
             
         }
-        if (track_spawns > 0L) {
+        if (track_spawns > 0L)
+        {
             return tracking_report(worldIn);
         }
-        else {
+        else
+        {
             return printMobcapsForDimension(worldIn, true );
         }
         
     }
     
-    public static MobCategory get_type_code_from_wool_code(DyeColor color) {
-        switch (color) {
+    public static MobCategory get_type_code_from_wool_code(DyeColor color)
+    {
+        switch (color)
+        {
             case RED:
                 return MobCategory.MONSTER;
             case GREEN:
@@ -211,38 +241,48 @@ public class SpawnReporter {
         }
     }
     
-    public static MobCategory get_creature_type_from_code(String type_code) {
-        if ("hostile".equalsIgnoreCase(type_code)) {
+    public static MobCategory get_creature_type_from_code(String type_code)
+    {
+        if ("hostile".equalsIgnoreCase(type_code))
+        {
             return MobCategory.MONSTER;
         }
-        else if ("passive".equalsIgnoreCase(type_code)) {
+        else if ("passive".equalsIgnoreCase(type_code))
+        {
             return MobCategory.CREATURE;
         }
-        else if ("water".equalsIgnoreCase(type_code)) {
+        else if ("water".equalsIgnoreCase(type_code))
+        {
             return MobCategory.WATER_CREATURE;
         }
-        else if ("fish".equalsIgnoreCase(type_code)) {
+        else if ("fish".equalsIgnoreCase(type_code))
+        {
             return MobCategory.WATER_AMBIENT;
         }
-        else if ("ambient".equalsIgnoreCase(type_code)) {
+        else if ("ambient".equalsIgnoreCase(type_code))
+        {
             return MobCategory.AMBIENT;
         }
         return null;
     }
     
     
-    public static String get_type_string(MobCategory type) {
+    public static String get_type_string(MobCategory type)
+    {
         return String.format("%s", type);
     }
     
-    public static String get_creature_code_from_string(String str) {
+    public static String get_creature_code_from_string(String str)
+    {
         return get_type_string(get_creature_type_from_code(str));
     }
     
-    public static List<BaseComponent> printEntitiesByType(MobCategory cat, Level worldIn, boolean all) //Class<?> entityType) {
+    public static List<BaseComponent> printEntitiesByType(MobCategory cat, Level worldIn, boolean all) //Class<?> entityType)
+    {
         List<BaseComponent> lst = new ArrayList<>();
         lst.add( Messenger.s(String.format("Loaded entities for %s class:", get_type_string(cat))));
-        for (Entity entity : ((ServerLevel)worldIn).getEntities(EntityTypeTest.forClass(Entity.class), (e) -> e.getType().getCategory()==cat)) {
+        for (Entity entity : ((ServerLevel)worldIn).getEntities(EntityTypeTest.forClass(Entity.class), (e) -> e.getType().getCategory()==cat))
+        {
             boolean persistent = entity instanceof Mob && ( ((Mob) entity).isPersistenceRequired() || ((Mob) entity).requiresCustomPersistence());
             if (!all && persistent)
                 continue;
@@ -256,28 +296,35 @@ public class SpawnReporter {
             ));
 
         }
-        if (lst.size()==1) {
+        if (lst.size()==1)
+        {
             lst.add(Messenger.s(" - Empty."));
         }
         return lst;
     }
     
-    public static void initialize_mocking() {
+    public static void initialize_mocking()
+    {
         mock_spawns = true;
         
     }
-    public static void stop_mocking() {
+    public static void stop_mocking()
+    {
         mock_spawns = false;
     }
-    public static void reset_spawn_stats(MinecraftServer server, boolean full) {
+    public static void reset_spawn_stats(MinecraftServer server, boolean full)
+    {
 
         spawn_stats.clear();
         spawned_mobs.clear();
-        for (MobCategory enumcreaturetype : MobCategory.values()) {
-            if (full) {
+        for (MobCategory enumcreaturetype : MobCategory.values())
+        {
+            if (full)
+            {
                 spawn_tries.put(enumcreaturetype, 1);
             }
-            if (server != null) for (ResourceKey<Level> dim : server.levelKeys()) {
+            if (server != null) for (ResourceKey<Level> dim : server.levelKeys())
+            {
                 Pair<ResourceKey<Level>, MobCategory> key = Pair.of(dim, enumcreaturetype);
                 overall_spawn_ticks.put(key, 0L);
                 spawn_attempts.put(key, 0L);
@@ -293,15 +340,18 @@ public class SpawnReporter {
         track_spawns = 0L;
     }
 
-    private static String getWorldCode(ResourceKey<Level> world) {
+    private static String getWorldCode(ResourceKey<Level> world)
+    {
         if (world == Level.OVERWORLD) return "";
         return "("+world.location().getPath().toUpperCase(Locale.ROOT).replace("THE_","").charAt(0)+")";
     }
     
-    public static List<BaseComponent> tracking_report(Level worldIn) {
+    public static List<BaseComponent> tracking_report(Level worldIn)
+    {
 
         List<BaseComponent> report = new ArrayList<>();
-        if (track_spawns == 0L) {
+        if (track_spawns == 0L)
+        {
             report.add(Messenger.c(
                     "w Spawn tracking disabled, type '",
                     "wi /spawn tracking start","/spawn tracking start",
@@ -315,13 +365,14 @@ public class SpawnReporter {
                 lower_spawning_limit.getX(),lower_spawning_limit.getY(),lower_spawning_limit.getZ(),
                 upper_spawning_limit.getX(),upper_spawning_limit.getY(),upper_spawning_limit.getZ() ):"";
         report.add(Messenger.s(String.format("%sSpawn statistics %s: for %.1f min", simulated, location, (duration/72000.0)*60)));
-        for (MobCategory enumcreaturetype : MobCategory.values()) {
+        for (MobCategory enumcreaturetype : MobCategory.values())
+        {
             //String type_code = String.format("%s", enumcreaturetype);
-            boolean there_are_mobs_to_list = false;
-            for (ResourceKey<Level> dim : worldIn.getServer().levelKeys()) //String world_code: new String[] {"", " (N)", " (E)"}) {
+            for (ResourceKey<Level> dim : worldIn.getServer().levelKeys()) //String world_code: new String[] {"", " (N)", " (E)"})
+            {
                 Pair<ResourceKey<Level>, MobCategory> code = Pair.of(dim, enumcreaturetype);
-                if (spawn_ticks_spawns.get(code) > 0L) {
-                    there_are_mobs_to_list = true;
+                if (spawn_ticks_spawns.get(code) > 0L)
+                {
                     double hours = overall_spawn_ticks.get(code)/72000.0;
                     report.add(Messenger.s(String.format(" > %s%s (%.1f min), %.1f m/t, %%{%.1fF %.1f- %.1f+}; %.2f s/att",
                         enumcreaturetype.getName().substring(0,3), getWorldCode(dim),
@@ -332,7 +383,8 @@ public class SpawnReporter {
                         (100.0D*spawn_ticks_succ.get(code))/ spawn_attempts.get(code),
                         (1.0D*spawn_ticks_spawns.get(code))/(spawn_ticks_fail.get(code)+spawn_ticks_succ.get(code))
                     )));
-                    for (EntityType type: spawn_stats.get(code).keySet()) {
+                    for (EntityType type: spawn_stats.get(code).keySet())
+                    {
                         report.add(Messenger.s(String.format("   - %s: %d spawns, %d per hour",
                                 type.getDescription().getString(),
                                 spawn_stats.get(code).getLong(type),
@@ -346,29 +398,39 @@ public class SpawnReporter {
 
     
 
-    public static void killEntity(LivingEntity entity) {
-        if (entity.isPassenger()) {
+    public static void killEntity(LivingEntity entity)
+    {
+        if (entity.isPassenger())
+        {
             entity.getVehicle().discard();
         }
-        if (entity.isVehicle()) {
-            for (Entity e: entity.getPassengers()) {
+        if (entity.isVehicle())
+        {
+            for (Entity e: entity.getPassengers())
+            {
                 e.discard();
             }
         }
-        if (entity instanceof Ocelot) {
-            for (Entity e: entity.getCommandSenderWorld().getEntities(entity, entity.getBoundingBox())) {
+        if (entity instanceof Ocelot)
+        {
+            for (Entity e: entity.getCommandSenderWorld().getEntities(entity, entity.getBoundingBox()))
+            {
                 e.discard();
             }
         }
         entity.discard();
     }
 
-    // yeeted from SpawnHelper - temporary fix
-    private static List<MobSpawnSettings.SpawnerData> method_29950(ServerLevel serverWorld, StructureFeatureManager structureAccessor, ChunkGenerator chunkGenerator, MobCategory spawnGroup, BlockPos blockPos, /*@Nullable*/ Biome biome) {
-        return spawnGroup == MobCategory.MONSTER && serverWorld.getBlockState(blockPos.below()).getBlock() == Blocks.NETHER_BRICKS && structureAccessor.getStructureAt(blockPos, StructureFeature.NETHER_BRIDGE).isValid() ? StructureFeature.NETHER_BRIDGE.getMonsterSpawns().getEntries() : chunkGenerator.getMobsAt(biome != null ? biome : serverWorld.getBiome(blockPos), structureAccessor, spawnGroup, blockPos).unwrap();
+    // yeeted from NaturalSpawner - temporary access fix
+    private static List<MobSpawnSettings.SpawnerData> getSpawnEntries(final ServerLevel level, final StructureFeatureManager structureFeatureManager, final ChunkGenerator generator, final MobCategory mobCategory, final BlockPos pos, final Holder<Biome> biome) {
+        if (NaturalSpawner.isInNetherFortressBounds (pos, level, mobCategory, structureFeatureManager)) {
+            return NetherFortressFeature.FORTRESS_ENEMIES.unwrap();
+        }
+        return generator.getMobsAt(biome != null ? biome : level.getBiome(pos), structureFeatureManager, mobCategory, pos).unwrap();
     }
 
-    public static List<BaseComponent> report(BlockPos pos, ServerLevel worldIn) {
+    public static List<BaseComponent> report(BlockPos pos, ServerLevel worldIn)
+    {
         List<BaseComponent> rep = new ArrayList<>();
         int x = pos.getX(); int y = pos.getY(); int z = pos.getZ();
         ChunkAccess chunk = worldIn.getChunk(pos);
@@ -377,11 +439,14 @@ public class SpawnReporter {
         if (y == lc) where = "right at it.";
         rep.add(Messenger.s(String.format("Maximum spawn Y value for (%+d, %+d) is %d. You are "+where, x, z, lc )));
         rep.add(Messenger.s("Spawns:"));
-        for (MobCategory enumcreaturetype : MobCategory.values()) {
+        for (MobCategory enumcreaturetype : MobCategory.values())
+        {
             String type_code = String.format("%s", enumcreaturetype).substring(0, 3);
-            List<MobSpawnSettings.SpawnerData> lst = method_29950(worldIn, worldIn.structureFeatureManager(), worldIn.getChunkSource().getGenerator(), enumcreaturetype, pos, worldIn.getBiome(pos) );//  ((ChunkGenerator)worldIn.getChunkManager().getChunkGenerator()).getEntitySpawnList(, worldIn.getStructureAccessor(), enumcreaturetype, pos);
-            if (lst != null && !lst.isEmpty()) {
-                for (MobSpawnSettings.SpawnerData spawnEntry : lst) {
+            List<MobSpawnSettings.SpawnerData> lst = getSpawnEntries(worldIn, worldIn.structureFeatureManager(), worldIn.getChunkSource().getGenerator(), enumcreaturetype, pos, worldIn.getBiome(pos) );//  ((ChunkGenerator)worldIn.getChunkManager().getChunkGenerator()).getEntitySpawnList(, worldIn.getStructureAccessor(), enumcreaturetype, pos);
+            if (lst != null && !lst.isEmpty())
+            {
+                for (MobSpawnSettings.SpawnerData spawnEntry : lst)
+                {
                     if (SpawnPlacements.getPlacementType(spawnEntry.type)==null)
                         continue; // vanilla bug
                     boolean canspawn = NaturalSpawner.isSpawnPositionOk(SpawnPlacements.getPlacementType(spawnEntry.type), worldIn, pos, spawnEntry.type);
@@ -390,10 +455,12 @@ public class SpawnReporter {
                     boolean fits1;
                     
                     Mob mob;
-                    try {
+                    try
+                    {
                         mob = (Mob) spawnEntry.type.create(worldIn);
                     }
-                    catch (Exception exception) {
+                    catch (Exception exception)
+                    {
                         CarpetSettings.LOG.warn("Exception while creating mob for spawn reporter", exception);
                         return rep;
                     }
@@ -401,23 +468,28 @@ public class SpawnReporter {
                     boolean fits_true = false;
                     boolean fits_false = false;
                     
-                    if (canspawn) {
+                    if (canspawn)
+                    {
                         will_spawn = 0;
-                        for (int attempt = 0; attempt < 50; ++attempt) {
+                        for (int attempt = 0; attempt < 50; ++attempt)
+                        {
                             float f = (float)x + 0.5F;
                             float f1 = (float)z + 0.5F;
                             mob.moveTo((double)f, (double)y, (double)f1, worldIn.random.nextFloat() * 360.0F, 0.0F);
                             fits1 = worldIn.noCollision(mob);
-                            EntityType etype = mob.getType();
+                            EntityType<?> etype = mob.getType();
 
-                            for (int i = 0; i < 20; ++i) {
+                            for (int i = 0; i < 20; ++i)
+                            {
                                 if (
                                         SpawnPlacements.checkSpawnRules(etype,worldIn, MobSpawnType.NATURAL, pos, worldIn.random) &&
                                         NaturalSpawner.isSpawnPositionOk(SpawnPlacements.getPlacementType(etype), worldIn, pos, etype) &&
                                         mob.checkSpawnRules(worldIn, MobSpawnType.NATURAL)
                                     // && mob.canSpawn(worldIn) // entity collisions // mostly - except ocelots
-                                ) {
-                                    if (etype == EntityType.OCELOT) {
+                                )
+                                {
+                                    if (etype == EntityType.OCELOT)
+                                    {
                                         BlockState blockState = worldIn.getBlockState(pos.below());
                                         if ((pos.getY() < worldIn.getSeaLevel()) || !(blockState.is(Blocks.GRASS_BLOCK) || blockState.is(BlockTags.LEAVES))) {
                                            continue;
@@ -429,19 +501,23 @@ public class SpawnReporter {
                             mob.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(mob.blockPosition()), MobSpawnType.NATURAL, null, null);
                             // the code invokes onInitialSpawn after getCanSpawHere
                             fits = fits1 && worldIn.noCollision(mob);
-                            if (fits) {
+                            if (fits)
+                            {
                                 fits_true = true;
                             }
-                            else {
+                            else
+                            {
                                 fits_false = true;
                             }
                             
                             killEntity(mob);
                             
-                            try {
+                            try
+                            {
                                 mob = (Mob) spawnEntry.type.create(worldIn);
                             }
-                            catch (Exception exception) {
+                            catch (Exception exception)
+                            {
                                 CarpetSettings.LOG.warn("Exception while creating mob for spawn reporter", exception);
                                 return rep;
                             }
@@ -451,7 +527,8 @@ public class SpawnReporter {
                     String creature_name = mob.getType().getDescription().getString();
                     String pack_size = String.format("%d", mob.getMaxSpawnClusterSize());//String.format("%d-%d", animal.minGroupCount, animal.maxGroupCount);
                     int weight = spawnEntry.getWeight().asInt();
-                    if (canspawn) {
+                    if (canspawn)
+                    {
                         String c = (fits_true && will_spawn>0)?"e":"gi";
                         rep.add(Messenger.c(
                                 String.format("%s %s: %s (%d:%d-%d/%d), can: ",c,type_code,creature_name,weight,spawnEntry.minCount, spawnEntry.maxCount,  mob.getMaxSpawnClusterSize()),
@@ -462,7 +539,8 @@ public class SpawnReporter {
                                 ((will_spawn>0)?"l ":"r ")+Math.round((double)will_spawn)/10+"%"
                         ));
                     }
-                    else {
+                    else
+                    {
                         rep.add(Messenger.c(String.format("gi %s: %s (%d:%d-%d/%d), can: ",type_code,creature_name,weight,spawnEntry.minCount, spawnEntry.maxCount, mob.getMaxSpawnClusterSize()), "n NO"));
                     }
                     killEntity(mob);

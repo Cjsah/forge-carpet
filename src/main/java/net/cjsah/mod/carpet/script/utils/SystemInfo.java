@@ -1,10 +1,12 @@
 package net.cjsah.mod.carpet.script.utils;
 
+import com.sun.management.OperatingSystemMXBean;
 import net.cjsah.mod.carpet.CarpetServer;
 import net.cjsah.mod.carpet.CarpetSettings;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.CarpetScriptHost;
 import net.cjsah.mod.carpet.script.value.BooleanValue;
+import net.cjsah.mod.carpet.script.value.EntityValue;
 import net.cjsah.mod.carpet.script.value.ListValue;
 import net.cjsah.mod.carpet.script.value.MapValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
@@ -13,14 +15,16 @@ import net.cjsah.mod.carpet.script.value.Value;
 import net.cjsah.mod.carpet.script.value.ValueConversions;
 import net.cjsah.mod.carpet.settings.ParsedRule;
 import net.cjsah.mod.carpet.settings.SettingsManager;
-import com.sun.management.OperatingSystemMXBean;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.SharedConstants;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.Vec2;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.forgespi.language.IModInfo;
+
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,8 +38,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SystemInfo {
-    private static final Map<String, Function<CarpetContext, Value>> options = new HashMap<String, Function<CarpetContext,Value>>(){{
-        put("app_name", c -> {
+    private static final Map<String, Function<CarpetContext,Value>> options = new HashMap<String, Function<CarpetContext,Value>>(){{
+        put("app_name", c ->
+        {
             String name = c.host.getName();
             return name == null?Value.NULL:new StringValue(name);
         });
@@ -69,7 +74,9 @@ public class SystemInfo {
             return ListValue.fromTriple(worldBorder.getCenterX(), 0, worldBorder.getCenterZ());
         });
 
-        put("world_size", c-> new NumericValue( c.s.getLevel().getWorldBorder().getAbsoluteMaxSize()));
+        put("world_size", c -> new NumericValue(c.s.getLevel().getWorldBorder().getSize() / 2));
+
+        put("world_max_size", c-> new NumericValue( c.s.getLevel().getWorldBorder().getAbsoluteMaxSize()));
 
         put("world_time", c -> new NumericValue(c.s.getLevel().getGameTime()));
 
@@ -99,30 +106,34 @@ public class SystemInfo {
         put("server_whitelisted", c -> BooleanValue.of(c.s.getServer().isEnforceWhitelist()));
         put("server_whitelist", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getWhiteListNames()) {
+            for (String s: c.s.getServer().getPlayerList().getWhiteListNames())
+            {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_players", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getBans().getUserList()) {
+            for (String s: c.s.getServer().getPlayerList().getBans().getUserList())
+            {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_ips", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getIpBans().getUserList()) {
+            for (String s: c.s.getServer().getPlayerList().getIpBans().getUserList())
+            {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
-        put("server_dev_environment", c-> BooleanValue.of(FabricLoader.getInstance().isDevelopmentEnvironment()));
+        put("server_dev_environment", c-> BooleanValue.of(FMLLoader.isProduction()));
         put("server_mods", c -> {
             Map<Value, Value> ret = new HashMap<>();
-            for (ModContainer mod : FabricLoader.getInstance().getAllMods())
-                ret.put(new StringValue(mod.getMetadata().getName()), new StringValue(mod.getMetadata().getVersion().getFriendlyString()));
+            for (IModInfo mod : ModList.get().getMods()) {
+                ret.put(new StringValue(mod.getDisplayName()), new StringValue(mod.getVersion().toString()));
+            }
             return MapValue.wrap(ret);
         });
         put("server_last_tick_times", c -> {
@@ -131,7 +142,8 @@ public class SystemInfo {
             int currentReportedTick = c.s.getServer().getTickCount()-1;
             List<Value> ticks = new ArrayList<>(100);
             final long[] tickArray = c.s.getServer().tickTimes;
-            for (int i=currentReportedTick+100; i > currentReportedTick; i--) {
+            for (int i=currentReportedTick+100; i > currentReportedTick; i--)
+            {
                 ticks.add(new NumericValue(((double)tickArray[i % 100])/1000000.0));
             }
             return ListValue.wrap(ticks);
@@ -143,7 +155,8 @@ public class SystemInfo {
         put("java_cpu_count", c -> new NumericValue(Runtime.getRuntime().availableProcessors()));
         put("java_version", c -> StringValue.of(System.getProperty("java.version")));
         put("java_bits", c -> {
-            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"}) {
+            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"})
+            {
                 String value = System.getProperty(property);
                 if (value != null && value.contains("64"))
                     return new NumericValue(64);
@@ -189,14 +202,25 @@ public class SystemInfo {
             });
             return MapValue.wrap(rules);
         });
+
+        put("source_entity", c -> EntityValue.of(c.s.getEntity()));
+        put("source_position", c -> ValueConversions.of(c.s.getPosition()));
+        put("source_dimension", c -> ValueConversions.of(c.s.getLevel()));
+        put("source_rotation", c -> {
+            Vec2 rotation = c.s.getRotation();
+            return ListValue.of(new NumericValue(rotation.x), new NumericValue(rotation.y));
+        });
+        
         put("scarpet_version", c -> StringValue.of(CarpetSettings.carpetVersion));
 
     }};
-    public static Value get(String what, CarpetContext cc) {
+    public static Value get(String what, CarpetContext cc)
+    {
         return options.getOrDefault(what, c -> null).apply(cc);
     }
-    public static Value getAll(CarpetContext cc) {
-        return MapValue.wrap(options.entrySet().stream().collect(Collectors.toMap(e -> new StringValue(e.getKey()), e -> e.getValue().apply(cc))));
+    public static Value getAll()
+    {
+        return ListValue.wrap(options.keySet().stream().map(StringValue::of).collect(Collectors.toList()));
     }
 
 }

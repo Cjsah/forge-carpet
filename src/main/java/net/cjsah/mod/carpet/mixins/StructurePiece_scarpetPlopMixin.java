@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(StructurePiece.class)
-public class StructurePiece_scarpetPlopMixin {
-    @Redirect(method = "addBlock", at = @At(
+public class StructurePiece_scarpetPlopMixin
+{
+    @Redirect(method = "placeBlock", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/chunk/Chunk;markBlockForPostProcessing(Lnet/minecraft/util/math/BlockPos;)V"
+            target = "Lnet/minecraft/world/level/chunk/ChunkAccess;markPosForPostprocessing(Lnet/minecraft/core/BlockPos;)V"
     ))
-    private void markOrNot(ChunkAccess chunk, BlockPos pos) {
+    private void markOrNot(ChunkAccess chunk, BlockPos pos)
+    {
         if (!CarpetSettings.skipGenerationChecks.get()) chunk.markPosForPostprocessing(pos);
     }
 }

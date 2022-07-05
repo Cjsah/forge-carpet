@@ -1,8 +1,5 @@
 package net.cjsah.mod.carpet.script.annotation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.cjsah.mod.carpet.script.value.AbstractListValue;
 import net.cjsah.mod.carpet.script.value.BlockValue;
 import net.cjsah.mod.carpet.script.value.BooleanValue;
@@ -17,6 +14,9 @@ import net.cjsah.mod.carpet.script.value.StringValue;
 import net.cjsah.mod.carpet.script.value.ThreadValue;
 import net.cjsah.mod.carpet.script.value.Value;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>Simple {@link ValueConverter} implementation that casts a {@link Value} into one of its subclasses, either for use directly in parameters or
  * converters, or as an already working middle step.</p>
@@ -27,9 +27,11 @@ import net.cjsah.mod.carpet.script.value.Value;
  * 
  * @param <R> The {@link Value} subclass this {@link ValueCaster} casts to
  */
-public final class ValueCaster<R> implements ValueConverter<R> // R always extends Value, not explicitly because of type checking {
+public final class ValueCaster<R> implements ValueConverter<R> // R always extends Value, not explicitly because of type checking
+{
     private static final Map<Class<? extends Value>, ValueCaster<? extends Value>> byResult = new HashMap<>();
-    static {
+    static
+    {
         register(Value.class, "value");
         register(BlockValue.class, "block");
         register(EntityValue.class, "entity");
@@ -48,13 +50,15 @@ public final class ValueCaster<R> implements ValueConverter<R> // R always exten
     private final Class<R> outputType;
     private final String typeName;
 
-    private ValueCaster(Class<R> outputType, String typeName) {
+    private ValueCaster(Class<R> outputType, String typeName)
+    {
         this.outputType = outputType;
         this.typeName = typeName;
     }
 
     @Override
-    public String getTypeName() {
+    public String getTypeName()
+    {
         return typeName;
     }
 
@@ -67,15 +71,18 @@ public final class ValueCaster<R> implements ValueConverter<R> // R always exten
      */
     @SuppressWarnings("unchecked") // Casters are stored with their exact class, for sure since the map is private (&& class has same generic as
                                    // caster)
-    public static <R> ValueCaster<R> get(Class<R> outputType) {
+    public static <R> ValueCaster<R> get(Class<R> outputType)
+    {
         return (ValueCaster<R>) byResult.get(outputType);
     }
 
     @Override
-    public R convert(Value value) {
+    @SuppressWarnings("unchecked") // more than checked, see SimpleTypeConverter#converter for reasoning
+    public R convert(Value value)
+    {
         if (!outputType.isInstance(value))
             return null;
-        return outputType.cast(value);
+        return (R)value;
     }
 
     /**
@@ -87,7 +94,8 @@ public final class ValueCaster<R> implements ValueConverter<R> // R always exten
      *                   required<!--, with the form //Outdated concept <code>(function name) requires a (typeName) to be passed as (argName, if
      *                   available)</code>-->
      */
-    public static <R extends Value> void register(Class<R> valueClass, String typeName) {
+    public static <R extends Value> void register(Class<R> valueClass, String typeName)
+    {
         ValueCaster<R> caster = new ValueCaster<R>(valueClass, typeName);
         byResult.putIfAbsent(valueClass, caster);
     }

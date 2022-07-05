@@ -5,7 +5,8 @@ import com.google.gson.JsonPrimitive;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 
-public class BooleanValue extends NumericValue {
+public class BooleanValue extends NumericValue
+{
     public static final BooleanValue FALSE = new BooleanValue(false);
     public static final BooleanValue TRUE = new BooleanValue(true);
 
@@ -15,7 +16,8 @@ public class BooleanValue extends NumericValue {
         boolValue = boolval;
     }
 
-    public static BooleanValue of(boolean value) {
+    public static BooleanValue of(boolean value)
+    {
         return value ? TRUE : FALSE;
     }
 

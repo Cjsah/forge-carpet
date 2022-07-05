@@ -1,10 +1,12 @@
 package net.cjsah.mod.carpet.fakes;
 
-import java.util.concurrent.CompletableFuture;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
-public interface ServerLightingProviderInterface {
+import java.util.concurrent.CompletableFuture;
+
+public interface ServerLightingProviderInterface
+{
     void invokeUpdateChunkStatus(ChunkPos pos);
 
     void removeLightData(ChunkAccess chunk);

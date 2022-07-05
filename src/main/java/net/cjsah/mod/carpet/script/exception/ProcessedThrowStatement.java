@@ -1,12 +1,12 @@
 package net.cjsah.mod.carpet.script.exception;
 
-import java.util.List;
-
 import net.cjsah.mod.carpet.script.Context;
 import net.cjsah.mod.carpet.script.Expression;
 import net.cjsah.mod.carpet.script.Tokenizer.Token;
 import net.cjsah.mod.carpet.script.value.FunctionValue;
 import net.cjsah.mod.carpet.script.value.Value;
+
+import java.util.List;
 
 public class ProcessedThrowStatement extends ExpressionException {
     public final Throwables thrownExceptionType;

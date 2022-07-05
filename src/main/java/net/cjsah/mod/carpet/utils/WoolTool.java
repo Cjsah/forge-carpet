@@ -2,10 +2,6 @@ package net.cjsah.mod.carpet.utils;
 
 import net.cjsah.mod.carpet.CarpetSettings;
 import net.cjsah.mod.carpet.helpers.HopperCounter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.BaseComponent;
@@ -18,11 +14,16 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * A series of utility functions and variables for dealing predominantly with hopper counters and determining which counter
  * to add their items to, as well as helping dealing with carpet functionality.
  */
-public class WoolTool {
+public class WoolTool
+{
     /**
      * A map of the {@link MaterialColor} to the {@link DyeColor} which is used in {@link WoolTool#getWoolColorAtPosition}
      * to get the colour of wool at a position.
@@ -52,8 +53,10 @@ public class WoolTool {
         put(MaterialColor.COLOR_RED, "r ");
         put(MaterialColor.COLOR_BLACK, "k ");
     }};
-    static {
-        for (DyeColor color: DyeColor.values()) {
+    static
+    {
+        for (DyeColor color: DyeColor.values())
+        {
             Material2Dye.put(color.getMaterialColor(),color);
         }
     }
@@ -65,11 +68,14 @@ public class WoolTool {
      *     <li>Green - Prints the contents of the counter of the colour of wool underneath the carpet</li>
      * </ul>
      */
-    public static void carpetPlacedAction(DyeColor color, Player placer, BlockPos pos, ServerLevel worldIn) {
-		if (!CarpetSettings.carpets) {
+    public static void carpetPlacedAction(DyeColor color, Player placer, BlockPos pos, ServerLevel worldIn)
+    {
+		if (!CarpetSettings.carpets)
+		{
 			return;
 		}
-        switch (color) {
+        switch (color)
+        {
             case PINK:
                 if (!"false".equals(CarpetSettings.commandSpawn))
                     Messenger.send(placer, SpawnReporter.report(pos, worldIn));
@@ -80,7 +86,8 @@ public class WoolTool {
                     Messenger.send(placer, SpawnReporter.show_mobcaps(pos, worldIn));
                 break;
             case BROWN:
-                if (!"false".equals(CarpetSettings.commandDistance)) {
+                if (!"false".equals(CarpetSettings.commandDistance))
+                {
                     CommandSourceStack source = placer.createCommandSourceStack();
                     if (!DistanceCalculator.hasStartingPoint(source) || placer.isShiftKeyDown()) {
                         DistanceCalculator.setStart(source, Vec3.atLowerCornerOf(pos) ); // zero padded pos
@@ -95,7 +102,8 @@ public class WoolTool {
                     Messenger.send(placer, BlockInfo.blockInfo(pos.below(), worldIn));
                 break;
 			case GREEN:
-                if (CarpetSettings.hopperCounters) {
+                if (CarpetSettings.hopperCounters)
+                {
                     DyeColor under = getWoolColorAtPosition(worldIn, pos.below());
                     if (under == null) return;
                     HopperCounter counter = HopperCounter.getCounter(under.toString());
@@ -104,7 +112,8 @@ public class WoolTool {
                 }
 				break;
 			case RED:
-                if (CarpetSettings.hopperCounters) {
+                if (CarpetSettings.hopperCounters)
+                {
                     DyeColor under = getWoolColorAtPosition(worldIn, pos.below());
                     if (under == null) return;
                     HopperCounter counter = HopperCounter.getCounter(under.toString());
@@ -121,7 +130,8 @@ public class WoolTool {
     /**
      * Gets the colour of wool at the position, for hoppers to be able to decide whether to add their items to the global counter.
      */
-    public static DyeColor getWoolColorAtPosition(Level worldIn, BlockPos pos) {
+    public static DyeColor getWoolColorAtPosition(Level worldIn, BlockPos pos)
+    {
         BlockState state = worldIn.getBlockState(pos);
         if (state.getMaterial() != Material.WOOL || !state.isRedstoneConductor(worldIn, pos)) //isSimpleFullBlock
             return null;

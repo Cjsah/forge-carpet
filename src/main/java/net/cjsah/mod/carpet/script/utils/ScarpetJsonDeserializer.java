@@ -1,11 +1,5 @@
 package net.cjsah.mod.carpet.script.utils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -13,12 +7,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-
 import net.cjsah.mod.carpet.script.value.ListValue;
 import net.cjsah.mod.carpet.script.value.MapValue;
 import net.cjsah.mod.carpet.script.value.NumericValue;
 import net.cjsah.mod.carpet.script.value.StringValue;
 import net.cjsah.mod.carpet.script.value.Value;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ScarpetJsonDeserializer implements JsonDeserializer<Value>{
 
@@ -29,13 +28,16 @@ public class ScarpetJsonDeserializer implements JsonDeserializer<Value>{
     }
     
     private Value parseElement(JsonElement element) throws JsonParseException {
-        if (element.isJsonObject()) {
+        if (element.isJsonObject())
+        {
             return parseMap(element.getAsJsonObject());
         }
-        else if (element.isJsonArray()) {
+        else if (element.isJsonArray())
+        {
             return parseList(element.getAsJsonArray());
         }
-        else if (element.isJsonPrimitive()) {
+        else if (element.isJsonPrimitive())
+        {
             return parsePrimitive(element.getAsJsonPrimitive());
         }
         return Value.NULL;
@@ -58,13 +60,16 @@ public class ScarpetJsonDeserializer implements JsonDeserializer<Value>{
     }
     
     private Value parsePrimitive(JsonPrimitive primitive) throws JsonParseException {
-        if (primitive.isString()) {
+        if (primitive.isString())
+        {
             return new StringValue(primitive.getAsString());
         }
-        else if (primitive.isBoolean()) {
+        else if (primitive.isBoolean())
+        {
             return primitive.getAsBoolean() ? Value.TRUE : Value.FALSE;
         }
-        else if (primitive.isNumber()) {
+        else if (primitive.isNumber())
+        {
             return NumericValue.of(primitive.getAsNumber());
         }
         return Value.NULL;

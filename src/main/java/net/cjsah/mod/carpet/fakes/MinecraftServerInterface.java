@@ -1,16 +1,21 @@
 package net.cjsah.mod.carpet.fakes;
 
-import java.util.Map;
-import java.util.function.BooleanSupplier;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.ServerResources;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
-public interface MinecraftServerInterface {
+import java.util.Map;
+import java.util.function.BooleanSupplier;
+
+public interface MinecraftServerInterface
+{
     void forceTick(BooleanSupplier sup);
     LevelStorageSource.LevelStorageAccess getCMSession();
     Map<ResourceKey<Level>, ServerLevel> getCMWorlds();
-    ServerResources getResourceManager();
+    void reloadAfterReload(RegistryAccess newRegs);
+
+    MinecraftServer.ReloadableResources getResourceManager();
 }

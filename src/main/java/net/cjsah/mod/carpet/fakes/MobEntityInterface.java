@@ -1,10 +1,12 @@
 package net.cjsah.mod.carpet.fakes;
 
-import java.util.Map;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 
-public interface MobEntityInterface {
+import java.util.Map;
+
+public interface MobEntityInterface
+{
     GoalSelector getAI(boolean target);
 
     Map<String, Goal> getTemporaryTasks();
