@@ -1,4 +1,4 @@
-<img src="./icon.png" width="20%" alt="icon">
+<img src="./src/main/resources/carpet/icon.png" width="20%" alt="icon">
 
 # Forge-Carpet
 
