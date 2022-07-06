@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,7 +27,7 @@ import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_INTERAC
 @Mixin(ServerPlayerGameMode.class)
 public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInteractionManagerInterface
 {
-    @Shadow public ServerPlayer player;
+    @Shadow @Final protected ServerPlayer player;
 
     @Shadow private boolean isDestroyingBlock;
 
@@ -34,14 +35,14 @@ public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInte
 
     @Shadow private int lastSentState;
 
-    @Shadow public ServerLevel level;
+    @Shadow protected ServerLevel level;
 
-    @Inject(method = "removeBlock", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(
+    @Inject(method = "destroyBlock", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;onDestroyedByPlayer(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;ZLnet/minecraft/world/level/material/FluidState;)Z",
+            target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
             shift = At.Shift.BEFORE
     ))
-    private void onBlockBroken(BlockPos blockPos_1, boolean canHarvest, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1)
+    private void onBlockBroken(BlockPos blockPos_1, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1)
     {
         PLAYER_BREAK_BLOCK.onBlockBroken(player, blockPos_1, blockState_1);
     }

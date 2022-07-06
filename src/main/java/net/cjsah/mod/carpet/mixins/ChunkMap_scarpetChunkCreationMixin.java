@@ -108,7 +108,6 @@ public abstract class ChunkMap_scarpetChunkCreationMixin implements ThreadedAnvi
 
     // in protoChunkToFullChunk
     // fancier version of the one below, ensuring that the event is triggered when the chunk is actually loaded.
-    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "lambda$protoChunkToFullChunk$30", at = @At("HEAD"))
     private void onChunkGeneratedStart(ChunkHolder chunkHolder, Either<ChunkAccess, ChunkLoadingFailure> chunk, CallbackInfoReturnable<CompletableFuture<Either<ChunkAccess, ChunkLoadingFailure>>> cir)
     {
@@ -122,7 +121,6 @@ public abstract class ChunkMap_scarpetChunkCreationMixin implements ThreadedAnvi
         }
     }
 
-    @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "lambda$protoChunkToFullChunk$30", at = @At("RETURN"))
     private void onChunkGeneratedEnd(ChunkHolder chunkHolder, Either<ChunkAccess, ChunkLoadingFailure> chunk, CallbackInfoReturnable<CompletableFuture<Either<ChunkAccess, ChunkLoadingFailure>>> cir)
     {

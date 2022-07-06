@@ -6,17 +6,12 @@ import net.cjsah.mod.carpet.fakes.ServerPlayerEntityInterface;
 import net.cjsah.mod.carpet.script.EntityEventsGroup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.util.ITeleporter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.*;
 
@@ -42,8 +36,6 @@ public abstract class ServerPlayer_scarpetEventMixin extends Player implements S
     }
 
     @Shadow protected abstract void completeUsingItem();
-
-    @Shadow public boolean wonGame;
 
     @Redirect(method = "completeUsingItem", at = @At(
             value = "INVOKE",
@@ -90,31 +82,6 @@ public abstract class ServerPlayer_scarpetEventMixin extends Player implements S
         if (!((EntityInterface)serverPlayerEntity.getVehicle()).isPermanentVehicle()) // won't since that method makes sure its not null
             serverPlayerEntity.setShiftKeyDown(sneaking);
     }
-
-    private Vec3 previousLocation;
-    private ResourceKey<Level> previousDimension;
-
-    @Inject(method = "changeDimension", at = @At("HEAD"))
-    private void logPreviousCoordinates(ServerLevel serverWorld, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir)
-    {
-        previousLocation = position();
-        previousDimension = level.dimension();  //dimension type
-    }
-
-    @Inject(method = "changeDimension", at = @At("RETURN"))
-    private void atChangeDimension(ServerLevel destination, ITeleporter teleporter, CallbackInfoReturnable<Entity> cir)
-    {
-        if (PLAYER_CHANGES_DIMENSION.isNeeded())
-        {
-            ServerPlayer player = (ServerPlayer) (Object)this;
-            Vec3 to = null;
-            if (!wonGame || previousDimension != Level.END || destination.dimension() != Level.OVERWORLD) // end ow
-            {
-                to = position();
-            }
-            PLAYER_CHANGES_DIMENSION.onDimensionChange(player, previousLocation, to, previousDimension, destination.dimension());
-        }
-    };
 
     @Override
     public void invalidateEntityObjectReference()

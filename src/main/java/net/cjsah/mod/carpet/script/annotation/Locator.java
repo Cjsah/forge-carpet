@@ -1,6 +1,7 @@
 package net.cjsah.mod.carpet.script.annotation;
 
 import com.google.common.collect.Lists;
+import net.cjsah.mod.carpet.script.bundled.Module;
 import net.cjsah.mod.carpet.script.CarpetContext;
 import net.cjsah.mod.carpet.script.Context;
 import net.cjsah.mod.carpet.script.argument.Argument;

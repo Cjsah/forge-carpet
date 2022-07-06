@@ -9,9 +9,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.function.Predicate;
 
 @Mixin(PieceGeneratorSupplier.class)
-public interface PieceGeneratorSupplier_plopMixin
-{
-    @SuppressWarnings("UnresolvedMixinReference")
+public class PieceGeneratorSupplier_plopMixin {
     @Redirect(method = "lambda$simple$0", at = @At(
             value = "INVOKE",
             target = "java/util/function/Predicate.test(Ljava/lang/Object;)Z"

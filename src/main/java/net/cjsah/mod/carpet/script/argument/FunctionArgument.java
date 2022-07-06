@@ -1,6 +1,7 @@
 package net.cjsah.mod.carpet.script.argument;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.cjsah.mod.carpet.script.bundled.Module;
 import net.cjsah.mod.carpet.script.Context;
 import net.cjsah.mod.carpet.script.ScriptHost;
 import net.cjsah.mod.carpet.script.command.CommandArgument;
