@@ -27,7 +27,6 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-@SuppressWarnings("EntityConstructor")
 public class EntityPlayerMPFake extends ServerPlayer
 {
     public Runnable fixStartingPosition = () -> {};

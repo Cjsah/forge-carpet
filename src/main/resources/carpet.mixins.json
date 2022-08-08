@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.cjsah.mod.carpet.mixins",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "refmap": "mixins.refmap.json",
   "mixins": [
     "BarrierBlock_updateSuppressionBlockMixin",
@@ -86,7 +86,6 @@
     "WorldGenRegion_scarpetPlopMixin",
     "StructurePiece_scarpetPlopMixin",
     "PlacedFeature_scarpetMixin",
-    "PieceGeneratorSupplier_plopMixin",
     "ServerGamePacketListenerImpl_scarpetEventsMixin",
     "ServerPlayerGameMode_scarpetEventsMixin",
     "Player_parrotMixin",

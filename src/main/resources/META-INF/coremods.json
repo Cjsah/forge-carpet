@@ -1,0 +1,4 @@
+{
+  "PieceGeneratorSupplier": "coremods/PieceGeneratorSupplier.js",
+  "Level": "coremods/Level.js"
+}
