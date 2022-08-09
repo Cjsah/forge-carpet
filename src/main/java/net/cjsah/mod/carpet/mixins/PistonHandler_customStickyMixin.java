@@ -24,8 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.List;
 
 @Mixin(PistonStructureResolver.class)
-public abstract class PistonHandler_customStickyMixin
-{
+public abstract class PistonHandler_customStickyMixin {
     /*
      * The following Mixins make double chests behave sticky on the side where they are connected to its other double chest half block.
      * This is achieved by Injecting calls to "stickToStickySide" where normally slimeblocks stick to all their neighboring blocks.
@@ -63,8 +62,7 @@ public abstract class PistonHandler_customStickyMixin
             target = "Lnet/minecraft/world/level/block/state/BlockState;isStickyBlock()Z",
             ordinal = 0 )
     )
-    private boolean redirectIsStickyBlock(BlockState blockState)
-    {
+    private boolean redirectIsStickyBlock(BlockState blockState) {
         // applies to both MBE chests as well as sticky chains
         return blockCanBePulled(blockState) || blockState.isStickyBlock();
     }
@@ -76,8 +74,7 @@ public abstract class PistonHandler_customStickyMixin
      * @author 2No2Name
      */
     private boolean blockCanBePulled(BlockState blockState) {
-        if (CarpetSettings.movableBlockEntities)
-        {
+        if (CarpetSettings.movableBlockEntities) {
             Block block = blockState.getBlock();
             if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST)
                 //Make chests be sticky on the side to
@@ -86,8 +83,7 @@ public abstract class PistonHandler_customStickyMixin
             //if(block == Blocks.STICKY_PISTON)
             //    return blockState.get(FacingBlock.FACING) == motionDirection;
         }
-        if (CarpetSettings.doChainStone && blockState.getBlock() == Blocks.CHAIN)
-        {
+        if (CarpetSettings.doChainStone && blockState.getBlock() == Blocks.CHAIN) {
             return isChainOnAxis(currentState, pushDirection);
         }
 
@@ -105,17 +101,13 @@ public abstract class PistonHandler_customStickyMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/state/BlockState;canStickTo(Lnet/minecraft/world/level/block/state/BlockState;)Z")
     )
-    private boolean isDraggingPreviousBlockBehind(BlockState previous, BlockState next)
-    {
-        if (CarpetSettings.doChainStone)
-        {
-            if (previous.getBlock() == Blocks.CHAIN && isChainOnAxis(previous, pushDirection))
-            {
+    private boolean isDraggingPreviousBlockBehind(BlockState previous, BlockState next) {
+        if (CarpetSettings.doChainStone) {
+            if (previous.getBlock() == Blocks.CHAIN && isChainOnAxis(previous, pushDirection)) {
                 if ( (next.getBlock() == Blocks.CHAIN && isChainOnAxis(next, pushDirection))
                         || CarpetSettings.chainStoneStickToAll
                         || isEndRodOnAxis(next, pushDirection.getAxis())
-                        || Block.canSupportCenter(level, currentPos, pushDirection))
-                {
+                        || Block.canSupportCenter(level, currentPos, pushDirection)) {
                     return true;
                 }
             }
@@ -134,12 +126,9 @@ public abstract class PistonHandler_customStickyMixin
             target = "Ljava/util/List;get(I)Ljava/lang/Object;",
             shift = At.Shift.AFTER
     ))
-    private void stickToStickySide(BlockPos blockPos_1, Direction direction, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1, int int_1, BlockState blockState_2, int int_2, int int_4, BlockPos blockPos_3)
-    {
-        if (CarpetSettings.movableBlockEntities)
-        {
-            if (!stickToStickySide(blockPos_3))
-            {
+    private void stickToStickySide(BlockPos blockPos_1, Direction direction, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1, int int_1, BlockState blockState_2, int int_2, int int_4, BlockPos blockPos_3) {
+        if (CarpetSettings.movableBlockEntities) {
+            if (!stickToStickySide(blockPos_3)) {
                 cir.setReturnValue(false);
             }
         }
@@ -153,22 +142,18 @@ public abstract class PistonHandler_customStickyMixin
      * @author 2No2Name, gnembon
      */
     private void stickToStickySide(CallbackInfoReturnable<Boolean> cir, BlockState state, int int_1){
-        if (CarpetSettings.movableBlockEntities)
-        {
-            if (!stickToStickySide(this.toPush.get(int_1)))
-            {
+        if (CarpetSettings.movableBlockEntities) {
+            if (!stickToStickySide(this.toPush.get(int_1))) {
                 cir.setReturnValue(false);
             }
         }
 
-        if (CarpetSettings.doChainStone)
-        {
+        if (CarpetSettings.doChainStone) {
             BlockPos pos = this.toPush.get(int_1);
             BlockState chainState = level.getBlockState(pos);
             // chain is sideways
             if (chainState.getBlock() == Blocks.CHAIN && !isChainOnAxis(chainState, pushDirection)
-                    && !this.addBranchingBlocks(pos))
-            {
+                    && !this.addBranchingBlocks(pos)) {
                 cir.setReturnValue(false);
             }
         }
@@ -180,8 +165,7 @@ public abstract class PistonHandler_customStickyMixin
      * @param blockPos_1 location of a block that moves and needs to stick other blocks to it
      * @author 2No2Name
      */
-    private boolean stickToStickySide(BlockPos blockPos_1)
-    {
+    private boolean stickToStickySide(BlockPos blockPos_1) {
         BlockState blockState_1 = this.level.getBlockState(blockPos_1);
         Block block = blockState_1.getBlock();
         Direction stickyDirection  = null;
@@ -210,13 +194,10 @@ public abstract class PistonHandler_customStickyMixin
             )
     )
     private void redirectIsStickyBlock(BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> cir,
-                                       BlockState blockState, int i, BlockState blockState2, int j, int l, BlockPos blockPos2, int m, int n, BlockPos blockPos3)
-    {
-        if (CarpetSettings.doChainStone)
-        {
+                                       BlockState blockState, int i, BlockState blockState2, int j, int l, BlockPos blockPos2, int m, int n, BlockPos blockPos3) {
+        if (CarpetSettings.doChainStone) {
             BlockState chainState = level.getBlockState(blockPos3);
-            if (chainState.getBlock() == Blocks.CHAIN && !isChainOnAxis(chainState, pushDirection) && !addBranchingBlocks(blockPos3))
-            {
+            if (chainState.getBlock() == Blocks.CHAIN && !isChainOnAxis(chainState, pushDirection) && !addBranchingBlocks(blockPos3)) {
                 cir.setReturnValue(false);
             }
         }
@@ -232,21 +213,16 @@ public abstract class PistonHandler_customStickyMixin
             shift = At.Shift.BEFORE
     ))
     private void otherSideStickyCases(BlockPos pos, CallbackInfoReturnable<Boolean> cir,
-                                      BlockState blockState, Direction var3[], int var4, int var5, Direction direction, BlockPos blockPos, BlockState blockState2)
-    {
-        if (CarpetSettings.doChainStone)
-        {
-            if (blockState.getBlock() == Blocks.CHAIN && isChainOnAxis(blockState, direction) && !blockState2.isAir())
-            {
+                                      BlockState blockState, Direction var3[], int var4, int var5, Direction direction, BlockPos blockPos, BlockState blockState2) {
+        if (CarpetSettings.doChainStone) {
+            if (blockState.getBlock() == Blocks.CHAIN && isChainOnAxis(blockState, direction) && !blockState2.isAir()) {
                 Block otherBlock = blockState2.getBlock();
                 if ((otherBlock == Blocks.CHAIN && (blockState.getValue(ChainBlock.AXIS) == blockState2.getValue(ChainBlock.AXIS)))
                         || CarpetSettings.chainStoneStickToAll
                         || isEndRodOnAxis(blockState2, blockState.getValue(ChainBlock.AXIS))
                         || otherBlock == Blocks.HONEY_BLOCK
-                        || Block.canSupportCenter(level, blockPos, direction.getOpposite()))
-                {
-                    if (!addBlockLine(blockPos, direction))
-                    {
+                        || Block.canSupportCenter(level, blockPos, direction.getOpposite())) {
+                    if (!addBlockLine(blockPos, direction)) {
                         cir.setReturnValue(false);
                     }
                 }
@@ -266,8 +242,7 @@ public abstract class PistonHandler_customStickyMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/state/BlockState;canStickTo(Lnet/minecraft/world/level/block/state/BlockState;)Z")
     )
-    private boolean isStuckSlimeStone(BlockState block, BlockState block2)
-    {
+    private boolean isStuckSlimeStone(BlockState block, BlockState block2) {
         return block2.isStickyBlock() && block.canStickTo(block2);
     }
 
@@ -278,8 +253,7 @@ public abstract class PistonHandler_customStickyMixin
      * @return Direction towards the other block of the double chest, null if the blockState is not a double chest
      * @author 2No2Name
      */
-    private Direction getDirectionToOtherChestHalf(BlockState blockState)
-    {
+    private Direction getDirectionToOtherChestHalf(BlockState blockState) {
         ChestType chestType;
         try{
             chestType = blockState.getValue(ChestBlock.TYPE);
@@ -290,8 +264,7 @@ public abstract class PistonHandler_customStickyMixin
     }
 
 
-    private boolean isChainOnAxis(BlockState state, Direction stickDirection)
-    {
+    private boolean isChainOnAxis(BlockState state, Direction stickDirection) {
         Direction.Axis axis;
         try {
             axis = state.getValue(ChainBlock.AXIS);
@@ -299,8 +272,7 @@ public abstract class PistonHandler_customStickyMixin
         return stickDirection.getAxis() == axis;
     }
 
-    private boolean isEndRodOnAxis(BlockState state, Direction.Axis stickAxis)
-    {
+    private boolean isEndRodOnAxis(BlockState state, Direction.Axis stickAxis) {
         if (state.getBlock() != Blocks.END_ROD) return false;
         Direction facing;
         try {

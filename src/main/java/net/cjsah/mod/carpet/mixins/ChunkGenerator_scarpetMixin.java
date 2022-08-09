@@ -11,16 +11,14 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.List;
 
 @Mixin(ChunkGenerator.class)
-public abstract class ChunkGenerator_scarpetMixin implements ChunkGeneratorInterface
-{
+public abstract class ChunkGenerator_scarpetMixin implements ChunkGeneratorInterface {
 
     @Shadow protected abstract List<StructurePlacement> getPlacementsForFeature(Holder<ConfiguredStructureFeature<?, ?>> holder);
 
     @Shadow public abstract void ensureStructuresGenerated();
 
     @Override
-    public void initStrongholds()
-    {
+    public void initStrongholds() {
         ensureStructuresGenerated();
     }
 

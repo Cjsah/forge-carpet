@@ -11,10 +11,8 @@ import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-public class TestCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class TestCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("testcarpet").
                 then(literal("dump").
                         executes((c) -> CarpetServer.settingsManager.printAllRulesToLog(null)).
@@ -26,8 +24,7 @@ public class TestCommand
                         executes( (c)-> test(c, getString(c, "second")+" 2"))));
     }
 
-    private static int test(CommandContext<CommandSourceStack> c, String term)
-    {
+    private static int test(CommandContext<CommandSourceStack> c, String term) {
         Messenger.m(c.getSource(),term.substring(0,1)+" "+term+": how did you get here?");
         return 1;
     }

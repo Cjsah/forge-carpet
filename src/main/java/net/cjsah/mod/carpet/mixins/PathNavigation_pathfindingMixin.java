@@ -17,8 +17,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Set;
 
 @Mixin(PathNavigation.class)
-public abstract class PathNavigation_pathfindingMixin
-{
+public abstract class PathNavigation_pathfindingMixin {
 
     @Shadow @Final protected Mob mob;
 
@@ -29,8 +28,7 @@ public abstract class PathNavigation_pathfindingMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;createPath(Ljava/util/Set;IZI)Lnet/minecraft/world/level/pathfinder/Path;"
     ))
-    private Path pathToBlock(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2)
-    {
+    private Path pathToBlock(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2) {
         if (!LoggerRegistry.__pathfinding)
             return createPath(set_1, int_1, boolean_1, int_2);
         long start = System.nanoTime();
@@ -45,8 +43,7 @@ public abstract class PathNavigation_pathfindingMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;createPath(Ljava/util/Set;IZI)Lnet/minecraft/world/level/pathfinder/Path;"
     ))
-    private Path pathToEntity(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2)
-    {
+    private Path pathToEntity(PathNavigation entityNavigation, Set<BlockPos> set_1, int int_1, boolean boolean_1, int int_2) {
         if (!LoggerRegistry.__pathfinding)
             return createPath(set_1, int_1, boolean_1, int_2);
         long start = System.nanoTime();

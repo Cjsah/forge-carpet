@@ -17,17 +17,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(AbstractCauldronBlock.class)
-public class AbstractCauldronBlock_stackableSBoxesMixin
-{
+public class AbstractCauldronBlock_stackableSBoxesMixin {
     @Redirect(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/cauldron/CauldronInteraction;interact(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;"))
-    private InteractionResult wrapInteractor(CauldronInteraction cauldronBehavior, BlockState blockState, Level world, BlockPos blockPos, Player playerEntity, InteractionHand hand, ItemStack itemStack)
-    {
+    private InteractionResult wrapInteractor(CauldronInteraction cauldronBehavior, BlockState blockState, Level world, BlockPos blockPos, Player playerEntity, InteractionHand hand, ItemStack itemStack) {
         int count = -1;
         if (CarpetSettings.shulkerBoxStackSize > 1 && itemStack.getItem() instanceof BlockItem && ((BlockItem)itemStack.getItem()).getBlock() instanceof ShulkerBoxBlock)
             count = itemStack.getCount();
         InteractionResult result = cauldronBehavior.interact(blockState, world, blockPos, playerEntity, hand, itemStack);
-        if (count > 0 && result.consumesAction())
-        {
+        if (count > 0 && result.consumesAction()) {
             ItemStack current = playerEntity.getItemInHand(hand);
             if (current.getItem() instanceof BlockItem && ((BlockItem)itemStack.getItem()).getBlock() instanceof ShulkerBoxBlock)
                 current.setCount(count);

@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Gui.class)
-public abstract class Gui_tablistMixin
-{
+public abstract class Gui_tablistMixin {
     @Shadow
     @Final
     private Minecraft minecraft;
@@ -20,8 +19,7 @@ public abstract class Gui_tablistMixin
     @Shadow @Final private PlayerTabOverlay tabList;
 
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
-    private boolean onDraw(Minecraft minecraftClient)
-    {
+    private boolean onDraw(Minecraft minecraftClient) {
         return this.minecraft.isLocalServer() && !((PlayerListHudInterface) tabList).hasFooterOrHeader();
     }
 

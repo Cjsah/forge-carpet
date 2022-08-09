@@ -10,8 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(StructureBlockEntity.class)
-public abstract class StructureBlockEntity_limitsMixin
-{
+public abstract class StructureBlockEntity_limitsMixin {
     @ModifyConstant(
             method = "load",
             constant = @Constant(intValue = 48)

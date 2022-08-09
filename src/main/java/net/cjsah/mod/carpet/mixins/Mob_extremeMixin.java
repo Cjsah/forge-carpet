@@ -9,14 +9,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(Mob.class)
-public class Mob_extremeMixin
-{
+public class Mob_extremeMixin {
     @Redirect(method = "finalizeSpawn", expect = 1, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

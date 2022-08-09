@@ -13,15 +13,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayerGameMode.class)
-public class ServerPlayerGameMode_cactusMixin
-{
+public class ServerPlayerGameMode_cactusMixin {
 
     @Redirect(method = "useItemOn", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/state/BlockState;use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"
     ))
-    private InteractionResult activateWithOptionalCactus(BlockState blockState, Level world_1, Player playerEntity_1, InteractionHand hand_1, BlockHitResult blockHitResult_1)
-    {
+    private InteractionResult activateWithOptionalCactus(BlockState blockState, Level world_1, Player playerEntity_1, InteractionHand hand_1, BlockHitResult blockHitResult_1) {
         boolean flipped = BlockRotator.flipBlockWithCactus(blockState, world_1, playerEntity_1, hand_1, blockHitResult_1);
         if (flipped)
             return InteractionResult.SUCCESS;

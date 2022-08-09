@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
-public abstract class Player_portalDelayMixin
-{
+public abstract class Player_portalDelayMixin {
     @Final @Shadow public Abilities abilities;
 
     @Inject(method = "getPortalWaitTime()I", at = @At("HEAD"), cancellable = true)

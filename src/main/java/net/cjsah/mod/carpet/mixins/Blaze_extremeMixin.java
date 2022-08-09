@@ -9,15 +9,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(Blaze.class)
-public class Blaze_extremeMixin
-{
+public class Blaze_extremeMixin {
     // unused actually
     @Redirect(method = "customServerAiStep", expect = 1, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

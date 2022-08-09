@@ -12,8 +12,7 @@ import net.minecraft.world.level.material.Material;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(PickaxeItem.class)
-public class PickaxeItem_missingToolsMixin extends DiggerItem
-{
+public class PickaxeItem_missingToolsMixin extends DiggerItem {
 
     protected PickaxeItem_missingToolsMixin(float attackDamage, float attackSpeed, Tier material, TagKey<Block> tag, Properties settings) {
         super(attackDamage, attackSpeed, material, tag, settings);

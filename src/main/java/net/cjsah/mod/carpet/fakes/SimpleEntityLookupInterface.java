@@ -5,7 +5,6 @@ import net.minecraft.world.level.entity.EntityAccess;
 
 import java.util.List;
 
-public interface SimpleEntityLookupInterface<T extends EntityAccess>
-{
+public interface SimpleEntityLookupInterface<T extends EntityAccess> {
     List<T> getChunkEntities(ChunkPos chpos);
 }

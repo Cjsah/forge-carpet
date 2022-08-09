@@ -20,8 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(AbstractContainerMenu.class)
-public abstract class AbstractContainerMenu_scarpetMixin implements ScreenHandlerInterface
-{
+public abstract class AbstractContainerMenu_scarpetMixin implements ScreenHandlerInterface {
     @Shadow @Final private List<ContainerListener> containerListeners;
     @Shadow public abstract void sendAllDataToRemote();
     @Shadow @Final private List<DataSlot> dataSlots;

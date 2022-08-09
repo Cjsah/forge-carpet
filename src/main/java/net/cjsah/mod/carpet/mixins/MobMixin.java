@@ -12,28 +12,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(Mob.class)
-public abstract class MobMixin implements MobEntityInterface
-{
+public abstract class MobMixin implements MobEntityInterface {
     @Shadow @Final protected GoalSelector targetSelector;
     @Shadow @Final protected GoalSelector goalSelector;
     @Shadow private boolean persistenceRequired;
     public final Map<String, Goal> temporaryTasks = new HashMap<>();
 
     @Override
-    public GoalSelector getAI(boolean target)
-    {
+    public GoalSelector getAI(boolean target) {
         return target?targetSelector:goalSelector;
     }
 
     @Override
-    public Map<String, Goal> getTemporaryTasks()
-    {
+    public Map<String, Goal> getTemporaryTasks() {
         return temporaryTasks;
     }
 
     @Override
-    public void setPersistence(boolean what)
-    {
+    public void setPersistence(boolean what) {
         persistenceRequired = what;
     }
 }

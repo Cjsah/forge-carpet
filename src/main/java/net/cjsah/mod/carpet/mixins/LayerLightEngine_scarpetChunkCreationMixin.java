@@ -11,21 +11,18 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LayerLightEngine.class)
-public abstract class LayerLightEngine_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface, ChunkLightProviderInterface
-{
+public abstract class LayerLightEngine_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface, ChunkLightProviderInterface {
     @Shadow
     @Final
     protected LayerLightSectionStorage<?> storage;
 
     @Override
-    public void removeLightData(final long pos)
-    {
+    public void removeLightData(final long pos) {
         ((Lighting_scarpetChunkCreationInterface) this.storage).removeLightData(pos);
     }
 
     @Override
-    public void relight(final long pos)
-    {
+    public void relight(final long pos) {
         ((Lighting_scarpetChunkCreationInterface) this.storage).relight(pos);
     }
 

@@ -21,8 +21,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * The {@link Mixin} which removes items in a hopper if it points into a wool counter, and calls {@link HopperCounter#add}
  */
 @Mixin(HopperBlockEntity.class)
-public abstract class HopperBlockEntity_counterMixin extends RandomizableContainerBlockEntity
-{
+public abstract class HopperBlockEntity_counterMixin extends RandomizableContainerBlockEntity {
     protected HopperBlockEntity_counterMixin(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
     }

@@ -10,14 +10,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(WitherBoss.class)
-public class WitherBoss_extremeMixin
-{
+public class WitherBoss_extremeMixin {
     @Redirect(method = "performRangedAttack(ILnet/minecraft/world/entity/LivingEntity;)V", at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextFloat()F")
     )
-    private float nextFloatAmplfied(Random random)
-    {
+    private float nextFloatAmplfied(Random random) {
         if (CarpetSettings.extremeBehaviours) return random.nextFloat()/100;
         return random.nextFloat();
     }

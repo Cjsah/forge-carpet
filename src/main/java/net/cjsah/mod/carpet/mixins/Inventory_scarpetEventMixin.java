@@ -14,23 +14,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_PICKS_UP_ITEM;
 
 @Mixin(Inventory.class)
-public abstract class Inventory_scarpetEventMixin
-{
+public abstract class Inventory_scarpetEventMixin {
     @Shadow @Final public Player player;
 
     @Redirect(method = "add(Lnet/minecraft/world/item/ItemStack;)Z", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Inventory;add(ILnet/minecraft/world/item/ItemStack;)Z"
     ))
-    private boolean onItemAcquired(Inventory playerInventory, int slot, ItemStack stack)
-    {
+    private boolean onItemAcquired(Inventory playerInventory, int slot, ItemStack stack) {
         if (!PLAYER_PICKS_UP_ITEM.isNeeded() || !(player instanceof ServerPlayer))
             return playerInventory.add(-1, stack);
         Item item = stack.getItem();
         int count = stack.getCount();
         boolean res = playerInventory.add(-1, stack);
-        if (count != stack.getCount()) // res returns false for larger item adding to a almost full ineventory
-        {
+        if (count != stack.getCount()) { // res returns false for larger item adding to a almost full ineventory
             ItemStack diffStack = new ItemStack(item, count - stack.getCount());
             diffStack.setTag(stack.getTag());
             PLAYER_PICKS_UP_ITEM.onItemAction((ServerPlayer) player, null, diffStack);

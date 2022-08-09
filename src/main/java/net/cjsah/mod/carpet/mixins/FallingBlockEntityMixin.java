@@ -13,28 +13,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FallingBlockEntity.class)
-public abstract class FallingBlockEntityMixin extends Entity
-{
+public abstract class FallingBlockEntityMixin extends Entity {
     private TrajectoryLogHelper logHelper;
     public FallingBlockEntityMixin(EntityType<?> entityType_1, Level world_1) { super(entityType_1, world_1); }
 
     @Inject(method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V", at = @At("RETURN"))
-    private void addLogger(EntityType<? extends Projectile> entityType_1, Level world_1, CallbackInfo ci)
-    {
+    private void addLogger(EntityType<? extends Projectile> entityType_1, Level world_1, CallbackInfo ci) {
         if (LoggerRegistry.__fallingBlocks && !world_1.isClientSide)
             logHelper = new TrajectoryLogHelper("fallingBlocks");
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void tickCheck(CallbackInfo ci)
-    {
+    private void tickCheck(CallbackInfo ci) {
         if (LoggerRegistry.__fallingBlocks && logHelper != null)
             logHelper.onTick(getX(), getY(), getZ(), getDeltaMovement());
     }
 
     @Override
-    public void remove(RemovalReason arg) // reason
-    {
+    public void remove(RemovalReason arg) { // reason
         super.remove(arg);
         if (LoggerRegistry.__fallingBlocks && logHelper != null)
             logHelper.onFinish();

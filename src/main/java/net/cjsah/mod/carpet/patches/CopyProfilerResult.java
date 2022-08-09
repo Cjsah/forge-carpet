@@ -10,8 +10,7 @@ import java.util.List;
 public class CopyProfilerResult implements ProfileResults {
     int startI, endI;
     long startL, endL;
-    public CopyProfilerResult(int startI, long startL, int endI, long endL)
-    {
+    public CopyProfilerResult(int startI, long startL, int endI, long endL) {
         this.startI = startI;
         this.startL = startL;
         this.endI = endI;

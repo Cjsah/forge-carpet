@@ -13,11 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_RESPAWNS;
 
 @Mixin(PlayerList.class)
-public class PlayerList_scarpetEventsMixin
-{
+public class PlayerList_scarpetEventsMixin {
     @Inject(method = "respawn", at = @At("HEAD"))
-    private void onRespawn(ServerPlayer player, boolean olive, CallbackInfoReturnable<ServerPlayer> cir)
-    {
+    private void onRespawn(ServerPlayer player, boolean olive, CallbackInfoReturnable<ServerPlayer> cir) {
         PLAYER_RESPAWNS.onPlayerEvent(player);
     }
 
@@ -25,14 +23,12 @@ public class PlayerList_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;initInventoryMenu()V"
     ))
-    private void invalidatePreviousInstance(ServerPlayer player, boolean alive, CallbackInfoReturnable<ServerPlayer> cir)
-    {
+    private void invalidatePreviousInstance(ServerPlayer player, boolean alive, CallbackInfoReturnable<ServerPlayer> cir) {
         ((ServerPlayerEntityInterface)player).invalidateEntityObjectReference();
     }
 
     @Inject(method = "reloadResources", at = @At("HEAD"))
-    private void reloadCommands(CallbackInfo ci)
-    {
+    private void reloadCommands(CallbackInfo ci) {
         CarpetServer.scriptServer.reAddCommands();
     }
 }

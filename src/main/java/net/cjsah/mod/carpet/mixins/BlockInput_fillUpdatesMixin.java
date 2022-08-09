@@ -11,16 +11,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(BlockInput.class)
-public class BlockInput_fillUpdatesMixin
-{
+public class BlockInput_fillUpdatesMixin {
     @Redirect(method = "place", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/Block;updateFromNeighbourShapes(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
     ))
-    private BlockState postProcessStateProxy(BlockState state, LevelAccessor serverWorld, BlockPos blockPos)
-    {
-        if (CarpetSettings.impendingFillSkipUpdates.get())
-        {
+    private BlockState postProcessStateProxy(BlockState state, LevelAccessor serverWorld, BlockPos blockPos) {
+        if (CarpetSettings.impendingFillSkipUpdates.get()) {
             return state;
         }
         

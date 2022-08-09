@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public abstract class ServerGamePacketListenerImpl_antiCheatDisabledMixin
-{
+public abstract class ServerGamePacketListenerImpl_antiCheatDisabledMixin {
     @Shadow private int aboveGroundTickCount;
 
     @Shadow private int aboveGroundVehicleTickCount;
@@ -20,10 +19,8 @@ public abstract class ServerGamePacketListenerImpl_antiCheatDisabledMixin
     @Shadow protected abstract boolean isSingleplayerOwner();
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void restrictFloatingBits(CallbackInfo ci)
-    {
-        if (CarpetSettings.antiCheatDisabled)
-        {
+    private void restrictFloatingBits(CallbackInfo ci) {
+        if (CarpetSettings.antiCheatDisabled) {
             if (aboveGroundTickCount > 70) aboveGroundTickCount--;
             if (aboveGroundVehicleTickCount > 70) aboveGroundVehicleTickCount--;
         }
@@ -34,8 +31,7 @@ public abstract class ServerGamePacketListenerImpl_antiCheatDisabledMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;isSingleplayerOwner()Z"
     ))
-    private boolean isServerTrusting(ServerGamePacketListenerImpl serverPlayNetworkHandler)
-    {
+    private boolean isServerTrusting(ServerGamePacketListenerImpl serverPlayNetworkHandler) {
         return isSingleplayerOwner() || CarpetSettings.antiCheatDisabled;
     }
 
@@ -43,8 +39,7 @@ public abstract class ServerGamePacketListenerImpl_antiCheatDisabledMixin
              at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;isChangingDimension()Z"))
-    private boolean relaxMoveRestrictions(ServerPlayer serverPlayerEntity)
-    {
+    private boolean relaxMoveRestrictions(ServerPlayer serverPlayerEntity) {
         return CarpetSettings.antiCheatDisabled || serverPlayerEntity.isChangingDimension();
     }
 }

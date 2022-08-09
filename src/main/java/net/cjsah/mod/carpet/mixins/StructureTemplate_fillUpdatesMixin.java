@@ -11,14 +11,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(StructureTemplate.class)
-public class StructureTemplate_fillUpdatesMixin
-{
+public class StructureTemplate_fillUpdatesMixin {
     @Redirect( method = "placeInWorld(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/Random;I)Z", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/ServerLevelAccessor;blockUpdated(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V"
     ))
-    private void skipUpdateNeighbours(ServerLevelAccessor serverWorldAccess, BlockPos pos, Block block)
-    {
+    private void skipUpdateNeighbours(ServerLevelAccessor serverWorldAccess, BlockPos pos, Block block) {
         if (!CarpetSettings.impendingFillSkipUpdates.get())
             serverWorldAccess.blockUpdated(pos, block);
     }
@@ -27,8 +25,7 @@ public class StructureTemplate_fillUpdatesMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;getKnownShape()Z"
     ))
-    private boolean skipPostprocess(StructurePlaceSettings structurePlacementData)
-    {
+    private boolean skipPostprocess(StructurePlaceSettings structurePlacementData) {
         return structurePlacementData.getKnownShape() || CarpetSettings.impendingFillSkipUpdates.get();
     }
 }

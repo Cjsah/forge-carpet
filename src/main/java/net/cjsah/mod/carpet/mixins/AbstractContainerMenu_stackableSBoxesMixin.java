@@ -12,20 +12,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(AbstractContainerMenu.class)
-public class AbstractContainerMenu_stackableSBoxesMixin
-{
+public class AbstractContainerMenu_stackableSBoxesMixin {
     @Redirect(method = "doClick", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/inventory/Slot;getMaxStackSize(Lnet/minecraft/world/item/ItemStack;)I"
     ))
-    private int getMaxCountForSboxesInScreenHander(Slot slot, ItemStack stack)
-    {
+    private int getMaxCountForSboxesInScreenHander(Slot slot, ItemStack stack) {
         if (CarpetSettings.shulkerBoxStackSize > 1 &&
                 stack.getItem() instanceof BlockItem &&
                 ((BlockItem)stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
                 !InventoryHelper.shulkerBoxHasItems(stack)
-        )
-        {
+        ) {
             return CarpetSettings.shulkerBoxStackSize;
         }
         return slot.getMaxStackSize(stack);

@@ -6,8 +6,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(PoiRecord.class)
-public interface PoiRecord_scarpetMixin
-{
+public interface PoiRecord_scarpetMixin {
     @Accessor("freeTickets")
     int getFreeTickets();
 

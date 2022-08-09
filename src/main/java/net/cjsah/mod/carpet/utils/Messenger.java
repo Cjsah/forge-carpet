@@ -26,13 +26,11 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Messenger
-{
+public class Messenger {
     public static final Logger LOG = LoggerFactory.getLogger("Messaging System");
 
     private static final Pattern colorExtract = Pattern.compile("#([0-9a-fA-F]{6})");
-    public enum CarpetFormatting
-    {
+    public enum CarpetFormatting {
         ITALIC      ('i', (s, f) -> s.withItalic(true)),
         STRIKE      ('s', (s, f) -> s.applyFormat(ChatFormatting.STRIKETHROUGH)),
         UNDERLINE   ('u', (s, f) -> s.applyFormat(ChatFormatting.UNDERLINE)),
@@ -68,32 +66,27 @@ public class Messenger
         public char code;
         public BiFunction<Style, String, Style> applier;
         public Function<String, String> container;
-        CarpetFormatting(char code, BiFunction<Style, String, Style> applier)
-        {
+        CarpetFormatting(char code, BiFunction<Style, String, Style> applier) {
             this(code, applier, s -> s.indexOf(code)>=0?Character.toString(code):null);
         }
-        CarpetFormatting(char code, BiFunction<Style, String, Style> applier, Function<String, String> container)
-        {
+        CarpetFormatting(char code, BiFunction<Style, String, Style> applier, Function<String, String> container) {
             this.code = code;
             this.applier = applier;
             this.container = container;
         }
-        public Style apply(String format, Style previous)
-        {
+        public Style apply(String format, Style previous) {
             String fmt;
             if ((fmt = container.apply(format))!= null) return applier.apply(previous, fmt);
             return previous;
         }
     };
 
-    public static Style parseStyle(String style)
-    {
+    public static Style parseStyle(String style) {
         Style myStyle= Style.EMPTY.withColor(ChatFormatting.WHITE);
         for (CarpetFormatting cf: CarpetFormatting.values()) myStyle = cf.apply(style, myStyle);
         return myStyle;
     }
-    public static String heatmap_color(double actual, double reference)
-    {
+    public static String heatmap_color(double actual, double reference) {
         String color = "g";
         if (actual >= 0.0D) color = "e";
         if (actual > 0.5D*reference) color = "y";
@@ -101,10 +94,8 @@ public class Messenger
         if (actual > reference) color = "m";
         return color;
     }
-    public static String creatureTypeColor(MobCategory type)
-    {
-        return switch (type)
-        {
+    public static String creatureTypeColor(MobCategory type) {
+        return switch (type) {
             case MONSTER -> "n";
             case CREATURE -> "e";
             case AMBIENT -> "f";
@@ -114,21 +105,17 @@ public class Messenger
         };
     }
 
-    private static BaseComponent getChatComponentFromDesc(String message, BaseComponent previousMessage)
-    {
-        if (message.equalsIgnoreCase(""))
-        {
+    private static BaseComponent getChatComponentFromDesc(String message, BaseComponent previousMessage) {
+        if (message.equalsIgnoreCase("")) {
             return new TextComponent("");
         }
-        if (Character.isWhitespace(message.charAt(0)))
-        {
+        if (Character.isWhitespace(message.charAt(0))) {
             message = "w" + message;
         }
         int limit = message.indexOf(' ');
         String desc = message;
         String str = "";
-        if (limit >= 0)
-        {
+        if (limit >= 0) {
             desc = message.substring(0, limit);
             str = message.substring(limit+1);
         }
@@ -156,51 +143,42 @@ public class Messenger
     public static BaseComponent tp(String desc, Vec3 pos) { return tp(desc, pos.x, pos.y, pos.z); }
     public static BaseComponent tp(String desc, BlockPos pos) { return tp(desc, pos.getX(), pos.getY(), pos.getZ()); }
     public static BaseComponent tp(String desc, double x, double y, double z) { return tp(desc, (float)x, (float)y, (float)z);}
-    public static BaseComponent tp(String desc, float x, float y, float z)
-    {
+    public static BaseComponent tp(String desc, float x, float y, float z) {
         return getCoordsTextComponent(desc, x, y, z, false);
     }
-    public static BaseComponent tp(String desc, int x, int y, int z)
-    {
+    public static BaseComponent tp(String desc, int x, int y, int z) {
         return getCoordsTextComponent(desc, (float)x, (float)y, (float)z, true);
     }
 
     /// to be continued
-    public static BaseComponent dbl(String style, double double_value)
-    {
+    public static BaseComponent dbl(String style, double double_value) {
         return c(String.format("%s %.1f",style,double_value),String.format("^w %f",double_value));
     }
-    public static BaseComponent dbls(String style, double ... doubles)
-    {
+    public static BaseComponent dbls(String style, double ... doubles) {
         StringBuilder str = new StringBuilder(style + " [ ");
         String prefix = "";
-        for (double dbl : doubles)
-        {
+        for (double dbl : doubles) {
             str.append(String.format("%s%.1f", prefix, dbl));
             prefix = ", ";
         }
         str.append(" ]");
         return c(str.toString());
     }
-    public static BaseComponent dblf(String style, double ... doubles)
-    {
+    public static BaseComponent dblf(String style, double ... doubles) {
         StringBuilder str = new StringBuilder(style + " [ ");
         String prefix = "";
-        for (double dbl : doubles)
-        {
+        for (double dbl : doubles) {
             str.append(String.format("%s%f", prefix, dbl));
             prefix = ", ";
         }
         str.append(" ]");
         return c(str.toString());
     }
-    public static BaseComponent dblt(String style, double ... doubles)
-    {
+    public static BaseComponent dblt(String style, double ... doubles) {
         List<Object> components = new ArrayList<>();
         components.add(style+" [ ");
         String prefix = "";
-        for (double dbl:doubles)
-        {
+        for (double dbl:doubles) {
 
             components.add(String.format("%s %s%.1f",style, prefix, dbl));
             components.add("?"+dbl);
@@ -212,17 +190,14 @@ public class Messenger
         return c(components.toArray(new Object[0]));
     }
 
-    private static BaseComponent getCoordsTextComponent(String style, float x, float y, float z, boolean isInt)
-    {
+    private static BaseComponent getCoordsTextComponent(String style, float x, float y, float z, boolean isInt) {
         String text;
         String command;
-        if (isInt)
-        {
+        if (isInt) {
             text = String.format("%s [ %d, %d, %d ]",style, (int)x,(int)y, (int)z );
             command = String.format("!/tp %d %d %d",(int)x,(int)y, (int)z);
         }
-        else
-        {
+        else {
             text = String.format("%s [ %.1f, %.1f, %.1f]",style, x, y, z);
             command = String.format("!/tp %.3f %.3f %.3f",x, y, z);
         }
@@ -230,27 +205,22 @@ public class Messenger
     }
 
     //message source
-    public static void m(CommandSourceStack source, Object ... fields)
-    {
+    public static void m(CommandSourceStack source, Object ... fields) {
         if (source != null)
             source.sendSuccess(Messenger.c(fields),source.getServer() != null && source.getServer().getLevel(Level.OVERWORLD) != null); //OW
     }
-    public static void m(Player player, Object ... fields)
-    {
+    public static void m(Player player, Object ... fields) {
         player.sendMessage(Messenger.c(fields), Util.NIL_UUID);
     }
 
     /*
     composes single line, multicomponent message, and returns as one chat messagge
      */
-    public static BaseComponent c(Object ... fields)
-    {
+    public static BaseComponent c(Object ... fields) {
         BaseComponent message = new TextComponent("");
         BaseComponent previousComponent = null;
-        for (Object o: fields)
-        {
-            if (o instanceof BaseComponent)
-            {
+        for (Object o: fields) {
+            if (o instanceof BaseComponent) {
                 message.append((BaseComponent)o);
                 previousComponent = (BaseComponent)o;
                 continue;
@@ -265,12 +235,10 @@ public class Messenger
 
     //simple text
 
-    public static BaseComponent s(String text)
-    {
+    public static BaseComponent s(String text) {
         return s(text,"");
     }
-    public static BaseComponent s(String text, String style)
-    {
+    public static BaseComponent s(String text, String style) {
         BaseComponent message = new TextComponent(text);
         message.setStyle(parseStyle(style));
         return message;
@@ -279,34 +247,28 @@ public class Messenger
 
 
 
-    public static void send(Player player, Collection<BaseComponent> lines)
-    {
+    public static void send(Player player, Collection<BaseComponent> lines) {
         lines.forEach(message -> player.sendMessage(message, Util.NIL_UUID));
     }
-    public static void send(CommandSourceStack source, Collection<BaseComponent> lines)
-    {
+    public static void send(CommandSourceStack source, Collection<BaseComponent> lines) {
         lines.stream().forEachOrdered((s) -> source.sendSuccess(s, false));
     }
 
 
-    public static void print_server_message(MinecraftServer server, String message)
-    {
+    public static void print_server_message(MinecraftServer server, String message) {
         if (server == null)
             LOG.error("Message not delivered: "+message);
         server.sendMessage(new TextComponent(message), Util.NIL_UUID);
         BaseComponent txt = c("gi "+message);
-        for (Player entityplayer : server.getPlayerList().getPlayers())
-        {
+        for (Player entityplayer : server.getPlayerList().getPlayers()) {
             entityplayer.sendMessage(txt, Util.NIL_UUID);
         }
     }
-    public static void print_server_message(MinecraftServer server, BaseComponent message)
-    {
+    public static void print_server_message(MinecraftServer server, BaseComponent message) {
         if (server == null)
             LOG.error("Message not delivered: "+message.getString());
         server.sendMessage(message, Util.NIL_UUID);
-        for (Player entityplayer : server.getPlayerList().getPlayers())
-        {
+        for (Player entityplayer : server.getPlayerList().getPlayers()) {
             entityplayer.sendMessage(message, Util.NIL_UUID);
         }
     }

@@ -3,8 +3,7 @@ package net.cjsah.mod.carpet.script.value;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 
-public class StringValue extends Value
-{
+public class StringValue extends Value {
     public static Value EMPTY = StringValue.of("");
 
     private String str;
@@ -20,31 +19,26 @@ public class StringValue extends Value
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new StringValue(str);
     }
 
-    public StringValue(String str)
-    {
+    public StringValue(String str) {
         this.str = str;
     }
 
-    public static Value of(String value)
-    {
+    public static Value of(String value) {
         if (value == null) return Value.NULL;
         return new StringValue(value);
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "string";
     }
 
     @Override
-    public Tag toTag(boolean force)
-    {
+    public Tag toTag(boolean force) {
         return StringTag.valueOf(str);
     }
 }

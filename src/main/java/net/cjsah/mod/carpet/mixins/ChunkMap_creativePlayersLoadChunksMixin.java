@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ChunkMap_creativePlayersLoadChunksMixin {
 
     @Inject(method = "skipPlayer(Lnet/minecraft/server/level/ServerPlayer;)Z", at = @At("HEAD"), cancellable = true)
-    private void startProfilerSection(ServerPlayer serverPlayer, CallbackInfoReturnable<Boolean> cir)
-    {
+    private void startProfilerSection(ServerPlayer serverPlayer, CallbackInfoReturnable<Boolean> cir) {
         if (!CarpetSettings.creativePlayersLoadChunks && serverPlayer.isCreative()) {
             cir.setReturnValue(true);
         }

@@ -35,21 +35,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class PlayerCommand
-{
+public class PlayerCommand {
 
     // TODO: allow any order like execute
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         final String[] gamemodeStrings = Arrays.stream(GameType.values())
-                .map(GameType::getName)
-                .collect(Collectors.toList())
+                .map(GameType::getName).toList()
                 .toArray(new String[]{});
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = literal("player")
                 .requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandPlayer))
@@ -116,8 +112,7 @@ public class PlayerCommand
         dispatcher.register(literalargumentbuilder);
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> makeActionCommand(String actionName, EntityPlayerActionPack.ActionType type)
-    {
+    private static LiteralArgumentBuilder<CommandSourceStack> makeActionCommand(String actionName, EntityPlayerActionPack.ActionType type) {
         return literal(actionName)
                 .executes(c -> action(c, type, EntityPlayerActionPack.Action.once()))
                 .then(literal("once").executes(c -> action(c, type, EntityPlayerActionPack.Action.once())))
@@ -126,8 +121,7 @@ public class PlayerCommand
                         .executes(c -> action(c, type, EntityPlayerActionPack.Action.interval(IntegerArgumentType.getInteger(c, "ticks"))))));
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> makeDropCommand(String actionName, boolean dropAll)
-    {
+    private static LiteralArgumentBuilder<CommandSourceStack> makeDropCommand(String actionName, boolean dropAll) {
         return literal(actionName)
                 .then(literal("all").executes(c ->manipulate(c, ap -> ap.drop(-2,dropAll))))
                 .then(literal("mainhand").executes(c ->manipulate(c, ap -> ap.drop(-1,dropAll))))
@@ -139,42 +133,34 @@ public class PlayerCommand
                         ))));
     }
 
-    private static Collection<String> getPlayers(CommandSourceStack source)
-    {
+    private static Collection<String> getPlayers(CommandSourceStack source) {
         Set<String> players = Sets.newLinkedHashSet(Arrays.asList("Steve", "Alex"));
         players.addAll(source.getOnlinePlayerNames());
         return players;
     }
 
-    private static ServerPlayer getPlayer(CommandContext<CommandSourceStack> context)
-    {
+    private static ServerPlayer getPlayer(CommandContext<CommandSourceStack> context) {
         String playerName = StringArgumentType.getString(context, "player");
         MinecraftServer server = context.getSource().getServer();
         return server.getPlayerList().getPlayerByName(playerName);
     }
 
-    private static boolean cantManipulate(CommandContext<CommandSourceStack> context)
-    {
+    private static boolean cantManipulate(CommandContext<CommandSourceStack> context) {
         Player player = getPlayer(context);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(context.getSource(), "r Can only manipulate existing players");
             return true;
         }
         Player sendingPlayer;
-        try
-        {
+        try {
             sendingPlayer = context.getSource().getPlayerOrException();
         }
-        catch (CommandSyntaxException e)
-        {
+        catch (CommandSyntaxException e) {
             return false;
         }
 
-        if (!context.getSource().getServer().getPlayerList().isOp(sendingPlayer.getGameProfile()))
-        {
-            if (sendingPlayer != player && !(player instanceof EntityPlayerMPFake))
-            {
+        if (!context.getSource().getServer().getPlayerList().isOp(sendingPlayer.getGameProfile())) {
+            if (sendingPlayer != player && !(player instanceof EntityPlayerMPFake)) {
                 Messenger.m(context.getSource(), "r Non OP players can't control other real players");
                 return true;
             }
@@ -182,8 +168,7 @@ public class PlayerCommand
         return false;
     }
 
-    private static boolean cantReMove(CommandContext<CommandSourceStack> context)
-    {
+    private static boolean cantReMove(CommandContext<CommandSourceStack> context) {
         if (cantManipulate(context)) return true;
         Player player = getPlayer(context);
         if (player instanceof EntityPlayerMPFake) return false;
@@ -191,22 +176,18 @@ public class PlayerCommand
         return true;
     }
 
-    private static boolean cantSpawn(CommandContext<CommandSourceStack> context)
-    {
+    private static boolean cantSpawn(CommandContext<CommandSourceStack> context) {
         String playerName = StringArgumentType.getString(context, "player");
         MinecraftServer server = context.getSource().getServer();
         PlayerList manager = server.getPlayerList();
         Player player = manager.getPlayerByName(playerName);
-        if (player != null)
-        {
+        if (player != null) {
             Messenger.m(context.getSource(), "r Player ", "rb " + playerName, "r  is already logged on");
             return true;
         }
         GameProfile profile = server.getProfileCache().get(playerName).orElse(null);
-        if (profile == null)
-        {
-            if (!CarpetSettings.allowSpawningOfflinePlayers)
-            {
+        if (profile == null) {
+            if (!CarpetSettings.allowSpawningOfflinePlayers) {
                 Messenger.m(context.getSource(), "r Player "+playerName+" is either banned by Mojang, or auth servers are down. " +
                         "Banned players can only be summoned in Singleplayer and in servers in off-line mode.");
                 return true;
@@ -214,28 +195,24 @@ public class PlayerCommand
                 profile = new GameProfile(Player.createPlayerUUID(playerName), playerName);
             }
         }
-        if (manager.getBans().isBanned(profile))
-        {
+        if (manager.getBans().isBanned(profile)) {
             Messenger.m(context.getSource(), "r Player ", "rb " + playerName, "r  is banned on this server");
             return true;
         }
-        if (manager.isUsingWhitelist() && manager.isWhiteListed(profile) && !context.getSource().hasPermission(2))
-        {
+        if (manager.isUsingWhitelist() && manager.isWhiteListed(profile) && !context.getSource().hasPermission(2)) {
             Messenger.m(context.getSource(), "r Whitelisted players can only be spawned by operators");
             return true;
         }
         return false;
     }
 
-    private static int kill(CommandContext<CommandSourceStack> context)
-    {
+    private static int kill(CommandContext<CommandSourceStack> context) {
         if (cantReMove(context)) return 0;
         getPlayer(context).kill();
         return 1;
     }
 
-    private static int lookAt(CommandContext<CommandSourceStack> context)
-    {
+    private static int lookAt(CommandContext<CommandSourceStack> context) {
         return manipulate(context, ap -> {
             //try {
                 ap.lookAt(Vec3Argument.getVec3(context, "position"));
@@ -244,25 +221,20 @@ public class PlayerCommand
     }
 
     @FunctionalInterface
-    interface SupplierWithCommandSyntaxException<T>
-    {
+    interface SupplierWithCommandSyntaxException<T> {
         T get() throws CommandSyntaxException;
     }
 
-    private static <T> T tryGetArg(SupplierWithCommandSyntaxException<T> a, SupplierWithCommandSyntaxException<T> b) throws CommandSyntaxException
-    {
-        try
-        {
+    private static <T> T tryGetArg(SupplierWithCommandSyntaxException<T> a, SupplierWithCommandSyntaxException<T> b) throws CommandSyntaxException {
+        try {
             return a.get();
         }
-        catch (IllegalArgumentException e)
-        {
+        catch (IllegalArgumentException e) {
             return b.get();
         }
     }
 
-    private static int spawn(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
-    {
+    private static int spawn(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         if (cantSpawn(context)) return 0;
         CommandSourceStack source = context.getSource();
         Vec3 pos = tryGetArg(
@@ -279,8 +251,7 @@ public class PlayerCommand
         );
         GameType mode = GameType.CREATIVE;
         boolean flying = false;
-        try
-        {
+        try {
             ServerPlayer player = context.getSource().getPlayerOrException();
             mode = player.gameMode.getGameModeForPlayer();
             flying = player.getAbilities().flying;
@@ -289,14 +260,12 @@ public class PlayerCommand
         try {
             String opGameMode = StringArgumentType.getString(context, "gamemode");
             mode = GameType.byName(opGameMode, null);
-            if(mode == null)
-            {
+            if(mode == null) {
                 Messenger.m(context.getSource(), "rb Invalid game mode: "+opGameMode+".");
                 return 0;
             }
         } catch (IllegalArgumentException ignored) {}
-        if(mode == GameType.SPECTATOR)
-        {
+        if(mode == GameType.SPECTATOR) {
             // Force override flying to true for spectator players, or they will fell out of the world.
             flying = true;
         } else if(mode.isSurvival()){
@@ -304,21 +273,18 @@ public class PlayerCommand
             flying = false;
         }
         String playerName = StringArgumentType.getString(context, "player");
-        if (playerName.length()>maxPlayerLength(source.getServer()))
-        {
+        if (playerName.length()>maxPlayerLength(source.getServer())) {
             Messenger.m(context.getSource(), "rb Player name: "+playerName+" is too long");
             return 0;
         }
 
         MinecraftServer server = source.getServer();
-        if (!Level.isInSpawnableBounds(new BlockPos(pos.x, pos.y, pos.z)))
-        {
+        if (!Level.isInSpawnableBounds(new BlockPos(pos.x, pos.y, pos.z))) {
             Messenger.m(context.getSource(), "rb Player "+playerName+" cannot be placed outside of the world");
             return 0;
         }
         Player player = EntityPlayerMPFake.createFake(playerName, server, pos.x, pos.y, pos.z, facing.y, facing.x, dimType, mode, flying);
-        if (player == null)
-        {
+        if (player == null) {
             Messenger.m(context.getSource(), "rb Player " + StringArgumentType.getString(context, "player") + " doesn't exist " +
                     "and cannot spawn in online mode. Turn the server offline to spawn non-existing players");
             return 0;
@@ -326,48 +292,40 @@ public class PlayerCommand
         return 1;
     }
 
-    private static int maxPlayerLength(MinecraftServer server)
-    {
+    private static int maxPlayerLength(MinecraftServer server) {
         return server.getPort() >= 0 ? 16 : 40;
     }
 
-    private static int stop(CommandContext<CommandSourceStack> context)
-    {
+    private static int stop(CommandContext<CommandSourceStack> context) {
         if (cantManipulate(context)) return 0;
         ServerPlayer player = getPlayer(context);
         ((ServerPlayerEntityInterface) player).getActionPack().stopAll();
         return 1;
     }
 
-    private static int manipulate(CommandContext<CommandSourceStack> context, Consumer<EntityPlayerActionPack> action)
-    {
+    private static int manipulate(CommandContext<CommandSourceStack> context, Consumer<EntityPlayerActionPack> action) {
         if (cantManipulate(context)) return 0;
         ServerPlayer player = getPlayer(context);
         action.accept(((ServerPlayerEntityInterface) player).getActionPack());
         return 1;
     }
 
-    private static Command<CommandSourceStack> manipulation(Consumer<EntityPlayerActionPack> action)
-    {
+    private static Command<CommandSourceStack> manipulation(Consumer<EntityPlayerActionPack> action) {
         return c -> manipulate(c, action);
     }
 
-    private static int action(CommandContext<CommandSourceStack> context, EntityPlayerActionPack.ActionType type, EntityPlayerActionPack.Action action)
-    {
+    private static int action(CommandContext<CommandSourceStack> context, EntityPlayerActionPack.ActionType type, EntityPlayerActionPack.Action action) {
         return manipulate(context, ap -> ap.start(type, action));
     }
 
-    private static int shadow(CommandContext<CommandSourceStack> context)
-    {
+    private static int shadow(CommandContext<CommandSourceStack> context) {
         ServerPlayer player = getPlayer(context);
-        if (player instanceof EntityPlayerMPFake)
-        {
+        if (player instanceof EntityPlayerMPFake) {
             Messenger.m(context.getSource(), "r Cannot shadow fake players");
             return 0;
         }
         ServerPlayer sendingPlayer = null;
-        try
-        {
+        try {
             sendingPlayer = context.getSource().getPlayerOrException();
         }
         catch (CommandSyntaxException ignored) { }

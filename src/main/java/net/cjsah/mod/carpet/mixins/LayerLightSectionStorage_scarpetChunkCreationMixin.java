@@ -20,8 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Arrays;
 
 @Mixin(LayerLightSectionStorage.class)
-public abstract class LayerLightSectionStorage_scarpetChunkCreationMixin implements LightStorageInterface
-{
+public abstract class LayerLightSectionStorage_scarpetChunkCreationMixin implements LightStorageInterface {
     @Shadow
     protected abstract DataLayer getDataLayer(final long sectionPos, final boolean cached);
 
@@ -51,14 +50,12 @@ public abstract class LayerLightSectionStorage_scarpetChunkCreationMixin impleme
     private final LongSet relightChunks = new LongOpenHashSet();
 
     @Override
-    public void removeLightData(final long pos)
-    {
+    public void removeLightData(final long pos) {
         this.removedChunks.add(pos);
     }
 
     @Override
-    public void relight(final long pos)
-    {
+    public void relight(final long pos) {
         this.relightChunks.add(pos);
     }
 
@@ -66,20 +63,16 @@ public abstract class LayerLightSectionStorage_scarpetChunkCreationMixin impleme
         method = "markNewInconsistencies(Lnet/minecraft/world/level/lighting/LayerLightEngine;ZZ)V",
         at = @At("HEAD")
     )
-    private void processData(final LayerLightEngine<?, ?> lightProvider, final boolean doSkylight, final boolean skipEdgeLightPropagation, final CallbackInfo ci)
-    {
+    private void processData(final LayerLightEngine<?, ?> lightProvider, final boolean doSkylight, final boolean skipEdgeLightPropagation, final CallbackInfo ci) {
         // Process light removal
 
-        for (final long cPos : this.removedChunks)
-        {
-            for (int y = -1; y < 17; ++y)
-            {
+        for (final long cPos : this.removedChunks) {
+            for (int y = -1; y < 17; ++y) {
                 final long sectionPos = SectionPos.asLong(SectionPos.x(cPos), y, SectionPos.z(cPos));
 
                 this.queuedSections.remove(sectionPos);
 
-                if (this.storingLightForSection(sectionPos))
-                {
+                if (this.storingLightForSection(sectionPos)) {
                     this.clearQueuedSectionBlocks(lightProvider, sectionPos);
 
                     if (this.changedSections.add(sectionPos))
@@ -103,12 +96,10 @@ public abstract class LayerLightSectionStorage_scarpetChunkCreationMixin impleme
     }
 
     @Override
-    public void processRemoveLightData(final long pos)
-    {
+    public void processRemoveLightData(final long pos) {
     }
 
     @Override
-    public void processRelight(final LayerLightEngine<?, ?> lightProvider, final long pos)
-    {
+    public void processRelight(final LayerLightEngine<?, ?> lightProvider, final long pos) {
     }
 }

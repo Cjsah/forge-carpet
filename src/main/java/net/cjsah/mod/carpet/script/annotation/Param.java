@@ -39,8 +39,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @see Locator.Function
  *
  */
-public interface Param
-{
+public interface Param {
     /**
      * <p>Determines that this parameter accepts being passing a value directly instead of a list of those values.</p>
      * 
@@ -51,8 +50,7 @@ public interface Param
     @Documented
     @Retention(RUNTIME)
     @Target({ PARAMETER, TYPE_USE })
-    public @interface AllowSingleton
-    {
+    public @interface AllowSingleton {
 
     }
 
@@ -71,8 +69,7 @@ public interface Param
     @Documented
     @Retention(RUNTIME)
     @Target({ PARAMETER, TYPE_USE })
-    public @interface KeyValuePairs
-    {
+    public @interface KeyValuePairs {
         /**
          * <p>Whether or not this accepts the key-value pairs directly in the function call as myFunction(..., key, value, key2, value2)</p>
          * 
@@ -91,8 +88,7 @@ public interface Param
     @Documented
     @Retention(RUNTIME)
     @Target({ PARAMETER, TYPE_USE })
-    public @interface Custom
-    {
+    public @interface Custom {
 
     }
 
@@ -111,8 +107,7 @@ public interface Param
     @Documented
     @Retention(RUNTIME)
     @Target({ PARAMETER, TYPE_USE })
-    public @interface Strict
-    {
+    public @interface Strict {
         /**
          * <p>Defines whether this parameter can accept types with "shallow strictness", that is, in order to get a {@link Component}, accepting either a
          * {@link StringValue} or a {@link FormattedTextValue} as the parameter, or in order to get a {@link Boolean}, accepting either a
@@ -137,31 +132,26 @@ public interface Param
      * @see #registerCustomConverterFactory(BiFunction)
      *
      */
-    public static final class Params
-    {
+    public static final class Params {
         /**
          * <p>A {@link ValueConverter} that outputs the {@link Context} in which the function has been called, and throws {@link UnsupportedOperationException} when trying to convert a {@link Value}
          * directly.</p>
          */
-        static final ValueConverter<Context> CONTEXT_PROVIDER = new ValueConverter<Context>()
-        {
+        static final ValueConverter<Context> CONTEXT_PROVIDER = new ValueConverter<Context>() {
             @Override public String getTypeName() { return null; }
 
             @Override
-            public Context convert(Value value)
-            {
+            public Context convert(Value value) {
                 throw new UnsupportedOperationException("Called convert() with Value in Context Provider converter, where only checkAndConvert is supported");
             }
 
             @Override
-            public Context checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT)
-            {
+            public Context checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT) {
                 return context;
             }
 
             @Override
-            public int valueConsumption()
-            {
+            public int valueConsumption() {
                 return 0;
             }
         };
@@ -170,33 +160,28 @@ public interface Param
          * <p>A {@link ValueConverter} that outputs the {@link Context.Type} which the function has been called, or throws {@link UnsupportedOperationException} when trying to convert a {@link Value}
          * directly.</p>
          */
-        static final ValueConverter<Context.Type> CONTEXT_TYPE_PROVIDER = new ValueConverter<Context.Type>()
-        {
+        static final ValueConverter<Context.Type> CONTEXT_TYPE_PROVIDER = new ValueConverter<Context.Type>() {
             @Override public String getTypeName() { return null; }
 
             @Override
-            public Context.Type convert(Value value)
-            {
+            public Context.Type convert(Value value) {
                 throw new UnsupportedOperationException("Called convert() with a Value in TheLazyT Provider, where only checkAndConvert is supported");
             }
 
             @Override
-            public Context.Type checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT)
-            {
+            public Context.Type checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT) {
                 return theLazyT;
             }
 
             @Override
-            public int valueConsumption()
-            {
+            public int valueConsumption() {
                 return 0;
             }
         };
 
         static record StrictConverterInfo(Class<?> type, boolean shallow) {}
         private static final Map<StrictConverterInfo, ValueConverter<?>> strictParamsByClassAndShallowness = new HashMap<>();
-        static
-        { // TODO Specify strictness in name?
+        static { // TODO Specify strictness in name?
             registerStrictConverter(String.class, false, new SimpleTypeConverter<>(StringValue.class, StringValue::getString, "string"));
             registerStrictConverter(Component.class, false, new SimpleTypeConverter<>(FormattedTextValue.class, FormattedTextValue::getText, "text"));
             registerStrictConverter(Component.class, true, new SimpleTypeConverter<>(StringValue.class, FormattedTextValue::getTextByValue, "text"));
@@ -214,8 +199,7 @@ public interface Param
          * @throws IllegalArgumentException If the type doesn't accept the {@link Strict} annotation or if it has been used incorrectly (shallow in
          *                                  unsupported places)
          */
-        static ValueConverter<?> getStrictConverter(AnnotatedType type)
-        {
+        static ValueConverter<?> getStrictConverter(AnnotatedType type) {
             boolean shallow = type.getAnnotation(Strict.class).shallow();
             Class<?> clazz = (Class<?>) type.getType();
             var key = new StrictConverterInfo(clazz, shallow);
@@ -237,8 +221,7 @@ public interface Param
          * @param shallow   {@code true} if you are registering a shallow-strict parameter, {@code false} if a "fully" strict one
          * @param converter The {@link ValueConverter} for the given type and shallowness.
          */
-        public static <T> void registerStrictConverter(Class<T> type, boolean shallow, ValueConverter<T> converter)
-        {
+        public static <T> void registerStrictConverter(Class<T> type, boolean shallow, ValueConverter<T> converter) {
             var key = new StrictConverterInfo(type, shallow);
             if (strictParamsByClassAndShallowness.containsKey(key))
                 throw new IllegalArgumentException(type + " already has a registered " + (shallow ? "" : "non-") + "shallow StrictConverter");
@@ -267,17 +250,14 @@ public interface Param
          *                avoid possible collisions with other extensions.
          */
         @SuppressWarnings("unchecked") // this makes no sense... But I guess its preferable to enforce typesafety in callers
-        public static <T> void registerCustomConverterFactory(BiFunction<AnnotatedType, Class<T>, ValueConverter<T>> factory)
-        {
+        public static <T> void registerCustomConverterFactory(BiFunction<AnnotatedType, Class<T>, ValueConverter<T>> factory) {
             customFactories.add((BiFunction<AnnotatedType, Class<?>, ValueConverter<?>>) (Object) factory);
         }
 
         @SuppressWarnings("unchecked") // Stored correctly
-        static <R> ValueConverter<R> getCustomConverter(AnnotatedType annoType, Class<R> type)
-        {
+        static <R> ValueConverter<R> getCustomConverter(AnnotatedType annoType, Class<R> type) {
             ValueConverter<R> result;
-            for (BiFunction<AnnotatedType, Class<?>, ValueConverter<?>> factory : customFactories)
-            {
+            for (BiFunction<AnnotatedType, Class<?>, ValueConverter<?>> factory : customFactories) {
                 if ((result = (ValueConverter<R>) factory.apply(annoType, type)) != null)
                     return result;
             }

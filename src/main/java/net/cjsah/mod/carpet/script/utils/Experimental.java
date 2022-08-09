@@ -45,10 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class Experimental
-{
-    public static Value reloadOne(MinecraftServer server)
-    {
+public class Experimental {
+    public static Value reloadOne(MinecraftServer server) {
         LevelStorageSource.LevelStorageAccess session = ((MinecraftServerInterface) server).getCMSession();
         DataPackConfig dataPackSettings = session.getDataPacks();
         PackRepository resourcePackManager = server.getPackRepository();
@@ -89,12 +87,10 @@ public class Experimental
         long m = BiomeManager.obfuscateSeed(l);
         Map<ResourceKey<Level>, ServerLevel> existing_worlds = ((MinecraftServerInterface) server).getCMWorlds();
         List<Value> addeds = new ArrayList<>();
-        for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : generatorOptions.dimensions().entrySet())
-        {
+        for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : generatorOptions.dimensions().entrySet()) {
             ResourceKey<LevelStem> registryKey = entry.getKey();
             CarpetScriptServer.LOG.error("Analysing workld: {}", registryKey.location());
-            if (!existing_worlds.containsKey(registryKey))
-            {
+            if (!existing_worlds.containsKey(registryKey)) {
                 addeds.add(ValueConversions.of(registryKey.location()));
                 ResourceKey<Level> registryKey2 = ResourceKey.create(Registry.DIMENSION_REGISTRY, registryKey.location());
                 Holder<DimensionType> holder2 = (entry.getValue()).typeHolder();
@@ -108,8 +104,7 @@ public class Experimental
         return ListValue.wrap(addeds);
     }
 
-    public static Value reloadTwo(MinecraftServer server)
-    {
+    public static Value reloadTwo(MinecraftServer server) {
         LevelStorageSource.LevelStorageAccess session = ((MinecraftServerInterface)server).getCMSession();
         DataPackConfig dataPackSettings = session.getDataPacks();
         PackRepository resourcePackManager = server.getPackRepository();
@@ -137,8 +132,7 @@ public class Experimental
         for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : generatorOptions.dimensions().entrySet()) {
             ResourceKey<LevelStem> registryKey = entry.getKey();
             CarpetScriptServer.LOG.error("Analysing workld: {}", registryKey.location());
-            if (!existing_worlds.containsKey(registryKey))
-            {
+            if (!existing_worlds.containsKey(registryKey)) {
                 ResourceKey<Level> resourceKey2 = ResourceKey.create(Registry.DIMENSION_REGISTRY, registryKey.location());
                 DerivedLevelData derivedLevelData = new DerivedLevelData(data.worldData(), ((ServerWorldInterface) server.overworld()).getWorldPropertiesCM());
                 ChunkGenerator chunkGenerator2 = ((LevelStem)entry.getValue()).generator();

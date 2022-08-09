@@ -32,54 +32,44 @@ public class Sys {
     // %[argument_index$][flags][width][.precision][t]conversion
     private static final Pattern formatPattern = Pattern.compile("%(\\d+\\$)?([-#+ 0,(<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])");
 
-    public static void apply(Expression expression)
-    {
+    public static void apply(Expression expression) {
         expression.addUnaryFunction("hash_code", v -> new NumericValue(v.hashCode()));
 
         expression.addImpureUnaryFunction("copy", Value::deepcopy);
 
-        expression.addTypedContextFunction("bool", 1, Context.BOOLEAN, (c, t, lv) ->
-        {
+        expression.addTypedContextFunction("bool", 1, Context.BOOLEAN, (c, t, lv) -> {
             Value v = lv.get(0);
-            if (v instanceof StringValue)
-            {
+            if (v instanceof StringValue) {
                 String str = v.getString().toLowerCase(Locale.ROOT);
                 if ("false".equals(str) || "null".equals(str)) return Value.FALSE;
             }
             return BooleanValue.of(v.getBoolean());
         });
 
-        expression.addUnaryFunction("number", v ->
-        {
-            if (v instanceof NumericValue num)
-            {
+        expression.addUnaryFunction("number", v -> {
+            if (v instanceof NumericValue num) {
                 if (num.isInteger()) return new NumericValue(num.getLong());
                 return new NumericValue(num.getDouble());
             }
-            if (v instanceof ListValue || v instanceof MapValue)
-            {
+            if (v instanceof ListValue || v instanceof MapValue) {
                 return new NumericValue(v.length());
             }
-            try
-            {
+            try {
                 return new NumericValue(v.getString());
             }
-            catch (NumberFormatException format)
-            {
+            catch (NumberFormatException format) {
                 return Value.NULL;
             }
         });
 
-        expression.addFunction("str", lv ->
-        {
+        expression.addFunction("str", lv -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'str' requires at least one argument");
             String format = lv.get(0).getString();
             if (lv.size() == 1)
                 return new StringValue(format);
             int argIndex = 1;
-            if (lv.get(1) instanceof ListValue && lv.size() == 2)
-            {
+            if (lv.get(1) instanceof ListValue && lv.size() == 2) {
                 lv = ((ListValue) lv.get(1)).getItems();
                 argIndex = 0;
             }
@@ -93,40 +83,34 @@ public class Sys {
                     // an invalid format string.
                     // [[scarpet]] but we skip it and let the String.format fail
                     char fmt = m.group(6).toLowerCase().charAt(0);
-                    if (fmt == 's')
-                    {
+                    if (fmt == 's') {
                         if (argIndex >= lv.size())
                             throw new InternalExpressionException("Not enough arguments for "+m.group(0));
                         args.add(lv.get(argIndex).getString());
                         argIndex++;
                     }
-                    else if (fmt == 'd' || fmt == 'o' || fmt == 'x')
-                    {
+                    else if (fmt == 'd' || fmt == 'o' || fmt == 'x') {
                         if (argIndex >= lv.size())
                             throw new InternalExpressionException("Not enough arguments for "+m.group(0));
                         args.add(lv.get(argIndex).readInteger());
                         argIndex++;
                     }
-                    else if (fmt == 'a' || fmt == 'e' || fmt == 'f' || fmt == 'g')
-                    {
+                    else if (fmt == 'a' || fmt == 'e' || fmt == 'f' || fmt == 'g') {
                         if (argIndex >= lv.size())
                             throw new InternalExpressionException("Not enough arguments for "+m.group(0));
                         args.add(lv.get(argIndex).readDoubleNumber());
                         argIndex++;
                     }
-                    else if (fmt == 'b')
-                    {
+                    else if (fmt == 'b') {
                         if (argIndex >= lv.size())
                             throw new InternalExpressionException("Not enough arguments for "+m.group(0));
                         args.add(lv.get(argIndex).getBoolean());
                         argIndex++;
                     }
-                    else if (fmt == '%')
-                    {
+                    else if (fmt == '%') {
                         //skip /%%
                     }
-                    else
-                    {
+                    else {
                         throw new InternalExpressionException("Format not supported: "+m.group(6));
                     }
 
@@ -138,12 +122,10 @@ public class Sys {
                     break;
                 }
             }
-            try
-            {
+            try {
                 return new StringValue(String.format(Locale.ROOT, format, args.toArray()));
             }
-            catch (IllegalFormatException ife)
-            {
+            catch (IllegalFormatException ife) {
                 throw new InternalExpressionException("Illegal string format: "+ife.getMessage());
             }
         });
@@ -154,8 +136,7 @@ public class Sys {
 
         expression.addUnaryFunction("title", v -> new StringValue(WordUtils.capitalizeFully(v.getString())));
 
-        expression.addFunction("replace", (lv) ->
-        {
+        expression.addFunction("replace", (lv) -> {
             if (lv.size() != 3 && lv.size() !=2)
                 throw new InternalExpressionException("'replace' expects string to read, pattern regex, and optional replacement string");
             String data = lv.get(0).getString();
@@ -163,18 +144,15 @@ public class Sys {
             String replacement = "";
             if (lv.size() == 3)
                 replacement = lv.get(2).getString();
-            try
-            {
+            try {
                 return new StringValue(data.replaceAll(regex, replacement));
             }
-            catch (PatternSyntaxException pse)
-            {
+            catch (PatternSyntaxException pse) {
                 throw new InternalExpressionException("Incorrect pattern for 'replace': "+pse.getMessage());
             }
         });
 
-        expression.addFunction("replace_first", (lv) ->
-        {
+        expression.addFunction("replace_first", (lv) -> {
             if (lv.size() != 3 && lv.size() !=2)
                 throw new InternalExpressionException("'replace_first' expects string to read, pattern regex, and optional replacement string");
             String data = lv.get(0).getString();
@@ -187,16 +165,14 @@ public class Sys {
 
         expression.addUnaryFunction("type", v -> new StringValue(v.getTypeString()));
         expression.addUnaryFunction("length", v -> new NumericValue(v.length()));
-        expression.addContextFunction("rand", -1, (c, t, lv) ->
-        {
+        expression.addContextFunction("rand", -1, (c, t, lv) -> {
             int argsize = lv.size();
             Random randomizer = Sys.randomizer;
             if (argsize != 1 && argsize != 2)
                 throw new InternalExpressionException("'rand' takes one (range) or two arguments (range and seed)");
             if (argsize == 2) randomizer = c.host.getRandom(NumericValue.asNumber(lv.get(1)).getLong());
             Value argument = lv.get(0);
-            if (argument instanceof ListValue)
-            {
+            if (argument instanceof ListValue) {
                 List<Value> list = ((ListValue) argument).getItems();
                 return list.get(randomizer.nextInt(list.size()));
             }
@@ -210,28 +186,24 @@ public class Sys {
             return BooleanValue.of(gotIt);
         });
 
-        expression.addFunction("perlin", lv ->
-        {
+        expression.addFunction("perlin", lv -> {
             PerlinNoiseSampler sampler;
             Value x, y, z;
 
-            if (lv.size() >= 4)
-            {
+            if (lv.size() >= 4) {
                 x = lv.get(0);
                 y = lv.get(1);
                 z = lv.get(2);
                 sampler = PerlinNoiseSampler.getPerlin(NumericValue.asNumber(lv.get(3)).getLong());
             }
-            else
-            {
+            else {
                 sampler = PerlinNoiseSampler.instance;
                 y = Value.NULL;
                 z = Value.NULL;
                 if (lv.size() == 0 )
                     throw new InternalExpressionException("'perlin' requires at least one dimension to sample from");
                 x = NumericValue.asNumber(lv.get(0));
-                if (lv.size() > 1)
-                {
+                if (lv.size() > 1) {
                     y = NumericValue.asNumber(lv.get(1));
                     if (lv.size() > 2)
                         z = NumericValue.asNumber(lv.get(2));
@@ -253,20 +225,17 @@ public class Sys {
             return new NumericValue(result);
         });
 
-        expression.addFunction("simplex", lv ->
-        {
+        expression.addFunction("simplex", lv -> {
             SimplexNoiseSampler sampler;
             Value x, y, z;
 
-            if (lv.size() >= 4)
-            {
+            if (lv.size() >= 4) {
                 x = lv.get(0);
                 y = lv.get(1);
                 z = lv.get(2);
                 sampler = SimplexNoiseSampler.getSimplex(NumericValue.asNumber(lv.get(3)).getLong());
             }
-            else
-            {
+            else {
                 sampler = SimplexNoiseSampler.instance;
                 z = Value.NULL;
                 if (lv.size() < 2 )
@@ -288,8 +257,7 @@ public class Sys {
             return new NumericValue(result);
         });
 
-        expression.addUnaryFunction("print", (v) ->
-        {
+        expression.addUnaryFunction("print", (v) -> {
             System.out.println(v.getString());
             return v; // pass through for variables
         });
@@ -300,13 +268,11 @@ public class Sys {
         expression.addContextFunction("unix_time", 0, (c, t, lv) ->
                 new NumericValue(System.currentTimeMillis()));
 
-        expression.addFunction("convert_date", lv ->
-        {
+        expression.addFunction("convert_date", lv -> {
             int argsize = lv.size();
             if (lv.size() == 0) throw new InternalExpressionException("'convert_date' requires at least one parameter");
             Value value = lv.get(0);
-            if (argsize == 1 && !(value instanceof ListValue))
-            {
+            if (argsize == 1 && !(value instanceof ListValue)) {
                 Calendar cal = new GregorianCalendar(Locale.ROOT);
                 cal.setTimeInMillis(NumericValue.asNumber(value, "timestamp").getLong());
                 int weekday = cal.get(Calendar.DAY_OF_WEEK)-1;
@@ -323,23 +289,20 @@ public class Sys {
                         cal.get(Calendar.WEEK_OF_YEAR)
                 );
             }
-            else if(value instanceof ListValue)
-            {
+            else if(value instanceof ListValue) {
                 lv = ((ListValue) value).getItems();
                 argsize = lv.size();
             }
             Calendar cal = new GregorianCalendar(0, 0, 0, 0, 0, 0);
 
-            if (argsize == 3)
-            {
+            if (argsize == 3) {
                 cal.set(
                         NumericValue.asNumber(lv.get(0)).getInt(),
                         NumericValue.asNumber(lv.get(1)).getInt()-1,
                         NumericValue.asNumber(lv.get(2)).getInt()
                 );
             }
-            else if (argsize == 6)
-            {
+            else if (argsize == 6) {
                 cal.set(
                         NumericValue.asNumber(lv.get(0)).getInt(),
                         NumericValue.asNumber(lv.get(1)).getInt()-1,
@@ -354,13 +317,11 @@ public class Sys {
         });
 
         // lazy cause evaluates expression multiple times
-        expression.addLazyFunction("profile_expr", 1, (c, t, lv) ->
-        {
+        expression.addLazyFunction("profile_expr", 1, (c, t, lv) -> {
             LazyValue lazy = lv.get(0);
             long end = System.nanoTime()+50000000L;
             long it = 0;
-            while (System.nanoTime()<end)
-            {
+            while (System.nanoTime()<end) {
                 lazy.evalValue(c);
                 it++;
             }
@@ -371,11 +332,9 @@ public class Sys {
         expression.addContextFunction("var", 1, (c, t, lv) ->
                 expression.getOrSetAnyVariable(c, lv.get(0).getString()).evalValue(c));
 
-        expression.addContextFunction("undef", 1, (c, t, lv) ->
-        {
+        expression.addContextFunction("undef", 1, (c, t, lv) -> {
             Value remove = lv.get(0);
-            if (remove instanceof FunctionValue)
-            {
+            if (remove instanceof FunctionValue) {
                 c.host.delFunction(expression.module, remove.getString());
                 return Value.NULL;
             }
@@ -383,27 +342,21 @@ public class Sys {
             boolean isPrefix = varname.endsWith("*");
             if (isPrefix)
                 varname = varname.replaceAll("\\*+$", "");
-            if (isPrefix)
-            {
+            if (isPrefix) {
                 c.host.delFunctionWithPrefix(expression.module, varname);
-                if (varname.startsWith("global_"))
-                {
+                if (varname.startsWith("global_")) {
                     c.host.delGlobalVariableWithPrefix(expression.module, varname);
                 }
-                else if (!varname.startsWith("_"))
-                {
+                else if (!varname.startsWith("_")) {
                     c.removeVariablesMatching(varname);
                 }
             }
-            else
-            {
+            else {
                 c.host.delFunction(expression.module, varname);
-                if (varname.startsWith("global_"))
-                {
+                if (varname.startsWith("global_")) {
                     c.host.delGlobalVariable(expression.module, varname);
                 }
-                else if (!varname.startsWith("_"))
-                {
+                else if (!varname.startsWith("_")) {
                     c.delVariable(varname);
                 }
             }
@@ -411,24 +364,20 @@ public class Sys {
         });
 
         //deprecate
-        expression.addContextFunction("vars", 1, (c, t, lv) ->
-        {
+        expression.addContextFunction("vars", 1, (c, t, lv) -> {
             String prefix = lv.get(0).getString();
             List<Value> values = new ArrayList<>();
-            if (prefix.startsWith("global"))
-            {
+            if (prefix.startsWith("global")) {
                 c.host.globalVariableNames(expression.module, (s) -> s.startsWith(prefix)).forEach(s -> values.add(new StringValue(s)));
             }
-            else
-            {
+            else {
                 c.getAllVariableNames().stream().filter(s -> s.startsWith(prefix)).forEach(s -> values.add(new StringValue(s)));
             }
             return ListValue.wrap(values);
         });
 
         // lazy cause default expression may not be executed if not needed
-        expression.addLazyFunction("system_variable_get", (c, t, lv) ->
-        {
+        expression.addLazyFunction("system_variable_get", (c, t, lv) -> {
             if (lv.size() == 0) throw new InternalExpressionException("'system_variable_get' expects at least a key to be fetched");
             Value key = lv.get(0).evalValue(c);
             if (lv.size() > 1) ScriptHost.systemGlobals.computeIfAbsent(key, k -> lv.get(1).evalValue(c));
@@ -437,8 +386,7 @@ public class Sys {
             return LazyValue.NULL;
         });
 
-        expression.addBinaryFunction("system_variable_set", (key, value) ->
-        {
+        expression.addBinaryFunction("system_variable_set", (key, value) -> {
             Value res = ScriptHost.systemGlobals.put(key, value);
             if (res!=null) return res;
             return Value.NULL;

@@ -5,8 +5,7 @@ import net.minecraft.world.entity.ai.goal.GoalSelector;
 
 import java.util.Map;
 
-public interface MobEntityInterface
-{
+public interface MobEntityInterface {
     GoalSelector getAI(boolean target);
 
     Map<String, Goal> getTemporaryTasks();

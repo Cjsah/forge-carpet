@@ -17,30 +17,24 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerList.class)
-public abstract class PlayerList_fakePlayersMixin
-{
+public abstract class PlayerList_fakePlayersMixin {
     @Shadow
     @Final
     private MinecraftServer server;
 
     @Inject(method = "load", at = @At(value = "RETURN", shift = At.Shift.BEFORE))
-    private void fixStartingPos(ServerPlayer serverPlayerEntity_1, CallbackInfoReturnable<CompoundTag> cir)
-    {
-        if (serverPlayerEntity_1 instanceof EntityPlayerMPFake)
-        {
+    private void fixStartingPos(ServerPlayer serverPlayerEntity_1, CallbackInfoReturnable<CompoundTag> cir) {
+        if (serverPlayerEntity_1 instanceof EntityPlayerMPFake) {
             ((EntityPlayerMPFake) serverPlayerEntity_1).fixStartingPosition.run();
         }
     }
 
     @Redirect(method = "placeNewPlayer", at = @At(value = "NEW", target = "net/minecraft/server/network/ServerGamePacketListenerImpl"))
-    private ServerGamePacketListenerImpl replaceNetworkHandler(MinecraftServer server, Connection clientConnection, ServerPlayer playerIn)
-    {
-        if (playerIn instanceof EntityPlayerMPFake fake)
-        {
+    private ServerGamePacketListenerImpl replaceNetworkHandler(MinecraftServer server, Connection clientConnection, ServerPlayer playerIn) {
+        if (playerIn instanceof EntityPlayerMPFake fake) {
             return new NetHandlerPlayServerFake(this.server, clientConnection, fake);
         }
-        else
-        {
+        else {
             return new ServerGamePacketListenerImpl(this.server, clientConnection, playerIn);
         }
     }

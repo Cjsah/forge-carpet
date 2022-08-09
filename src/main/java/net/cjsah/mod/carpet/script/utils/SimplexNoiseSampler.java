@@ -14,8 +14,7 @@ public class SimplexNoiseSampler extends PerlinNoiseSampler {
     public static SimplexNoiseSampler instance = new SimplexNoiseSampler(new Random(0));
     public static Map<Long, SimplexNoiseSampler> samplers = new Long2ObjectOpenHashMap<>();
 
-    public static SimplexNoiseSampler getSimplex(long aLong)
-    {
+    public static SimplexNoiseSampler getSimplex(long aLong) {
         if (samplers.size() > 256)
             samplers.clear();
         return samplers.computeIfAbsent(aLong, seed -> new SimplexNoiseSampler(new Random(seed)));

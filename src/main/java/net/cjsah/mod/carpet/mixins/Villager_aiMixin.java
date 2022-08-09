@@ -40,8 +40,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Mixin(Villager.class)
-public abstract class Villager_aiMixin extends AbstractVillager
-{
+public abstract class Villager_aiMixin extends AbstractVillager {
     @Shadow protected abstract void setUnhappy();
 
     @Shadow protected abstract int countFoodPointsInInventory();
@@ -52,24 +51,19 @@ public abstract class Villager_aiMixin extends AbstractVillager
     boolean hasBed;
     int displayAge;
 
-    public Villager_aiMixin(EntityType<? extends AbstractVillager> entityType_1, Level world_1)
-    {
+    public Villager_aiMixin(EntityType<? extends AbstractVillager> entityType_1, Level world_1) {
         super(entityType_1, world_1);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void ontick(CallbackInfo ci)
-    {
-        if (MobAI.isTracking(this, MobAI.TrackingType.IRON_GOLEM_SPAWNING))
-        {
+    private void ontick(CallbackInfo ci) {
+        if (MobAI.isTracking(this, MobAI.TrackingType.IRON_GOLEM_SPAWNING)) {
             long time;
             Optional<? extends ExpirableValue<?>> last_seen = this.brain.getMemories().get(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
-            if (!last_seen.isPresent())
-            {
+            if (!last_seen.isPresent()) {
                 time = 0;
             }
-            else
-            {
+            else {
                 time = last_seen.get().getTimeToLive();
             }
             boolean recentlySeen = time > 0;
@@ -93,10 +87,8 @@ public abstract class Villager_aiMixin extends AbstractVillager
                     (recentlySeen?"rb ":"lb ")+time ));
             this.setCustomNameVisible(true);
         }
-        else if (MobAI.isTracking(this, MobAI.TrackingType.VILLAGER_BREEDING))
-        {
-            if (tickCount % 50 == 0 || tickCount < 20)
-            {
+        else if (MobAI.isTracking(this, MobAI.TrackingType.VILLAGER_BREEDING)) {
+            if (tickCount % 50 == 0 || tickCount < 20) {
                 totalFood = countFoodPointsInInventory() / 12;
                 hasBed = this.brain.getMemory(MemoryModuleType.HOME).isPresent();
                 displayAge = getAge();
@@ -114,41 +106,32 @@ public abstract class Villager_aiMixin extends AbstractVillager
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
-    private void onInteract(Player playerEntity_1, InteractionHand hand_1, CallbackInfoReturnable<InteractionResult> cir)
-    {
-        if (MobAI.isTracking(this, MobAI.TrackingType.VILLAGER_BREEDING))
-        {
+    private void onInteract(Player playerEntity_1, InteractionHand hand_1, CallbackInfoReturnable<InteractionResult> cir) {
+        if (MobAI.isTracking(this, MobAI.TrackingType.VILLAGER_BREEDING)) {
             ItemStack itemStack_1 = playerEntity_1.getItemInHand(hand_1);
-            if (itemStack_1.getItem() == Items.EMERALD)
-            {
+            if (itemStack_1.getItem() == Items.EMERALD) {
                 GlobalPos bedPos = this.brain.getMemory(MemoryModuleType.HOME).orElse(null);
-                if (bedPos == null || bedPos.dimension() != level.dimension()) // get Dimension
-                {
+                if (bedPos == null || bedPos.dimension() != level.dimension()) { // get Dimension
                     setUnhappy();
                     ((ServerLevel) getCommandSenderWorld()).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, Blocks.BARRIER.defaultBlockState()), getX(), getY() + getEyeHeight() + 1, getZ(), 1, 0.1, 0.1, 0.1, 0.0);
                 }
-                else
-                {
+                else {
 
                     ParticleDisplay.drawParticleLine((ServerPlayer) playerEntity_1, position(), Vec3.atCenterOf(bedPos.pos()), "dust 0 0 0 1", "happy_villager", 100, 0.2); // pos+0.5v
                 }
             }
-            else if (itemStack_1.getItem() == Items.ROTTEN_FLESH)
-            {
+            else if (itemStack_1.getItem() == Items.ROTTEN_FLESH) {
                 while(countFoodPointsInInventory() >= 12) eatAndDigestFood();
 
             }
-            else if (itemStack_1.getItem() instanceof BedItem)
-            {
+            else if (itemStack_1.getItem() instanceof BedItem) {
                 List<PoiRecord> list_1 = ((ServerLevel) getCommandSenderWorld()).getPoiManager().getInRange(
                         type -> type == PoiType.HOME,
                         blockPosition(),
                         48, PoiManager.Occupancy.ANY).collect(Collectors.toList());
-                for (PoiRecord poi : list_1)
-                {
+                for (PoiRecord poi : list_1) {
                     Vec3 pv = Vec3.atCenterOf(poi.getPos());
-                    if (!poi.hasSpace())
-                    {
+                    if (!poi.hasSpace()) {
                         ((ServerLevel) getCommandSenderWorld()).sendParticles(ParticleTypes.HAPPY_VILLAGER,
                                 pv.x, pv.y+1.5, pv.z,
                                 50, 0.1, 0.3, 0.1, 0.0);
@@ -180,10 +163,8 @@ public abstract class Villager_aiMixin extends AbstractVillager
             target = "Lnet/minecraft/world/phys/AABB;inflate(DDD)Lnet/minecraft/world/phys/AABB;",
             shift = At.Shift.AFTER
     ))
-    private void particleIt(ServerLevel serverWorld, long l, int i, CallbackInfo ci)
-    {
-        if (MobAI.isTracking(this, MobAI.TrackingType.IRON_GOLEM_SPAWNING))
-        {
+    private void particleIt(ServerLevel serverWorld, long l, int i, CallbackInfo ci) {
+        if (MobAI.isTracking(this, MobAI.TrackingType.IRON_GOLEM_SPAWNING)) {
             ((ServerLevel) getCommandSenderWorld()).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, Blocks.BARRIER.defaultBlockState()), getX(), getY()+3, getZ(), 1, 0.1, 0.1, 0.1, 0.0);
         }
     }

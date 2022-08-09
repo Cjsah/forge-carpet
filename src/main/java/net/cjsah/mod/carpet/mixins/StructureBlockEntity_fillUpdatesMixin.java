@@ -13,22 +13,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(StructureBlockEntity.class)
-public abstract class StructureBlockEntity_fillUpdatesMixin
-{
+public abstract class StructureBlockEntity_fillUpdatesMixin {
     @Redirect(method = "Lnet/minecraft/world/level/block/entity/StructureBlockEntity;loadStructure(Lnet/minecraft/server/level/ServerLevel;ZLnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;)Z", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;placeInWorld(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;Ljava/util/Random;I)Z"
     ))
-    private boolean onStructurePlacen(StructureTemplate structure, ServerLevelAccessor serverWorldAccess, BlockPos pos, BlockPos blockPos, StructurePlaceSettings placementData, Random random, int i)
-    {
+    private boolean onStructurePlacen(StructureTemplate structure, ServerLevelAccessor serverWorldAccess, BlockPos pos, BlockPos blockPos, StructurePlaceSettings placementData, Random random, int i) {
         if(!CarpetSettings.fillUpdates)
             CarpetSettings.impendingFillSkipUpdates.set(true);
-        try
-        {
+        try {
             return structure.placeInWorld(serverWorldAccess, pos, blockPos, placementData, random, i); // serverWorldAccess, pos, placementData, random);
         }
-        finally
-        {
+        finally {
             CarpetSettings.impendingFillSkipUpdates.set(false);
         }
     }

@@ -19,16 +19,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Mixin(Level.class)
-public abstract class Level_tickMixin implements WorldInterface
-{
+public abstract class Level_tickMixin implements WorldInterface {
     @Shadow @Final public boolean isClientSide;
     CarpetProfiler.ProfilerToken currentSection;
     CarpetProfiler.ProfilerToken entitySection;
 
     Map<EntityType<?>, Entity> precookedMobs = new HashMap<>();
 
-    public Map<EntityType<?>, Entity> getPrecookedMobs()
-    {
+    public Map<EntityType<?>, Entity> getPrecookedMobs() {
         return precookedMobs;
     }
 
@@ -48,8 +46,7 @@ public abstract class Level_tickMixin implements WorldInterface
             shift = At.Shift.BEFORE,
             ordinal = 0
     ))
-    private void startTileEntitySection(CallbackInfo ci, Profiler profiler_1, Iterator i, class_5562 lv)
-    {
+    private void startTileEntitySection(CallbackInfo ci, Profiler profiler_1, Iterator i, class_5562 lv) {
         entitySection = CarpetProfiler.start_block_entity_section((World)(Object)this, (BlockEntity) lv, CarpetProfiler.TYPE.TILEENTITY);
     }
 
@@ -58,8 +55,7 @@ public abstract class Level_tickMixin implements WorldInterface
             target = "Lnet/minecraft/class_5562;method_31704()Z",
             ordinal = 0
     ))   // isRemoved()
-    private boolean checkProcessTEs(class_5562 class_5562)
-    {
+    private boolean checkProcessTEs(class_5562 class_5562) {
         return class_5562.method_31704() || !TickSpeed.process_entities; // blockEntity can be NULL? happened once with fake player
     }
 
@@ -69,14 +65,12 @@ public abstract class Level_tickMixin implements WorldInterface
             shift = At.Shift.AFTER,
             ordinal = 0
     ))
-    private void endTileEntitySection(CallbackInfo ci)
-    {
+    private void endTileEntitySection(CallbackInfo ci) {
          CarpetProfiler.end_current_entity_section(entitySection);
     }
 */
     @Inject(method = "guardEntityTick", at = @At("HEAD"), cancellable = true)
-    private void startEntity(Consumer<Entity> consumer_1, Entity e, CallbackInfo ci)
-    {
+    private void startEntity(Consumer<Entity> consumer_1, Entity e, CallbackInfo ci) {
         if (!(TickSpeed.process_entities || (e instanceof Player) || (TickSpeed.is_superHot && isClientSide && e.getControllingPassenger() instanceof Player)))
             ci.cancel();
         entitySection =  CarpetProfiler.start_entity_section((Level) (Object) this, e, CarpetProfiler.TYPE.ENTITY);

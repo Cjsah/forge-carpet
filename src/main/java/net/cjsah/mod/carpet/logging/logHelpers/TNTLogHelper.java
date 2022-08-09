@@ -5,8 +5,7 @@ import net.cjsah.mod.carpet.utils.Messenger;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.world.phys.Vec3;
 
-public class TNTLogHelper
-{
+public class TNTLogHelper {
     public boolean initialized;
     private double primedX, primedY, primedZ;
     private static long lastGametime = 0;
@@ -15,8 +14,7 @@ public class TNTLogHelper
     /**
      * Runs when the TNT is primed. Expects the position and motion angle of the TNT.
      */
-    public void onPrimed(double x, double y, double z, Vec3 motion)
-    {
+    public void onPrimed(double x, double y, double z, Vec3 motion) {
         primedX = x;
         primedY = y;
         primedZ = z;
@@ -26,16 +24,14 @@ public class TNTLogHelper
     /**
      * Runs when the TNT explodes. Expects the position of the TNT.
      */
-    public void onExploded(double x, double y, double z, long gametime)
-    {
+    public void onExploded(double x, double y, double z, long gametime) {
         if (!(lastGametime == gametime)){
             tntCount = 0;
             lastGametime = gametime;
         }
         tntCount++;
         LoggerRegistry.getLogger("tnt").log( (option) -> {
-            switch (option)
-            {
+            switch (option) {
                 case "brief":
                     return new BaseComponent[]{Messenger.c(
                             "l P ",Messenger.dblt("l",primedX,primedY,primedZ),

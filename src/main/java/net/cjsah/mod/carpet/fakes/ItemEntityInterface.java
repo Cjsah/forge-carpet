@@ -1,6 +1,5 @@
 package net.cjsah.mod.carpet.fakes;
 
-public interface ItemEntityInterface
-{
+public interface ItemEntityInterface {
     int getPickupDelayCM();
 }

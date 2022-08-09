@@ -4,8 +4,7 @@ import net.cjsah.mod.carpet.script.value.Value;
 
 /** LazyNumber interface created for lazily evaluated functions */
 @FunctionalInterface
-public interface LazyValue
-{
+public interface LazyValue {
     LazyValue FALSE = (c, t) -> Value.FALSE;
     LazyValue TRUE = (c, t) -> Value.TRUE;
     LazyValue NULL = (c, t) -> Value.NULL;
@@ -22,8 +21,7 @@ public interface LazyValue
     }
 
     @FunctionalInterface
-    interface ContextFreeLazyValue extends LazyValue
-    {
+    interface ContextFreeLazyValue extends LazyValue {
 
         Value evalType(Context.Type type);
 
@@ -34,12 +32,10 @@ public interface LazyValue
     }
 
 
-    class Constant implements ContextFreeLazyValue
-    {
+    class Constant implements ContextFreeLazyValue {
         Value result;
 
-        public Constant(Value value)
-        {
+        public Constant(Value value) {
             result = value;
         }
 

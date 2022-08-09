@@ -24,8 +24,7 @@ import java.util.List;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.EXPLOSION_OUTCOME;
 
 @Mixin(value = Explosion.class, priority = 990)
-public abstract class Explosion_scarpetEventMixin
-{
+public abstract class Explosion_scarpetEventMixin {
     @Shadow @Final private Level level;
     @Shadow @Final private double x;
     @Shadow @Final private double y;
@@ -44,10 +43,8 @@ public abstract class Explosion_scarpetEventMixin
 
     @Inject(method = "<init>(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;)V",
             at = @At(value = "RETURN"))
-    private void onExplosionCreated(Level world, Entity entity, DamageSource damageSource, ExplosionDamageCalculator explosionBehavior, double x, double y, double z, float power, boolean createFire, Explosion.BlockInteraction destructionType, CallbackInfo ci)
-    {
-        if (EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide())
-        {
+    private void onExplosionCreated(Level world, Entity entity, DamageSource damageSource, ExplosionDamageCalculator explosionBehavior, double x, double y, double z, float power, boolean createFire, Explosion.BlockInteraction destructionType, CallbackInfo ci) {
+        if (EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide()) {
             affectedEntities = new ArrayList<>();
         }
     }
@@ -56,20 +53,16 @@ public abstract class Explosion_scarpetEventMixin
             value = "INVOKE",
             target = "Lnet/minecraft/world/level/Explosion;getSeenPercent(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/Entity;)F")
     )
-    private float onExplosion(Vec3 source, Entity entity)
-    {
-        if (affectedEntities != null)
-        {
+    private float onExplosion(Vec3 source, Entity entity) {
+        if (affectedEntities != null) {
             affectedEntities.add(entity);
         }
         return getSeenPercent(source, entity);
     }
 
     @Inject(method = "finalizeExplosion", at = @At("HEAD"))
-    private void onExplosion(boolean spawnParticles, CallbackInfo ci)
-    {
-        if (EXPLOSION_OUTCOME.isNeeded() && !level.isClientSide())
-        {
+    private void onExplosion(boolean spawnParticles, CallbackInfo ci) {
+        if (EXPLOSION_OUTCOME.isNeeded() && !level.isClientSide()) {
             EXPLOSION_OUTCOME.onExplosion((ServerLevel) level, source, this::getSourceMob, x, y, z, radius, fire, toBlow, affectedEntities, blockInteraction);
         }
     }

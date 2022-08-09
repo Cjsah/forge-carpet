@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 
 @Mixin(CloneCommands.class)
-public abstract class CloneCommands_fillUpdatesMixin
-{
+public abstract class CloneCommands_fillUpdatesMixin {
     @ModifyConstant(method = "clone", constant = @Constant(intValue = 32768))
     private static int fillLimit(int original) {
         return CarpetSettings.fillLimit;
@@ -24,8 +23,7 @@ public abstract class CloneCommands_fillUpdatesMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;blockUpdated(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V"
     ))
-    private static void conditionalUpdating(ServerLevel serverWorld, BlockPos blockPos_1, Block block_1)
-    {
+    private static void conditionalUpdating(ServerLevel serverWorld, BlockPos blockPos_1, Block block_1) {
         if (CarpetSettings.fillUpdates) serverWorld.blockUpdated(blockPos_1, block_1);
     }
 }

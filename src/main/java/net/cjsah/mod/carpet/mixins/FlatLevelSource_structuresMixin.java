@@ -11,15 +11,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import java.util.Optional;
 
 @Mixin(FlatLevelSource.class)
-public abstract class FlatLevelSource_structuresMixin extends ChunkGenerator
-{
+public abstract class FlatLevelSource_structuresMixin extends ChunkGenerator {
     public FlatLevelSource_structuresMixin(Registry<StructureSet> registry, Optional<HolderSet<StructureSet>> optional, BiomeSource biomeSource) {
         super(registry, optional, biomeSource);
     }
 /*
     @Override
-    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMobsAt(Holder<Biome> biome, StructureFeatureManager accessor, MobCategory group, BlockPos pos)
-    {
+    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMobsAt(Holder<Biome> biome, StructureFeatureManager accessor, MobCategory group, BlockPos pos) {
         if (!CarpetSettings.flatWorldStructureSpawning) return super.getMobsAt(biome, accessor, group, pos);
 
         // vanila noise one
@@ -49,26 +47,19 @@ public abstract class FlatLevelSource_structuresMixin extends ChunkGenerator
 
 
         // carpet spawns
-        if (group == MobCategory.MONSTER)
-        {
-            if (CarpetSettings.huskSpawningInTemples)
-            {
-                if (accessor.getStructureAt(pos, StructureFeature.DESERT_PYRAMID).isValid())
-                {
+        if (group == MobCategory.MONSTER) {
+            if (CarpetSettings.huskSpawningInTemples) {
+                if (accessor.getStructureAt(pos, StructureFeature.DESERT_PYRAMID).isValid()) {
                     return CustomSpawnLists.PYRAMID_SPAWNS;
                 }
             }
-            if (CarpetSettings.shulkerSpawningInEndCities)
-            {
-                if (accessor.getStructureAt(pos, StructureFeature.END_CITY).isValid())
-                {
+            if (CarpetSettings.shulkerSpawningInEndCities) {
+                if (accessor.getStructureAt(pos, StructureFeature.END_CITY).isValid()) {
                     return CustomSpawnLists.SHULKER_SPAWNS;
                 }
             }
-            if (CarpetSettings.piglinsSpawningInBastions)
-            {
-                if (accessor.getStructureAt(pos, StructureFeature.BASTION_REMNANT).isValid())
-                {
+            if (CarpetSettings.piglinsSpawningInBastions) {
+                if (accessor.getStructureAt(pos, StructureFeature.BASTION_REMNANT).isValid()) {
                     return CustomSpawnLists.BASTION_SPAWNS;
                 }
             }

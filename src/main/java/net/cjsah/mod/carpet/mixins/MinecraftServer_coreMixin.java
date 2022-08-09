@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServer_coreMixin
-{
+public abstract class MinecraftServer_coreMixin {
     //to inject right before
     // this.tickWorlds(booleanSupplier_1);
     @Inject(
@@ -33,32 +32,27 @@ public abstract class MinecraftServer_coreMixin
     }
 
     @Inject(method = "loadLevel", at = @At("HEAD"))
-    private void serverLoaded(CallbackInfo ci)
-    {
+    private void serverLoaded(CallbackInfo ci) {
         CarpetServer.onServerLoaded((MinecraftServer) (Object) this);
     }
 
     @Inject(method = "loadLevel", at = @At("RETURN"))
-    private void serverLoadedWorlds(CallbackInfo ci)
-    {
+    private void serverLoadedWorlds(CallbackInfo ci) {
         CarpetServer.onServerLoadedWorlds((MinecraftServer) (Object) this);
     }
 
     @Inject(method = "stopServer", at = @At("HEAD"))
-    private void serverClosed(CallbackInfo ci)
-    {
+    private void serverClosed(CallbackInfo ci) {
         CarpetServer.onServerClosed((MinecraftServer) (Object) this);
     }
 
     @Inject(method = "stopServer", at = @At("TAIL"))
-    private void serverDoneClosed(CallbackInfo ci)
-    {
+    private void serverDoneClosed(CallbackInfo ci) {
         CarpetServer.onServerDoneClosing((MinecraftServer) (Object) this);
     }
 
     @Inject(method = "prepareLevels", at = @At("RETURN"))
-    private void afterSpawnCreated(ChunkProgressListener worldGenerationProgressListener, CallbackInfo ci)
-    {
+    private void afterSpawnCreated(ChunkProgressListener worldGenerationProgressListener, CallbackInfo ci) {
         if (CarpetSettings.spawnChunksSize != 11)
             CarpetSettings.ChangeSpawnChunksValidator.changeSpawnSize(CarpetSettings.spawnChunksSize);
         

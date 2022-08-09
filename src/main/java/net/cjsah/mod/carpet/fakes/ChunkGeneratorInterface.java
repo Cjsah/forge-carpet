@@ -5,8 +5,7 @@ import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement
 
 import java.util.List;
 
-public interface ChunkGeneratorInterface
-{
+public interface ChunkGeneratorInterface {
     void initStrongholds();
     List<StructurePlacement> getPlacementsForFeatureCM(final ConfiguredStructureFeature<?, ?> structure);
 }

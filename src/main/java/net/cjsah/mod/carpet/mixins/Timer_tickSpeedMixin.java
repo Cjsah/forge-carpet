@@ -14,8 +14,7 @@ public class Timer_tickSpeedMixin {
             target = "Lnet/minecraft/client/Timer;msPerTick:F"
     ))
     private float adjustTickSpeed(Timer counter) {
-        if (CarpetSettings.smoothClientAnimations && TickSpeed.process_entities)
-        {
+        if (CarpetSettings.smoothClientAnimations && TickSpeed.process_entities) {
             return Math.max(50.0f, TickSpeed.mspt);
         }
         return 50f;

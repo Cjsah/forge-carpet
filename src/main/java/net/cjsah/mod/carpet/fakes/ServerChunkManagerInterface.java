@@ -2,7 +2,6 @@ package net.cjsah.mod.carpet.fakes;
 
 import net.minecraft.server.level.DistanceManager;
 
-public interface ServerChunkManagerInterface
-{
+public interface ServerChunkManagerInterface {
     DistanceManager getCMTicketManager();
 }

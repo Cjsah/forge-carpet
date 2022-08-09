@@ -10,14 +10,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ShulkerBoxBlockEntity.class)
-public class ShulkerBoxBlockEntity_creativeNoClipMixin
-{
+public class ShulkerBoxBlockEntity_creativeNoClipMixin {
     @Redirect(method = "moveCollidedEntities", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;getPistonPushReaction()Lnet/minecraft/world/level/material/PushReaction;"
     ))
-    private PushReaction getPistonBehaviourOfNoClipPlayers(Entity entity)
-    {
+    private PushReaction getPistonBehaviourOfNoClipPlayers(Entity entity) {
         if (CarpetSettings.creativeNoClip && entity instanceof Player && (((Player) entity).isCreative()) && ((Player) entity).getAbilities().flying)
             return PushReaction.IGNORE;
         return entity.getPistonPushReaction();

@@ -49,28 +49,23 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ValueConversions
-{
-    public static Value of(BlockPos pos)
-    {
+public class ValueConversions {
+    public static Value of(BlockPos pos) {
         return ListValue.of(new NumericValue(pos.getX()), new NumericValue(pos.getY()), new NumericValue(pos.getZ()));
     }
 
-    public static Value ofOptional(BlockPos pos)
-    {
+    public static Value ofOptional(BlockPos pos) {
         if (pos == null) return Value.NULL;
         return ListValue.of(new NumericValue(pos.getX()), new NumericValue(pos.getY()), new NumericValue(pos.getZ()));
     }
 
-    public static Value of(Vec3 vec)
-    {
+    public static Value of(Vec3 vec) {
         return ListValue.of(new NumericValue(vec.x), new NumericValue(vec.y), new NumericValue(vec.z));
     }
 
     public static Value of(ColumnPos cpos) { return ListValue.of(new NumericValue(cpos.x), new NumericValue(cpos.z));}
 
-    public static Value of(ServerLevel world)
-    {
+    public static Value of(ServerLevel world) {
         return of(world.dimension().location());
     }
 
@@ -78,8 +73,7 @@ public class ValueConversions
 
     public static <T extends Number> Value of(MinMaxBounds<T> range) { return ListValue.of(NumericValue.of(range.getMin()), NumericValue.of(range.getMax()));}
 
-    public static Value of(ItemStack stack)
-    {
+    public static Value of(ItemStack stack) {
         if (stack == null || stack.isEmpty())
             return Value.NULL;
         return ListValue.of(
@@ -89,8 +83,7 @@ public class ValueConversions
         );
     }
 
-    public static Value of(Objective objective)
-    {
+    public static Value of(Objective objective) {
         return ListValue.of(
                 StringValue.of(objective.getName()),
                 StringValue.of(objective.getCriteria().getName())
@@ -98,8 +91,7 @@ public class ValueConversions
     }
 
 
-    public static Value of(ObjectiveCriteria criteria)
-    {
+    public static Value of(ObjectiveCriteria criteria) {
         return ListValue.of(
                 StringValue.of(criteria.getName()),
                 BooleanValue.of(criteria.isReadOnly())
@@ -107,8 +99,7 @@ public class ValueConversions
     }
 
 
-    public static Value of(ParticleOptions particle)
-    {
+    public static Value of(ParticleOptions particle) {
         String repr = particle.writeToString();
         if (repr.startsWith("minecraft:")) return StringValue.of(repr.substring(10));
         return StringValue.of(repr);
@@ -116,28 +107,21 @@ public class ValueConversions
 
     public static Value ofRGB(int value) {return new NumericValue(value*256+255 );}
 
-    public static Level dimFromValue(Value dimensionValue, MinecraftServer server)
-    {
-        if (dimensionValue instanceof EntityValue)
-        {
+    public static Level dimFromValue(Value dimensionValue, MinecraftServer server) {
+        if (dimensionValue instanceof EntityValue) {
             return ((EntityValue)dimensionValue).getEntity().getCommandSenderWorld();
         }
-        else if (dimensionValue instanceof BlockValue bv)
-        {
-            if (bv.getWorld() != null)
-            {
+        else if (dimensionValue instanceof BlockValue bv) {
+            if (bv.getWorld() != null) {
                 return bv.getWorld();
             }
-            else
-            {
+            else {
                 throw new InternalExpressionException("dimension argument accepts only world-localized block arguments");
             }
         }
-        else
-        {
+        else {
             String dimString = dimensionValue.getString().toLowerCase(Locale.ROOT);
-            switch (dimString)
-            {
+            switch (dimString) {
                 case "nether":
                 case "the_nether":
                     return server.getLevel(Level.NETHER);
@@ -151,10 +135,8 @@ public class ValueConversions
                     ResourceKey<Level> dim = null;
                     ResourceLocation id = new ResourceLocation(dimString);
                     // not using RegistryKey.of since that one creates on check
-                    for (ResourceKey<Level> world : (server.levelKeys()))
-                    {
-                        if (id.equals(world.location()))
-                        {
+                    for (ResourceKey<Level> world : (server.levelKeys())) {
+                        if (id.equals(world.location())) {
                             dim = world;
                             break;
                         }
@@ -166,15 +148,13 @@ public class ValueConversions
         }
     }
 
-    public static Value of(ResourceKey<?> dim)
-    {
+    public static Value of(ResourceKey<?> dim) {
         return of(dim.location());
     }
 
     public static Value of(TagKey<?> tagKey) { return of(tagKey.location()); }
 
-    public static Value of(ResourceLocation id)
-    {
+    public static Value of(ResourceLocation id) {
         if (id == null) // should be Value.NULL
             return Value.NULL;
         if (id.getNamespace().equals("minecraft"))
@@ -182,8 +162,7 @@ public class ValueConversions
         return new StringValue(id.toString());
     }
 
-    public static String simplify(ResourceLocation id)
-    {
+    public static String simplify(ResourceLocation id) {
         if (id == null) // should be Value.NULL
             return "";
         if (id.getNamespace().equals("minecraft"))
@@ -191,20 +170,17 @@ public class ValueConversions
         return id.toString();
     }
 
-    public static Value of(GlobalPos pos)
-    {
+    public static Value of(GlobalPos pos) {
         return ListValue.of(
                 ValueConversions.of(pos.dimension()),
                 ValueConversions.of(pos.pos())
         );
     }
 
-    public static Value fromPath(ServerLevel world,  Path path)
-    {
+    public static Value fromPath(ServerLevel world,  Path path) {
         List<Value> nodes = new ArrayList<>();
         //for (PathNode node: path.getNodes())
-        for (int i = 0, len = path.getNodeCount(); i < len; i++)
-        {
+        for (int i = 0, len = path.getNodeCount(); i < len; i++) {
             Node node = path.getNode(i);
             nodes.add( ListValue.of(
                     new BlockValue(null, world, node.asBlockPos()),
@@ -216,118 +192,96 @@ public class ValueConversions
         return ListValue.wrap(nodes);
     }
 
-    public static Value fromTimedMemory(Entity e, long expiry, Object v)
-    {
+    public static Value fromTimedMemory(Entity e, long expiry, Object v) {
         Value ret = fromEntityMemory(e, v);
         if (ret.isNull() || expiry == Long.MAX_VALUE) return ret;
         return ListValue.of(ret, new NumericValue(expiry));
     }
 
-    private static Value fromEntityMemory(Entity e, Object v)
-    {
-        if (v instanceof GlobalPos pos)
-        {
+    private static Value fromEntityMemory(Entity e, Object v) {
+        if (v instanceof GlobalPos pos) {
             return of(pos);
         }
-        if (v instanceof Entity)
-        {
+        if (v instanceof Entity) {
             return new EntityValue((Entity)v);
         }
-        if (v instanceof BlockPos)
-        {
+        if (v instanceof BlockPos) {
             return new BlockValue(null, (ServerLevel) e.getCommandSenderWorld(), (BlockPos) v);
         }
-        if (v instanceof Number)
-        {
+        if (v instanceof Number) {
             return new NumericValue(((Number) v).doubleValue());
         }
-        if (v instanceof Boolean)
-        {
+        if (v instanceof Boolean) {
             return BooleanValue.of((Boolean) v);
         }
-        if (v instanceof UUID)
-        {
+        if (v instanceof UUID) {
             return ofUUID( (ServerLevel) e.getCommandSenderWorld(), (UUID)v);
         }
-        if (v instanceof DamageSource source)
-        {
+        if (v instanceof DamageSource source) {
             return ListValue.of(
                     new StringValue(source.getMsgId()),
                     source.getEntity()==null?Value.NULL:new EntityValue(source.getEntity())
             );
         }
-        if (v instanceof Path)
-        {
+        if (v instanceof Path) {
             return fromPath((ServerLevel)e.getCommandSenderWorld(), (Path)v);
         }
-        if (v instanceof PositionTracker)
-        {
+        if (v instanceof PositionTracker) {
             return new BlockValue(null, (ServerLevel) e.getCommandSenderWorld(), ((PositionTracker)v).currentBlockPosition());
         }
-        if (v instanceof WalkTarget)
-        {
+        if (v instanceof WalkTarget) {
             return ListValue.of(
                     new BlockValue(null, (ServerLevel) e.getCommandSenderWorld(), ((WalkTarget)v).getTarget().currentBlockPosition()),
                     new NumericValue(((WalkTarget) v).getSpeedModifier()),
                     new NumericValue(((WalkTarget) v).getCloseEnoughDist())
             );
         }
-        if (v instanceof Set)
-        {
+        if (v instanceof Set) {
             v = new ArrayList(((Set) v));
         }
-        if (v instanceof List l)
-        {
+        if (v instanceof List l) {
             if (l.isEmpty()) return ListValue.of();
             Object el = l.get(0);
-            if (el instanceof Entity)
-            {
+            if (el instanceof Entity) {
                 return ListValue.wrap((List<Value>) l.stream().map(o -> new EntityValue((Entity)o)).collect(Collectors.toList()));
             }
-            if (el instanceof GlobalPos)
-            {
+            if (el instanceof GlobalPos) {
                 return ListValue.wrap((List<Value>) l.stream().map(o ->  of((GlobalPos) o)).collect(Collectors.toList()));
             }
         }
         return Value.NULL;
     }
 
-    private static Value ofUUID(ServerLevel entityWorld, UUID uuid)
-    {
+    private static Value ofUUID(ServerLevel entityWorld, UUID uuid) {
         Entity current = entityWorld.getEntity(uuid);
         return ListValue.of(
                 current == null?Value.NULL:new EntityValue(current),
                 new StringValue(uuid.toString())
         );
     }
-    public static Value of(AABB box)
-    {
+    public static Value of(AABB box) {
         return ListValue.of(
                 ListValue.fromTriple(box.minX, box.minY, box.minZ),
                 ListValue.fromTriple(box.maxX, box.maxY, box.maxZ)
         );
     }
-    public static Value of(BoundingBox box)
-    {
+    public static Value of(BoundingBox box) {
         return ListValue.of(
                 ListValue.fromTriple(box.minX(), box.minY(), box.minZ()),
                 ListValue.fromTriple(box.maxX(), box.maxY(), box.maxZ())
         );
     }
 
-    public static Value of(StructureStart structure)
-    {
+    public static Value of(StructureStart structure) {
         if (structure == null || structure == StructureStart.INVALID_START) return Value.NULL;
         BoundingBox boundingBox = structure.getBoundingBox();
         if (boundingBox.maxX() < boundingBox.minX() || boundingBox.maxY() < boundingBox.minY() || boundingBox.maxZ() < boundingBox.minZ()) return Value.NULL;
         Map<Value, Value> ret = new HashMap<>();
         ret.put(new StringValue("box"), of(boundingBox));
         List<Value> pieces = new ArrayList<>();
-        for (StructurePiece piece : structure.getPieces())
-        {
+        for (StructurePiece piece : structure.getPieces()) {
             BoundingBox box = piece.getBoundingBox();
-            if (box.maxX() >= box.minX() && box.maxY() >= box.minY() && box.maxZ() >= box.minZ())
-            {
+            if (box.maxX() >= box.minX() && box.maxY() >= box.minY() && box.maxZ() >= box.minZ()) {
                 pieces.add(ListValue.of(
                         new StringValue(NBTSerializableValue.nameFromRegistryId(Registry.STRUCTURE_PIECE.getKey(piece.getType()))),
                         (piece.getOrientation() == null) ? Value.NULL : new StringValue(piece.getOrientation().getName()),
@@ -340,12 +294,10 @@ public class ValueConversions
         return MapValue.wrap(ret);
     }
 
-    public static Value fromProperty(BlockState state, Property<?> p)
-    {
+    public static Value fromProperty(BlockState state, Property<?> p) {
         Comparable<?> object = state.getValue(p);
         if (object instanceof Boolean || object instanceof Number) return StringValue.of(object.toString());
-        if (object instanceof StringRepresentable)
-        {
+        if (object instanceof StringRepresentable) {
             return StringValue.of(((StringRepresentable) object).getSerializedName());
         }
         throw new InternalExpressionException("Unknown property type: "+p.getName());
@@ -389,15 +341,13 @@ public class ValueConversions
         //hashMap.put("horse.chest", 499);
     }};
 
-    public static Value ofVanillaSlotResult(int itemSlot)
-    {
+    public static Value ofVanillaSlotResult(int itemSlot) {
         Value ret = slotIdsToSlotParams.get(itemSlot);
         if (ret == null) return ListValue.of(Value.NULL, NumericValue.of(itemSlot));
         return ret;
     }
 
-    public static Value ofBlockPredicate(RegistryAccess registryAccess, Predicate<BlockInWorld> blockPredicate)
-    {
+    public static Value ofBlockPredicate(RegistryAccess registryAccess, Predicate<BlockInWorld> blockPredicate) {
         BlockPredicateInterface predicateData = (BlockPredicateInterface) blockPredicate;
         return ListValue.of(
                 predicateData.getCMBlockState()==null?Value.NULL:of(Registry.BLOCK.getKey(predicateData.getCMBlockState().getBlock())),

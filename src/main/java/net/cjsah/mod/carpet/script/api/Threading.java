@@ -10,10 +10,8 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.concurrent.CompletionException;
 
-public class Threading
-{
-    public static void apply(Expression expression)
-    {
+public class Threading {
+    public static void apply(Expression expression) {
         //"overidden" native call to cancel if on main thread
         expression.addContextFunction("task_join", 1, (c, t, lv) -> {
             if (((CarpetContext)c).s.getServer().isSameThread())
@@ -31,35 +29,27 @@ public class Threading
             if (server.isSameThread()) return lv.get(0); // pass through for on thread tasks
             Value[] result = new Value[]{Value.NULL};
             RuntimeException[] internal = new RuntimeException[]{null};
-            try
-            {
-                ((CarpetContext) c).s.getServer().executeBlocking(() ->
-                {
-                    try
-                    {
+            try {
+                ((CarpetContext) c).s.getServer().executeBlocking(() -> {
+                    try {
                         result[0] = lv.get(0).evalValue(c, t);
                     }
-                    catch (ExpressionException exc)
-                    {
+                    catch (ExpressionException exc) {
                         internal[0] = exc;
                     }
-                    catch (InternalExpressionException exc)
-                    {
+                    catch (InternalExpressionException exc) {
                         internal[0] = new ExpressionException(c, expr, tok, exc.getMessage(), exc.stack);
                     }
 
-                    catch (ArithmeticException exc)
-                    {
+                    catch (ArithmeticException exc) {
                         internal[0] = new ExpressionException(c, expr, tok, "Your math is wrong, "+exc.getMessage());
                     }
                 });
             }
-            catch (CompletionException exc)
-            {
+            catch (CompletionException exc) {
                 throw new InternalExpressionException("Error while executing docked task section, internal stack trace is gone");
             }
-            if (internal[0] != null)
-            {
+            if (internal[0] != null) {
                 throw internal[0];
             }
             Value ret = result[0]; // preventing from lazy evaluating of the result in case a future completes later

@@ -10,8 +10,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-public interface MinecraftServerInterface
-{
+public interface MinecraftServerInterface {
     void forceTick(BooleanSupplier sup);
     LevelStorageSource.LevelStorageAccess getCMSession();
     Map<ResourceKey<Level>, ServerLevel> getCMWorlds();

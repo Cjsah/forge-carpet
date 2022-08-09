@@ -16,17 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.Consumer;
 
 @Mixin(ServerEntity.class)
-public class ServerEntity_leashFixMixin
-{
+public class ServerEntity_leashFixMixin {
     @Shadow @Final private Entity entity;
 
     @Inject(method = "sendPairingData", at = @At("RETURN"))
-    private void sendLeashPackets(Consumer<Packet<?>> consumer_1, CallbackInfo ci)
-    {
-        if (CarpetSettings.leadFix)
-        {
-            if (entity instanceof Mob)
-            {
+    private void sendLeashPackets(Consumer<Packet<?>> consumer_1, CallbackInfo ci) {
+        if (CarpetSettings.leadFix) {
+            if (entity instanceof Mob) {
                 consumer_1.accept( new ClientboundSetEntityLinkPacket(entity, ((Mob) entity).getLeashHolder()));
             }
         }

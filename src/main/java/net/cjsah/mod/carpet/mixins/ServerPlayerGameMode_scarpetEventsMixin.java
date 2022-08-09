@@ -25,8 +25,7 @@ import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_INTERAC
 
 
 @Mixin(ServerPlayerGameMode.class)
-public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInteractionManagerInterface
-{
+public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInteractionManagerInterface {
     @Shadow @Final protected ServerPlayer player;
 
     @Shadow private boolean isDestroyingBlock;
@@ -42,8 +41,7 @@ public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInte
             target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z",
             shift = At.Shift.BEFORE
     ))
-    private void onBlockBroken(BlockPos blockPos_1, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1)
-    {
+    private void onBlockBroken(BlockPos blockPos_1, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1) {
         PLAYER_BREAK_BLOCK.onBlockBroken(player, blockPos_1, blockState_1);
     }
 
@@ -51,28 +49,24 @@ public class ServerPlayerGameMode_scarpetEventsMixin implements ServerPlayerInte
             value = "RETURN",
             ordinal = 2
     ))
-    private void onBlockActivated(ServerPlayer serverPlayerEntity, Level world, ItemStack stack, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir)
-    {
+    private void onBlockActivated(ServerPlayer serverPlayerEntity, Level world, ItemStack stack, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
         PLAYER_INTERACTS_WITH_BLOCK.onBlockHit(player, hand, hitResult);
     }
 
     @Override
-    public BlockPos getCurrentBreakingBlock()
-    {
+    public BlockPos getCurrentBreakingBlock() {
         if (!isDestroyingBlock) return null;
         return destroyPos;
     }
 
     @Override
-    public int getCurrentBlockBreakingProgress()
-    {
+    public int getCurrentBlockBreakingProgress() {
         if (!isDestroyingBlock) return -1;
         return lastSentState;
     }
 
     @Override
-    public void setBlockBreakingProgress(int progress)
-    {
+    public void setBlockBreakingProgress(int progress) {
         lastSentState = Mth.clamp(progress, -1, 10);
         level.destroyBlockProgress(-1*this.player.getId(), destroyPos, lastSentState);
     }

@@ -9,17 +9,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(UseOnContext.class)
-public class UseOnContext_cactusMixin
-{
+public class UseOnContext_cactusMixin {
     @Redirect(method = "getHorizontalDirection", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getDirection()Lnet/minecraft/core/Direction;"
     ))
-    private Direction getPlayerFacing(Player playerEntity)
-    {
+    private Direction getPlayerFacing(Player playerEntity) {
         Direction dir = playerEntity.getDirection();
-        if (BlockRotator.flippinEligibility(playerEntity))
-        {
+        if (BlockRotator.flippinEligibility(playerEntity)) {
             dir = dir.getOpposite();
         }
         return dir;

@@ -72,8 +72,7 @@ public class SpawnOverrides {
         return null;
     }
 
-    public static boolean isStructureAtPosition(ServerLevel level, ResourceKey<ConfiguredStructureFeature<?, ?>> structureKey, BlockPos pos)
-    {
+    public static boolean isStructureAtPosition(ServerLevel level, ResourceKey<ConfiguredStructureFeature<?, ?>> structureKey, BlockPos pos) {
         final ConfiguredStructureFeature<?, ?> fortressFeature = level.registryAccess().registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY).get(structureKey);
         if (fortressFeature == null) {
             return false;
@@ -81,8 +80,7 @@ public class SpawnOverrides {
         return level.structureFeatureManager().getStructureAt(pos, fortressFeature).isValid();
     }
 
-    public static boolean isStructureAtPosition(ServerLevel level, StructureFeature<?> structure, BlockPos pos)
-    {
+    public static boolean isStructureAtPosition(ServerLevel level, StructureFeature<?> structure, BlockPos pos) {
         for(StructureStart structureStart : startsForFeature(level, SectionPos.of(pos), structure)) {
             if (structureStart.getBoundingBox().isInside(pos) && structureStart.isValid()) {
                 return true;
@@ -94,11 +92,9 @@ public class SpawnOverrides {
     public static List<StructureStart> startsForFeature(ServerLevel level, SectionPos sectionPos, StructureFeature<?> structure) {
         Map<ConfiguredStructureFeature<?, ?>, LongSet> allrefs = level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
         List<StructureStart> result = new ArrayList<>();
-        for (var entry: allrefs.entrySet())
-        {
+        for (var entry: allrefs.entrySet()) {
             ConfiguredStructureFeature<?, ?> existing = entry.getKey();
-            if (existing.feature == structure)
-            {
+            if (existing.feature == structure) {
                 level.structureFeatureManager().fillStartsForFeature(existing, entry.getValue(), result::add);
             }
         }

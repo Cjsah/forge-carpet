@@ -11,23 +11,18 @@ import net.minecraft.world.phys.Vec3;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParticleDisplay
-{
+public class ParticleDisplay {
     private static Map<String, ParticleOptions> particleCache = new HashMap<>();
 
-    private static ParticleOptions parseParticle(String name)
-    {
-        try
-        {
+    private static ParticleOptions parseParticle(String name) {
+        try {
             return ParticleArgument.readParticle(new StringReader(name));
         }
-        catch (CommandSyntaxException e)
-        {
+        catch (CommandSyntaxException e) {
             throw new RuntimeException("No such particle: "+name);
         }
     }
-    public static ParticleOptions getEffect(String name)
-    {
+    public static ParticleOptions getEffect(String name) {
         if (name == null) return null;
         ParticleOptions res = particleCache.get(name);
         if (res != null) return res;
@@ -35,8 +30,7 @@ public class ParticleDisplay
         return particleCache.get(name);
     }
 
-    public static void drawParticleLine(ServerPlayer player, Vec3 from, Vec3 to, String main, String accent, int count, double spread)
-    {
+    public static void drawParticleLine(ServerPlayer player, Vec3 from, Vec3 to, String main, String accent, int count, double spread) {
         ParticleOptions accentParticle = getEffect(accent);
         ParticleOptions mainParticle = getEffect(main);
 
@@ -53,8 +47,7 @@ public class ParticleDisplay
         Vec3 incvec = to.subtract(from).normalize();//    multiply(50/sqrt(lineLengthSq));
         for (Vec3 delta = new Vec3(0.0,0.0,0.0);
              delta.lengthSqr()<lineLengthSq;
-             delta = delta.add(incvec.scale(player.level.random.nextFloat())))
-        {
+             delta = delta.add(incvec.scale(player.level.random.nextFloat()))) {
             ((ServerLevel)player.level).sendParticles(
                     player,
                     mainParticle,

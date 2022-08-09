@@ -19,15 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 @Mixin(ChunkHolder.class)
-public abstract class ChunkHolder_scarpetChunkCreationMixin implements ChunkHolderInterface
-{
+public abstract class ChunkHolder_scarpetChunkCreationMixin implements ChunkHolderInterface {
     @Shadow protected abstract void updateChunkToSave(CompletableFuture<? extends Either<? extends ChunkAccess, ChunkHolder.ChunkLoadingFailure>> newChunkFuture, String type);
 
     @Shadow @Final private AtomicReferenceArray<CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>> futures;
 
     @Override
-    public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> setDefaultProtoChunk(ChunkPos chpos, BlockableEventLoop<Runnable> executor, ServerLevel world)
-    {
+    public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> setDefaultProtoChunk(ChunkPos chpos, BlockableEventLoop<Runnable> executor, ServerLevel world) {
         int i = ChunkStatus.EMPTY.getIndex();
         CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completableFuture2 = CompletableFuture.supplyAsync(
                 () -> Either.left(new ProtoChunk(chpos, UpgradeData.EMPTY, world,  world.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), null)), // todo figure out what that does - maybe add an option to reset with blending enabled..?

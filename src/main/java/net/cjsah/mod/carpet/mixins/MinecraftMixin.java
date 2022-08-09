@@ -13,13 +13,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
-public class MinecraftMixin
-{
+public class MinecraftMixin {
     @Shadow public ClientLevel level;
     
     @Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
-    private void onCloseGame(Screen screen, CallbackInfo ci)
-    {
+    private void onCloseGame(Screen screen, CallbackInfo ci) {
         CarpetClient.disconnect();
     }
     

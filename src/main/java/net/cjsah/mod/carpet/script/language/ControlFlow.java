@@ -18,11 +18,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ControlFlow {
-    public static void apply(Expression expression) // public just to get the javadoc right
-    {
+    public static void apply(Expression expression) { // public just to get the javadoc right
         // needs to be lazy cause of custom contextualization
-        expression.addLazyBinaryOperator(";", Operators.precedence.get("nextop;"), true, true, t -> Context.Type.VOID, (c, t, lv1, lv2) ->
-        {
+        expression.addLazyBinaryOperator(";", Operators.precedence.get("nextop;"), true, true, t -> Context.Type.VOID, (c, t, lv1, lv2) -> {
             lv1.evalValue(c, Context.VOID);
             Value v2 = lv2.evalValue(c, t);
             return (cc, tt) -> v2;
@@ -38,21 +36,17 @@ public class ControlFlow {
 
 
         // obvious lazy due to conditional evaluation of arguments
-        expression.addLazyFunction("if", (c, t, lv) ->
-        {
+        expression.addLazyFunction("if", (c, t, lv) -> {
             if ( lv.size() < 2 )
                 throw new InternalExpressionException("'if' statement needs to have at least one condition and one case");
-            for (int i=0; i<lv.size()-1; i+=2)
-            {
-                if (lv.get(i).evalValue(c, Context.BOOLEAN).getBoolean())
-                {
+            for (int i=0; i<lv.size()-1; i+=2) {
+                if (lv.get(i).evalValue(c, Context.BOOLEAN).getBoolean()) {
                     //int iFinal = i;
                     Value ret = lv.get(i+1).evalValue(c, t);
                     return (cc, tt) -> ret;
                 }
             }
-            if (lv.size()%2 == 1)
-            {
+            if (lv.size()%2 == 1) {
                 Value ret = lv.get(lv.size() - 1).evalValue(c, t);
                 return (cc, tt) -> ret;
             }
@@ -61,10 +55,8 @@ public class ControlFlow {
 
         expression.addImpureFunction("exit", (lv) -> { throw new ExitStatement(lv.size()==0?Value.NULL:lv.get(0)); });
 
-        expression.addImpureFunction("throw", lv->
-        {
-            switch (lv.size()) 
-            {
+        expression.addImpureFunction("throw", lv-> {
+            switch (lv.size())  {
                 case 0:
                     throw new ThrowStatement(Value.NULL, Throwables.USER_DEFINED);
                 case 1:
@@ -79,25 +71,20 @@ public class ControlFlow {
         });
 
         // needs to be lazy since execution of parameters but first one are conditional
-        expression.addLazyFunction("try", (c, t, lv) ->
-        {
+        expression.addLazyFunction("try", (c, t, lv) -> {
             if (lv.size()==0)
                 throw new InternalExpressionException("'try' needs at least an expression block, and either a catch_epr, or a number of pairs of filters and catch_expr");
-            try
-            {
+            try {
                 Value retval = lv.get(0).evalValue(c, t);
                 return (c_, t_) -> retval;
             }
-            catch (ProcessedThrowStatement ret)
-            {
-                if (lv.size() == 1)
-                {
+            catch (ProcessedThrowStatement ret) {
+                if (lv.size() == 1) {
                     if (!ret.thrownExceptionType.isUserException())
                         throw ret;
                     return (c_, t_) -> Value.NULL;
                 }
-                if (lv.size() > 3 && lv.size() % 2 == 0)
-                {
+                if (lv.size() > 3 && lv.size() % 2 == 0) {
                     throw new InternalExpressionException("Try-catch block needs the code to run, and either a catch expression for user thrown exceptions, or a number of pairs of filters and catch expressions");
                 }
                 
@@ -125,18 +112,14 @@ public class ControlFlow {
                         )
                 )));
 
-                if (lv.size() == 2)
-                {
+                if (lv.size() == 2) {
                     if (ret.thrownExceptionType.isUserException())
                         val = lv.get(1).evalValue(c, t);
                 }
-                else
-                {
+                else {
                     int pointer = 1;
-                    while (pointer < lv.size() -1)
-                    {
-                        if (ret.thrownExceptionType.isRelevantFor(lv.get(pointer).evalValue(c).getString()))
-                        {
+                    while (pointer < lv.size() -1) {
+                        if (ret.thrownExceptionType.isRelevantFor(lv.get(pointer).evalValue(c).getString())) {
                             val = lv.get(pointer + 1).evalValue(c, t);
                             break;
                         }
@@ -148,8 +131,7 @@ public class ControlFlow {
                     c.setVariable("_trace", _trace);
                 else
                     c.delVariable("_trace");
-                if (val == null)  // not handled
-                {
+                if (val == null) { // not handled
                     throw ret;
                 }
                 Value retval = val;

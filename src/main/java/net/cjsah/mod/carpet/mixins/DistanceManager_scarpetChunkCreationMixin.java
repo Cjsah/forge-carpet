@@ -10,15 +10,13 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Set;
 
 @Mixin(DistanceManager.class)
-public abstract class DistanceManager_scarpetChunkCreationMixin implements ChunkTicketManagerInterface
-{
+public abstract class DistanceManager_scarpetChunkCreationMixin implements ChunkTicketManagerInterface {
     @Shadow
     @Final
     private Set<ChunkHolder> chunksToUpdateFutures;
 
     @Override
-    public void replaceHolder(final ChunkHolder oldHolder, final ChunkHolder newHolder)
-    {
+    public void replaceHolder(final ChunkHolder oldHolder, final ChunkHolder newHolder) {
         this.chunksToUpdateFutures.remove(oldHolder);
         this.chunksToUpdateFutures.add(newHolder);
     }

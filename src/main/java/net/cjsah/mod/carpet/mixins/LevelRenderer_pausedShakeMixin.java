@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(value = LevelRenderer.class, priority = 69420)
-public class LevelRenderer_pausedShakeMixin
-{
+public class LevelRenderer_pausedShakeMixin {
     @Shadow @Final private Minecraft minecraft;
 
     float initial = -1234.0f;
@@ -22,8 +21,7 @@ public class LevelRenderer_pausedShakeMixin
             value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"
     ))
-    private float changeTickPhase(float previous)
-    {
+    private float changeTickPhase(float previous) {
         initial = previous;
         if (!TickSpeed.process_entities)
             return ((MinecraftClientInferface)minecraft).getPausedTickDelta();
@@ -36,8 +34,7 @@ public class LevelRenderer_pausedShakeMixin
             target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V",
             shift = At.Shift.BEFORE
     ))
-    private float changeTickPhaseBack(float previous)
-    {
+    private float changeTickPhaseBack(float previous) {
         // this may not set with optifine bitch
         return initial==-1234.0f?previous:initial;
     }

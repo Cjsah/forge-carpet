@@ -28,8 +28,7 @@ import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.EXPLOSION;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.LIGHTNING;
 
 @Mixin(ServerLevel.class)
-public class ServerLevel_scarpetMixin implements ServerWorldInterface
-{
+public class ServerLevel_scarpetMixin implements ServerWorldInterface {
     @Inject(method = "tickChunk", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z",
@@ -38,14 +37,12 @@ public class ServerLevel_scarpetMixin implements ServerWorldInterface
     ))
     private void onNaturalLightinig(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci,
                                     //ChunkPos chunkPos, boolean bl, int i, int j, Profiler profiler, BlockPos blockPos, boolean bl2)
-                                    ChunkPos chunkPos, boolean bl, int i, int j, ProfilerFiller profiler, BlockPos blockPos, DifficultyInstance localDifficulty, boolean bl2, LightningBolt lightningEntity)
-    {
+                                    ChunkPos chunkPos, boolean bl, int i, int j, ProfilerFiller profiler, BlockPos blockPos, DifficultyInstance localDifficulty, boolean bl2, LightningBolt lightningEntity) {
         if (LIGHTNING.isNeeded()) LIGHTNING.onWorldEventFlag((ServerLevel) (Object)this, blockPos, bl2?1:0);
     }
 
     @Inject(method = "explode", at = @At("HEAD"))
-    private void handleExplosion(/*@Nullable*/ Entity entity, /*@Nullable*/ DamageSource damageSource, /*@Nullable*/ ExplosionDamageCalculator explosionBehavior, double d, double e, double f, float g, boolean bl, Explosion.BlockInteraction destructionType, CallbackInfoReturnable<Explosion> cir)
-    {
+    private void handleExplosion(/*@Nullable*/ Entity entity, /*@Nullable*/ DamageSource damageSource, /*@Nullable*/ ExplosionDamageCalculator explosionBehavior, double d, double e, double f, float g, boolean bl, Explosion.BlockInteraction destructionType, CallbackInfoReturnable<Explosion> cir) {
         if (EXPLOSION.isNeeded())
             EXPLOSION.onExplosion((ServerLevel) (Object)this, entity, null, d, e, f, g, bl, null, null, destructionType);
     }

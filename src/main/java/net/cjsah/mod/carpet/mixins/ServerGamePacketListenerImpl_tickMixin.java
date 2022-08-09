@@ -12,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class ServerGamePacketListenerImpl_tickMixin
-{
+public class ServerGamePacketListenerImpl_tickMixin {
     @Shadow public ServerPlayer player;
 
     @Shadow private double firstGoodX;
@@ -23,10 +22,8 @@ public class ServerGamePacketListenerImpl_tickMixin
     @Shadow private double firstGoodZ;
 
     @Inject(method = "handlePlayerInput", at = @At(value = "RETURN"))
-    private void checkMoves(ServerboundPlayerInputPacket p, CallbackInfo ci)
-    {
-        if (p.getXxa() != 0.0F || p.getZza() != 0.0F || p.isJumping() || p.isShiftKeyDown())
-        {
+    private void checkMoves(ServerboundPlayerInputPacket p, CallbackInfo ci) {
+        if (p.getXxa() != 0.0F || p.getZza() != 0.0F || p.isJumping() || p.isShiftKeyDown()) {
             TickSpeed.reset_player_active_timeout();
         }
     }
@@ -40,17 +37,14 @@ public class ServerGamePacketListenerImpl_tickMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;isSleeping()Z",
             shift = At.Shift.BEFORE
     ))
-    private void checkMove(ServerboundMovePlayerPacket p, CallbackInfo ci)
-    {
+    private void checkMove(ServerboundMovePlayerPacket p, CallbackInfo ci) {
         double movedBy = player.position().distanceToSqr(firstGoodX, firstGoodY, firstGoodZ);
         if (movedBy == 0.0D) return;
         // corrective tick
-        if (movedBy < 0.0009 && lastMoved > 0.0009 && Math.abs(player.getServer().getTickCount()-lastMovedTick-20)<2)
-        {
+        if (movedBy < 0.0009 && lastMoved > 0.0009 && Math.abs(player.getServer().getTickCount()-lastMovedTick-20)<2) {
             return;
         }
-        if (movedBy > 0.0D)
-        {
+        if (movedBy > 0.0D) {
             lastMoved = movedBy;
             lastMovedTick = player.getServer().getTickCount();
             TickSpeed.reset_player_active_timeout();

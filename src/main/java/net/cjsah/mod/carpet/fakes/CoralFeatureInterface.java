@@ -6,7 +6,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
 
-public interface CoralFeatureInterface
-{
+public interface CoralFeatureInterface {
     boolean growSpecific(Level worldIn, Random random, BlockPos pos, BlockState blockUnder);
 }

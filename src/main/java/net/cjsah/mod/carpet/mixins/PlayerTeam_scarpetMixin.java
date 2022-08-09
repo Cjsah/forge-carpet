@@ -6,8 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PlayerTeam.class)
-public interface PlayerTeam_scarpetMixin
-{
+public interface PlayerTeam_scarpetMixin {
     @Accessor("color")
     ChatFormatting getColor();
 }

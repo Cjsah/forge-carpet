@@ -21,8 +21,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 
-public class CarpetExpression
-{
+public class CarpetExpression {
     private final CommandSourceStack source;
     private final BlockPos origin;
     private final Expression expr;
@@ -31,8 +30,7 @@ public class CarpetExpression
     public CommandSourceStack getSource() {return source;}
     public BlockPos getOrigin() {return origin;}
 
-    public CarpetExpression(Module module, String expression, CommandSourceStack source, BlockPos origin)
-    {
+    public CarpetExpression(Module module, String expression, CommandSourceStack source, BlockPos origin) {
         this.origin = origin;
         this.source = source;
         this.expr = new Expression(expression);
@@ -50,77 +48,63 @@ public class CarpetExpression
         CarpetServer.extensions.forEach(e -> e.scarpetApi(this));
     }
 
-    public boolean fillAndScanCommand(ScriptHost host, int x, int y, int z)
-    {
+    public boolean fillAndScanCommand(ScriptHost host, int x, int y, int z) {
         if (CarpetServer.scriptServer.stopAll)
             return false;
-        try
-        {
+        try {
             Context context = new CarpetContext(host, source, origin).
                     with("x", (c, t) -> new NumericValue(x - origin.getX()).bindTo("x")).
                     with("y", (c, t) -> new NumericValue(y - origin.getY()).bindTo("y")).
                     with("z", (c, t) -> new NumericValue(z - origin.getZ()).bindTo("z")).
                     with("_", (c, t) -> new BlockValue(null, source.getLevel(), new BlockPos(x, y, z)).bindTo("_"));
             Entity e = source.getEntity();
-            if (e==null)
-            {
+            if (e==null) {
                 Value nullPlayer = Value.NULL.reboundedTo("p");
                 context.with("p", (cc, tt) -> nullPlayer );
             }
-            else
-            {
+            else {
                 Value playerValue = new EntityValue(e).bindTo("p");
                 context.with("p", (cc, tt) -> playerValue);
             }
             return CarpetServer.scriptServer.events.handleEvents.getWhileDisabled(()-> this.expr.eval(context).getBoolean());
         }
-        catch (ExpressionException e)
-        {
+        catch (ExpressionException e) {
             throw new CarpetExpressionException(e.getMessage(), e.stack);
         }
-        catch (ArithmeticException ae)
-        {
+        catch (ArithmeticException ae) {
             throw new CarpetExpressionException("Math doesn't compute... "+ae.getMessage(), null);
         }
-        catch (StackOverflowError soe)
-        {
+        catch (StackOverflowError soe) {
             throw new CarpetExpressionException("Your thoughts are too deep", null);
         }
     }
 
-    public Value scriptRunCommand(ScriptHost host, BlockPos pos)
-    {
+    public Value scriptRunCommand(ScriptHost host, BlockPos pos) {
         if (CarpetServer.scriptServer.stopAll)
             throw new CarpetExpressionException("SCRIPTING PAUSED (unpause with /script resume)", null);
-        try
-        {
+        try {
             Context context = new CarpetContext(host, source, origin).
                     with("x", (c, t) -> new NumericValue(pos.getX() - origin.getX()).bindTo("x")).
                     with("y", (c, t) -> new NumericValue(pos.getY() - origin.getY()).bindTo("y")).
                     with("z", (c, t) -> new NumericValue(pos.getZ() - origin.getZ()).bindTo("z"));
             Entity e = source.getEntity();
-            if (e==null)
-            {
+            if (e==null) {
                 Value nullPlayer = Value.NULL.reboundedTo("p");
                 context.with("p", (cc, tt) -> nullPlayer );
             }
-            else
-            {
+            else {
                 Value playerValue = new EntityValue(e).bindTo("p");
                 context.with("p", (cc, tt) -> playerValue);
             }
             return CarpetServer.scriptServer.events.handleEvents.getWhileDisabled(()-> this.expr.eval(context));
         }
-        catch (ExpressionException e)
-        {
+        catch (ExpressionException e) {
             throw new CarpetExpressionException(e.getMessage(), e.stack);
         }
-        catch (ArithmeticException ae)
-        {
+        catch (ArithmeticException ae) {
             throw new CarpetExpressionException("Math doesn't compute... "+ae.getMessage(), null);
         }
-        catch (StackOverflowError soe)
-        {
+        catch (StackOverflowError soe) {
             throw new CarpetExpressionException("Your thoughts are too deep", null);
         }
     }

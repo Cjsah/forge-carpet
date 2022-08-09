@@ -72,8 +72,7 @@ public class ScreenValue extends Value {
 
     public static Map<String,ScarpetScreenHandlerFactory> screenHandlerFactories;
 
-    static
-    {
+    static {
         screenHandlerFactories = new HashMap<>();
 
         screenHandlerFactories.put("anvil",(syncId, playerInventory) -> new AnvilMenu(syncId,playerInventory));
@@ -179,13 +178,11 @@ public class ScreenValue extends Value {
         }
         CommandSourceStack source = player.createCommandSourceStack().withPermission(CarpetSettings.runPermissionLevel);
         CarpetScriptHost executingHost = appHost.retrieveForExecution(source,player);
-        try
-        {
+        try {
             Value cancelValue = executingHost.callUDF(player.blockPosition(), source.withPermission(CarpetSettings.runPermissionLevel), callback, args);
             return cancelValue.getString().equals("cancel");
         }
-        catch (NullPointerException | InvalidCallbackException | IntegrityException error)
-        {
+        catch (NullPointerException | InvalidCallbackException | IntegrityException error) {
             CarpetScriptServer.LOG.error("Got exception when running screen event call ", error);
             return false;
         }
@@ -322,8 +319,7 @@ public class ScreenValue extends Value {
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "screen";
     }
 

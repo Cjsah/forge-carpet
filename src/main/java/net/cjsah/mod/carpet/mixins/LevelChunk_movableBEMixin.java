@@ -27,8 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LevelChunk.class)
-public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements WorldChunkInterface
-{
+public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements WorldChunkInterface {
     @Shadow
     @Final
     Level level;
@@ -51,14 +50,11 @@ public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements W
     @Redirect(method = "setBlockState", at = @At(value = "INVOKE", ordinal = 0,
             target = "Lnet/minecraft/world/level/chunk/LevelChunk;getBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/chunk/LevelChunk$EntityCreationType;)Lnet/minecraft/world/level/block/entity/BlockEntity;"))
     private BlockEntity ifGetBlockEntity(LevelChunk worldChunk, BlockPos blockPos_1,
-            LevelChunk.EntityCreationType worldChunk$CreationType_1)
-    {
-        if (!CarpetSettings.movableBlockEntities)
-        {
+            LevelChunk.EntityCreationType worldChunk$CreationType_1) {
+        if (!CarpetSettings.movableBlockEntities) {
             return this.getBlockEntity(blockPos_1, LevelChunk.EntityCreationType.CHECK);
         }
-        else
-        {
+        else {
             return this.level.getBlockEntity(blockPos_1);
         }
     }
@@ -73,28 +69,23 @@ public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements W
     /* @Nullable */
     // todo update me to the new version
     public BlockState setBlockStateWithBlockEntity(BlockPos blockPos_1, BlockState newBlockState, BlockEntity newBlockEntity,
-            boolean boolean_1)
-    {
+            boolean boolean_1) {
         int x = blockPos_1.getX() & 15;
         int y = blockPos_1.getY();
         int z = blockPos_1.getZ() & 15;
         LevelChunkSection chunkSection = this.getSection(this.getSectionIndex(y));
-        if (chunkSection.hasOnlyAir())
-        {
-            if (newBlockState.isAir())
-            {
+        if (chunkSection.hasOnlyAir()) {
+            if (newBlockState.isAir()) {
                 return null;
             }
         }
         
         boolean boolean_2 = chunkSection.hasOnlyAir();
         BlockState oldBlockState = chunkSection.setBlockState(x, y & 15, z, newBlockState);
-        if (oldBlockState == newBlockState)
-        {
+        if (oldBlockState == newBlockState) {
             return null;
         }
-        else
-        {
+        else {
             Block newBlock = newBlockState.getBlock();
             Block oldBlock = oldBlockState.getBlock();
             ((Heightmap) this.heightmaps.get(Heightmap.Types.MOTION_BLOCKING)).update(x, y, z, newBlockState);
@@ -102,46 +93,36 @@ public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements W
             ((Heightmap) this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR)).update(x, y, z, newBlockState);
             ((Heightmap) this.heightmaps.get(Heightmap.Types.WORLD_SURFACE)).update(x, y, z, newBlockState);
             boolean boolean_3 = chunkSection.hasOnlyAir();
-            if (boolean_2 != boolean_3)
-            {
+            if (boolean_2 != boolean_3) {
                 this.level.getChunkSource().getLightEngine().updateSectionStatus(blockPos_1, boolean_3);
             }
             
-            if (!this.level.isClientSide)
-            {
+            if (!this.level.isClientSide) {
                 if (!(oldBlock instanceof MovingPistonBlock))//this is a movableTE special case, if condition wasn't there it would remove the blockentity that was carried for some reason
                     oldBlockState.onRemove(this.level, blockPos_1, newBlockState, boolean_1);//this kills it
             }
-            else if (oldBlock != newBlock && oldBlock instanceof EntityBlock)
-            {
+            else if (oldBlock != newBlock && oldBlock instanceof EntityBlock) {
                 this.level.removeBlockEntity(blockPos_1);
             }
             
-            if (chunkSection.getBlockState(x, y & 15, z).getBlock() != newBlock)
-            {
+            if (chunkSection.getBlockState(x, y & 15, z).getBlock() != newBlock) {
                 return null;
             }
-            else
-            {
+            else {
                 BlockEntity oldBlockEntity = null;
-                if (oldBlockState.hasBlockEntity())
-                {
+                if (oldBlockState.hasBlockEntity()) {
                     oldBlockEntity = this.getBlockEntity(blockPos_1, LevelChunk.EntityCreationType.CHECK);
-                    if (oldBlockEntity != null)
-                    {
+                    if (oldBlockEntity != null) {
                         oldBlockEntity.setBlockState(oldBlockState);
                         updateBlockEntityTicker(oldBlockEntity);
                     }
                 }
 
-                if (oldBlockState.hasBlockEntity())
-                {
-                    if (newBlockEntity == null)
-                    {
+                if (oldBlockState.hasBlockEntity()) {
+                    if (newBlockEntity == null) {
                         newBlockEntity = ((EntityBlock) newBlock).newBlockEntity(blockPos_1, newBlockState);
                     }
-                    if (newBlockEntity != oldBlockEntity && newBlockEntity != null)
-                    {
+                    if (newBlockEntity != oldBlockEntity && newBlockEntity != null) {
                         newBlockEntity.clearRemoved();
                         this.level.setBlockEntity(newBlockEntity);
                         newBlockEntity.setBlockState(newBlockState);
@@ -149,8 +130,7 @@ public abstract class LevelChunk_movableBEMixin extends ChunkAccess implements W
                     }
                 }
 
-                if (!this.level.isClientSide)
-                {
+                if (!this.level.isClientSide) {
                     newBlockState.onPlace(this.level, blockPos_1, oldBlockState, boolean_1); //This can call setblockstate! (e.g. hopper does)
                 }
                 

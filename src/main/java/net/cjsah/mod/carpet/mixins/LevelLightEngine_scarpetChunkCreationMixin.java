@@ -8,8 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(LevelLightEngine.class)
-public abstract class LevelLightEngine_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface
-{
+public abstract class LevelLightEngine_scarpetChunkCreationMixin implements Lighting_scarpetChunkCreationInterface {
     @Shadow
     @Final
     private LayerLightEngine<?, ?> blockEngine;
@@ -19,8 +18,7 @@ public abstract class LevelLightEngine_scarpetChunkCreationMixin implements Ligh
     private LayerLightEngine<?, ?> skyEngine;
 
     @Override
-    public void removeLightData(final long pos)
-    {
+    public void removeLightData(final long pos) {
         if (this.blockEngine != null)
             ((Lighting_scarpetChunkCreationInterface) this.blockEngine).removeLightData(pos);
 
@@ -29,8 +27,7 @@ public abstract class LevelLightEngine_scarpetChunkCreationMixin implements Ligh
     }
 
     @Override
-    public void relight(final long pos)
-    {
+    public void relight(final long pos) {
         if (this.blockEngine != null)
             ((Lighting_scarpetChunkCreationInterface) this.blockEngine).relight(pos);
 

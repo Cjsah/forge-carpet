@@ -9,15 +9,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(DispenserBlock.class)
-public class DispenserBlock_qcMixin
-{
+public class DispenserBlock_qcMixin {
     @Redirect(method = "neighborChanged", at = @At(
             value = "INVOKE",
             target =  "Lnet/minecraft/world/level/Level;hasNeighborSignal(Lnet/minecraft/core/BlockPos;)Z",
             ordinal = 1
     ))
-    private boolean checkUpPower(Level world, BlockPos blockPos_1)
-    {
+    private boolean checkUpPower(Level world, BlockPos blockPos_1) {
         if (!CarpetSettings.quasiConnectivity)
             return false;
         return world.hasNeighborSignal(blockPos_1);

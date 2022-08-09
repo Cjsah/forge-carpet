@@ -5,10 +5,8 @@ import net.cjsah.mod.carpet.fakes.ClientConnectionInterface;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 
-public class FakeClientConnection extends Connection
-{
-    public FakeClientConnection(PacketFlow p)
-    {
+public class FakeClientConnection extends Connection {
+    public FakeClientConnection(PacketFlow p) {
         super(p);
         // compat with adventure-platform-fabric. This does NOT trigger other vanilla handlers for establishing a channel
         // also makes #isOpen return true, allowing enderpearls to teleport fake players
@@ -16,12 +14,10 @@ public class FakeClientConnection extends Connection
     }
 
     @Override
-    public void setReadOnly()
-    {
+    public void setReadOnly() {
     }
 
     @Override
-    public void handleDisconnection()
-    {
+    public void handleDisconnection() {
     }
 }

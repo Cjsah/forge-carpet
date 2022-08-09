@@ -18,8 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_CHANGES_DIMENSION;
 
 @Mixin(Entity.class)
-public abstract class Entity_scarpetEventsMixin implements EntityInterface
-{
+public abstract class Entity_scarpetEventsMixin implements EntityInterface {
     @Shadow public Level level;
     @Shadow protected int portalTime;
     @Shadow private int portalCooldown;
@@ -33,71 +32,60 @@ public abstract class Entity_scarpetEventsMixin implements EntityInterface
     private Vec3 pos1, motion;
 
     @Override
-    public EntityEventsGroup getEventContainer()
-    {
+    public EntityEventsGroup getEventContainer() {
         return events;
     }
 
     @Override
-    public boolean isPermanentVehicle()
-    {
+    public boolean isPermanentVehicle() {
         return permanentVehicle;
     }
 
     @Override
-    public void setPermanentVehicle(boolean permanent)
-    {
+    public void setPermanentVehicle(boolean permanent) {
         permanentVehicle = permanent;
     }
 
     @Override
-    public int getPublicNetherPortalCooldown()
-    {
+    public int getPublicNetherPortalCooldown() {
         return portalCooldown;
     }
 
     @Override
-    public void setPublicNetherPortalCooldown(int what)
-    {
+    public void setPublicNetherPortalCooldown(int what) {
         portalCooldown = what;
     }
 
     @Override
-    public int getPortalTimer()
-    {
+    public int getPortalTimer() {
         return portalTime;
     }
 
     @Override
-    public void setPortalTimer(int amount)
-    {
+    public void setPortalTimer(int amount) {
         portalTime = amount;
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    private void onTickCall(CallbackInfo ci)
-    {
+    private void onTickCall(CallbackInfo ci) {
         events.onEvent(EntityEventsGroup.Event.ON_TICK);
     }
 
 
     @Inject(method = "remove", at = @At("HEAD"))
-    private void onRemove(CallbackInfo ci)
-    {
+    private void onRemove(CallbackInfo ci) {
         if (!isRemoved()) events.onEvent(EntityEventsGroup.Event.ON_REMOVED);  // ! isRemoved()
     }
 
 
     @Inject(method = "setPosRaw", at = @At("HEAD"))
-    private void firstPos(CallbackInfo ci)
-    {
+    private void firstPos(CallbackInfo ci) {
         pos1 = this.position;
         motion = this.deltaMovement;
     }
 
     @Inject(method = "setPosRaw", at = @At("TAIL"))
-    private void secondPos(CallbackInfo ci)
-    {
+    private void secondPos(CallbackInfo ci) {
         if(pos1!=this.position)
             events.onEvent(EntityEventsGroup.Event.ON_MOVE, motion, pos1, this.position);
     }

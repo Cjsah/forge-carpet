@@ -12,8 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class LoggerRegistry
-{
+public class LoggerRegistry {
     // Map from logger names to loggers.
     private static Map<String, Logger> loggerRegistry = new HashMap<>();
     // Map from player names to the set of names of the logs that player is subscribed to.
@@ -30,15 +29,13 @@ public class LoggerRegistry
     public static boolean __explosions;
     public static boolean __updateSuppressedCrashes;
 
-    public static void initLoggers()
-    {
+    public static void initLoggers() {
         stopLoggers();
         registerLoggers();
         CarpetServer.registerExtensionLoggers();
     }
 
-    public static void registerLoggers()
-    {
+    public static void registerLoggers() {
         registerLogger("tnt", Logger.stardardLogger( "tnt", "brief", new String[]{"brief", "full"}, true));
         registerLogger("projectiles", Logger.stardardLogger("projectiles", "brief",  new String[]{"brief", "full"}));
         registerLogger("fallingBlocks",Logger.stardardLogger("fallingBlocks", "brief", new String[]{"brief", "full"}));
@@ -65,8 +62,7 @@ public class LoggerRegistry
     /**
      * Subscribes the player with name playerName to the log with name logName.
      */
-    public static void subscribePlayer(String playerName, String logName, String option)
-    {
+    public static void subscribePlayer(String playerName, String logName, String option) {
         if (!playerSubscriptions.containsKey(playerName)) playerSubscriptions.put(playerName, new HashMap<>());
         Logger log = loggerRegistry.get(logName);
         if (option == null) option = log.getDefault();
@@ -77,10 +73,8 @@ public class LoggerRegistry
     /**
      * Unsubscribes the player with name playerName from the log with name logName.
      */
-    public static void unsubscribePlayer(String playerName, String logName)
-    {
-        if (playerSubscriptions.containsKey(playerName))
-        {
+    public static void unsubscribePlayer(String playerName, String logName) {
+        if (playerSubscriptions.containsKey(playerName)) {
             Map<String,String> subscriptions = playerSubscriptions.get(playerName);
             subscriptions.remove(logName);
             loggerRegistry.get(logName).removePlayer(playerName);
@@ -91,15 +85,12 @@ public class LoggerRegistry
     /**
      * If the player is not subscribed to the log, then subscribe them. Otherwise, unsubscribe them.
      */
-    public static boolean togglePlayerSubscription(String playerName, String logName)
-    {
-        if (playerSubscriptions.containsKey(playerName) && playerSubscriptions.get(playerName).containsKey(logName))
-        {
+    public static boolean togglePlayerSubscription(String playerName, String logName) {
+        if (playerSubscriptions.containsKey(playerName) && playerSubscriptions.get(playerName).containsKey(logName)) {
             unsubscribePlayer(playerName, logName);
             return false;
         }
-        else
-        {
+        else {
             subscribePlayer(playerName, logName, null);
             return true;
         }
@@ -108,69 +99,56 @@ public class LoggerRegistry
     /**
      * Get the set of logs the current player is subscribed to.
      */
-    public static Map<String,String> getPlayerSubscriptions(String playerName)
-    {
-        if (playerSubscriptions.containsKey(playerName))
-        {
+    public static Map<String,String> getPlayerSubscriptions(String playerName) {
+        if (playerSubscriptions.containsKey(playerName)) {
             return playerSubscriptions.get(playerName);
         }
         return null;
     }
 
-    protected static void setAccess(Logger logger)
-    {
+    protected static void setAccess(Logger logger) {
         String name = logger.getLogName();
         boolean value = logger.hasOnlineSubscribers();
-        try
-        {
+        try {
             Field f = logger.getField();
             f.setBoolean(null, value);
         }
-        catch (IllegalAccessException e)
-        {
+        catch (IllegalAccessException e) {
             CarpetSettings.LOG.error("Cannot change logger quick access field");
         }
     }
     /**
      * Called when the server starts. Creates the logs used by Carpet mod.
      */
-    public static void registerLogger(String name, Logger logger)
-    {
+    public static void registerLogger(String name, Logger logger) {
         loggerRegistry.put(name, logger);
         setAccess(logger);
     }
 
     private static Set<String> seenPlayers = new HashSet<>();
 
-    public static void stopLoggers()
-    {
-        for(Logger log: loggerRegistry.values() )
-        {
+    public static void stopLoggers() {
+        for(Logger log: loggerRegistry.values() ) {
             log.serverStopped();
         }
         seenPlayers.clear();
         loggerRegistry.clear();
         playerSubscriptions.clear();
     }
-    public static void playerConnected(Player player)
-    {
+    public static void playerConnected(Player player) {
         boolean firstTime = false;
-        if (!seenPlayers.contains(player.getName().getString()))
-        {
+        if (!seenPlayers.contains(player.getName().getString())) {
             seenPlayers.add(player.getName().getString());
             firstTime = true;
             //subscribe them to the defualt loggers
         }
-        for(Logger log: loggerRegistry.values() )
-        {
+        for(Logger log: loggerRegistry.values() ) {
             log.onPlayerConnect(player, firstTime);
         }
     }
 
-    public static void playerDisconnected(Player player)
-    {
-        for(Logger log: loggerRegistry.values() )
-        {
+    public static void playerDisconnected(Player player) {
+        for(Logger log: loggerRegistry.values() ) {
             log.onPlayerDisconnect(player);
         }
     }

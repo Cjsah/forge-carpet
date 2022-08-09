@@ -13,32 +13,27 @@ public class UndefValue extends NullValue {
 
 
     @Override
-    public String getString()
-    {
+    public String getString() {
         throw getError();
     }
 
     @Override
-    public String getPrettyString()
-    {
+    public String getPrettyString() {
         return "undefined";
     }
 
     @Override
-    public boolean getBoolean()
-    {
+    public boolean getBoolean() {
         throw getError();
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new UndefValue();
     }
 
     @Override
-    public boolean equals(final Object o)
-    {
+    public boolean equals(final Object o) {
         throw getError();
     }
 
@@ -58,8 +53,7 @@ public class UndefValue extends NullValue {
     }
 
     @Override
-    public int compareTo(Value o)
-    {
+    public int compareTo(Value o) {
         throw getError();
     }
 
@@ -69,20 +63,17 @@ public class UndefValue extends NullValue {
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "undef";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         throw getError();
     }
 
     @Override
-    public Tag toTag(boolean force)
-    {
+    public Tag toTag(boolean force) {
         throw getError();
     }
 
@@ -92,8 +83,7 @@ public class UndefValue extends NullValue {
     }
 
     @Override
-    public JsonElement toJson()
-    {
+    public JsonElement toJson() {
         throw getError();
     }
 
@@ -108,32 +98,27 @@ public class UndefValue extends NullValue {
     }
 
     @Override
-    public Value subtract(Value v)
-    {
+    public Value subtract(Value v) {
         throw getError();
     }
 
     @Override
-    public Value multiply(Value v)
-    {
+    public Value multiply(Value v) {
         throw getError();
     }
 
     @Override
-    public Value divide(Value v)
-    {
+    public Value divide(Value v) {
         throw getError();
     }
 
     @Override
-    public double readDoubleNumber()
-    {
+    public double readDoubleNumber() {
         throw getError();
     }
 
     @Override
-    public long readInteger()
-    {
+    public long readInteger() {
         throw getError();
     }
 

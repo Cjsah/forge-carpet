@@ -54,8 +54,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class CarpetScriptServer
-{
+public class CarpetScriptServer {
     //make static for now, but will change that later:
     public static final Logger LOG = LoggerFactory.getLogger("Scarpet");
     public final MinecraftServer server;
@@ -78,8 +77,7 @@ public class CarpetScriptServer
      * 
      * @param app The {@link BundledModule} of the app
      */
-    public static void registerBuiltInScript(BundledModule app)
-    {
+    public static void registerBuiltInScript(BundledModule app) {
         bundledModuleData.add(app);
     }
     
@@ -95,8 +93,7 @@ public class CarpetScriptServer
         ruleModuleData.add(app);
     }
 
-    static
-    {
+    static {
         registerBuiltInScript(BundledModule.carpetNative("camera", false));
         registerBuiltInScript(BundledModule.carpetNative("overlay", false));
         registerBuiltInScript(BundledModule.carpetNative("event_test", false));
@@ -109,14 +106,12 @@ public class CarpetScriptServer
         registerBuiltInScript(BundledModule.carpetNative("distance_beta", false));
     }
 
-    public CarpetScriptServer(MinecraftServer server)
-    {
+    public CarpetScriptServer(MinecraftServer server) {
         this.server = server;
         init();
     }
 
-    private void init()
-    {
+    private void init() {
         ScriptHost.systemGlobals.clear();
         events = new CarpetEventServer(this);
         modules = new HashMap<>();
@@ -127,26 +122,22 @@ public class CarpetScriptServer
         globalHost = CarpetScriptHost.create(this, null, false, null, p -> true, false, null);
     }
 
-    public void initializeForWorld()
-    {
+    public void initializeForWorld() {
         CarpetServer.settingsManager.initializeScarpetRules();
         CarpetServer.extensions.forEach(e -> {
             if (e.customSettingsManager() != null) {
                 e.customSettingsManager().initializeScarpetRules();
             }
         });
-        if (CarpetSettings.scriptsAutoload)
-        {
-            for (String moduleName: listAvailableModules(false))
-            {
+        if (CarpetSettings.scriptsAutoload) {
+            for (String moduleName: listAvailableModules(false)) {
                 addScriptHost(server.createCommandSourceStack(), moduleName, null, true, true, false, null);
             }
         }
         CarpetEventServer.Event.START.onTick();
     }
 
-    public Module getModule(String name, boolean allowLibraries)
-    {
+    public Module getModule(String name, boolean allowLibraries) {
         try {
             Path folder = server.getWorldPath(LevelResource.ROOT).resolve("scripts");
             if (!Files.exists(folder)) 
@@ -160,8 +151,7 @@ public class CarpetScriptServer
             if (scriptPath.isPresent())
                 return new FileModule(scriptPath.get());
 
-            if (FMLEnvironment.dist == Dist.CLIENT)
-            {
+            if (FMLEnvironment.dist == Dist.CLIENT) {
                 Path globalFolder = FMLPaths.CONFIGDIR.get().resolve("carpet/scripts");
                 if (!Files.exists(globalFolder)) 
                     Files.createDirectories(globalFolder);
@@ -175,35 +165,27 @@ public class CarpetScriptServer
         } catch (IOException e) {
             CarpetSettings.LOG.error("Exception while loading the app: ", e);
         }
-        for (Module moduleData : bundledModuleData)
-        {
-            if (moduleData.getName().equalsIgnoreCase(name) && (allowLibraries || !moduleData.isLibrary()))
-            {
+        for (Module moduleData : bundledModuleData) {
+            if (moduleData.getName().equalsIgnoreCase(name) && (allowLibraries || !moduleData.isLibrary())) {
                 return moduleData;
             }
         }
         return null;
     }
     
-    public Module getRuleModule(String name) 
-    {
-        for (Module moduleData : ruleModuleData)
-        {
-            if (moduleData.getName().equalsIgnoreCase(name))
-            {
+    public Module getRuleModule(String name)  {
+        for (Module moduleData : ruleModuleData) {
+            if (moduleData.getName().equalsIgnoreCase(name)) {
                 return moduleData;
             }
         }
         return null;
     }
 
-    public List<String> listAvailableModules(boolean includeBuiltIns)
-    {
+    public List<String> listAvailableModules(boolean includeBuiltIns) {
         List<String> moduleNames = new ArrayList<>();
-        if (includeBuiltIns)
-        {
-            for (Module mi : bundledModuleData)
-            {
+        if (includeBuiltIns) {
+            for (Module mi : bundledModuleData) {
                 if (!mi.isLibrary() && !mi.getName().endsWith("_beta")) moduleNames.add(mi.getName());
             }
         }
@@ -215,8 +197,7 @@ public class CarpetScriptServer
                 .filter(f -> f.toString().endsWith(".sc"))
                 .forEach(f -> moduleNames.add(f.getFileName().toString().replaceFirst("\\.sc$","").toLowerCase(Locale.ROOT)));
 
-            if (includeBuiltIns && (FMLEnvironment.dist == Dist.CLIENT))
-            {
+            if (includeBuiltIns && (FMLEnvironment.dist == Dist.CLIENT)) {
                 Path globalScripts = FMLPaths.CONFIGDIR.get().resolve("carpet/scripts");
                 if (!Files.exists(globalScripts))
                     Files.createDirectories(globalScripts);
@@ -230,40 +211,34 @@ public class CarpetScriptServer
         return moduleNames;
     }
 
-    public CarpetScriptHost getAppHostByName(String name)
-    {
+    public CarpetScriptHost getAppHostByName(String name) {
         if (name == null)
             return globalHost;
         return modules.get(name);
     }
 
     public boolean addScriptHost(CommandSourceStack source, String name, Predicate<CommandSourceStack> commandValidator,
-                                 boolean perPlayer, boolean autoload, boolean isRuleApp, AppStoreManager.StoreNode installer)
-    {
+                                 boolean perPlayer, boolean autoload, boolean isRuleApp, AppStoreManager.StoreNode installer) {
         CarpetProfiler.ProfilerToken currentSection = CarpetProfiler.start_section(null, "Scarpet load", CarpetProfiler.TYPE.GENERAL);
         if (commandValidator == null) commandValidator = p -> true;
         long start = System.nanoTime();
         name = name.toLowerCase(Locale.ROOT);
         boolean reload = false;
-        if (modules.containsKey(name))
-        {
+        if (modules.containsKey(name)) {
             if (isRuleApp) return false;
             removeScriptHost(source, name, false, isRuleApp);
             reload = true;
         }
         Module module = isRuleApp ? getRuleModule(name) : getModule(name, false);
-        if (module == null)
-        {
+        if (module == null) {
             Messenger.m(source, "r Failed to add "+name+" app");
             return false;
         }
         CarpetScriptHost newHost;
-        try
-        {
+        try {
             newHost = CarpetScriptHost.create(this, module, perPlayer, source, commandValidator, isRuleApp, installer);
         }
-        catch (LoadException e)
-        {
+        catch (LoadException e) {
             Messenger.m(source, "r Failed to add " + name + " app" + (e.getMessage() == null ? "" : ": " + e.getMessage()));
             return false;
         }
@@ -273,8 +248,7 @@ public class CarpetScriptServer
         //    Messenger.m(source, "r Failed to add "+name+" app: invalid app config (via '__config()' function)");
         //    return false;
         //}
-        if (module.getCode() == null)
-        {
+        if (module.getCode() == null) {
             Messenger.m(source, "r Unable to load "+name+" app - not found");
             return false;
         }
@@ -282,8 +256,7 @@ public class CarpetScriptServer
         modules.put(name, newHost);
         if (!isRuleApp) unloadableModules.add(name);
 
-        if (autoload && !newHost.persistenceRequired)
-        {
+        if (autoload && !newHost.persistenceRequired) {
             removeScriptHost(source, name, false, false);
             return false;
         }
@@ -294,31 +267,25 @@ public class CarpetScriptServer
         Boolean isCommandAdded = newHost.addAppCommands(s -> {
             if (!isRuleApp) Messenger.m(source, s);
         });
-        if (isCommandAdded == null) // error should be dispatched
-        {
+        if (isCommandAdded == null) { // error should be dispatched
             removeScriptHost(source, name, false, isRuleApp);
             return false;
         }
-        else if (isCommandAdded)
-        {
+        else if (isCommandAdded) {
             CarpetServer.settingsManager.notifyPlayersCommandsChanged();
             if (!isRuleApp) Messenger.m(source, "gi "+name+" app "+action+" with /"+name+" command");
         }
-        else
-        {
+        else {
             if (!isRuleApp) Messenger.m(source, "gi "+name+" app "+action);
         }
 
-        if (newHost.isPerUser())
-        {
+        if (newHost.isPerUser()) {
             // that will provide player hosts right at the startup
-            for (ServerPlayer player : source.getServer().getPlayerList().getPlayers())
-            {
+            for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
                 newHost.retrieveForExecution(player.createCommandSourceStack(), player);
             }
         }
-        else
-        {
+        else {
             // global app - calling start now.
             FunctionValue onStart = newHost.getFunction("__on_start");
             if (onStart != null) newHost.callNow(onStart, Collections.emptyList());
@@ -329,17 +296,14 @@ public class CarpetScriptServer
         return true;
     }
 
-    public boolean isInvalidCommandRoot(String appName)
-    {
+    public boolean isInvalidCommandRoot(String appName) {
         return holyMoly.contains(appName);
     }
 
 
-    public boolean removeScriptHost(CommandSourceStack source, String name, boolean notifySource, boolean isRuleApp)
-    {
+    public boolean removeScriptHost(CommandSourceStack source, String name, boolean notifySource, boolean isRuleApp) {
         name = name.toLowerCase(Locale.ROOT);
-        if (!modules.containsKey(name) || (!isRuleApp && !unloadableModules.contains(name)))
-        {
+        if (!modules.containsKey(name) || (!isRuleApp && !unloadableModules.contains(name))) {
             if (notifySource) Messenger.m(source, "r No such app found: ", "wb  " + name);
             return false;
         }
@@ -353,15 +317,12 @@ public class CarpetScriptServer
         return true;
     }
 
-    public boolean uninstallApp(CommandSourceStack source, String name)
-    {
-        try
-        {
+    public boolean uninstallApp(CommandSourceStack source, String name) {
+        try {
             name = name.toLowerCase(Locale.ROOT);
             Path folder = server.getWorldPath(LevelResource.ROOT).resolve("scripts/trash");
             if (!Files.exists(folder)) Files.createDirectories(folder);
-            if (!Files.exists(folder.getParent().resolve(name+".sc")))
-            {
+            if (!Files.exists(folder.getParent().resolve(name+".sc"))) {
                 Messenger.m(source, "App doesn't exist in the world scripts folder, so can only be unloaded");
                 return false;
             }
@@ -370,64 +331,51 @@ public class CarpetScriptServer
             Messenger.m(source, "gi Removed "+name+" app");
             return true;
         }
-        catch (IOException exc)
-        {
+        catch (IOException exc) {
             Messenger.m(source, "rb Failed to uninstall the app");
         }
         return false;
     }
 
-    public void tick()
-    {
+    public void tick() {
         CarpetProfiler.ProfilerToken token;
         token = CarpetProfiler.start_section(null, "Scarpet schedule", CarpetProfiler.TYPE.GENERAL);
         events.handleEvents.getWhileDisabled( () -> {events.tick(); return null;});
         CarpetProfiler.end_current_section(token);
         token = CarpetProfiler.start_section(null, "Scarpet app data", CarpetProfiler.TYPE.GENERAL);
-        for (CarpetScriptHost host : modules.values())
-        {
+        for (CarpetScriptHost host : modules.values()) {
             host.tick();
         }
         CarpetProfiler.end_current_section(token);
     }
 
-    public void onClose()
-    {
+    public void onClose() {
         CarpetEventServer.Event.SHUTDOWN.onTick();
-        for (CarpetScriptHost host : modules.values())
-        {
+        for (CarpetScriptHost host : modules.values()) {
             host.onClose();
             events.removeAllHostEvents(host);
         }
     }
 
-    public void onPlayerJoin(ServerPlayer player)
-    {
-        modules.values().forEach(h ->
-        {
-            if (h.isPerUser())
-            {
-                try
-                {
+    public void onPlayerJoin(ServerPlayer player) {
+        modules.values().forEach(h -> {
+            if (h.isPerUser()) {
+                try {
                     h.retrieveOwnForExecution(player.createCommandSourceStack());
                 }
-                catch (CommandSyntaxException ignored)
-                {
+                catch (CommandSyntaxException ignored) {
                 }
             }
         });
     }
 
-    private static record TransferData(boolean perUser, Predicate<CommandSourceStack> commandValidator, boolean isRuleApp)
-    {
-        private TransferData(CarpetScriptHost host)
-        {
+    private static record TransferData(boolean perUser, Predicate<CommandSourceStack> commandValidator, boolean isRuleApp) {
+        private TransferData(CarpetScriptHost host) {
             this(host.perUser, host.commandValidator, host.isRuleApp);
         }
     }
 
-    public void reload(MinecraftServer server)
-    {
+    public void reload(MinecraftServer server) {
         Map<String, TransferData> apps = new HashMap<>();
         modules.forEach((s, h) -> apps.put(s, new TransferData(h)));
         apps.keySet().forEach(s -> removeScriptHost(server.createCommandSourceStack(), s, false, false));
@@ -436,13 +384,11 @@ public class CarpetScriptServer
         apps.forEach((s, data) -> addScriptHost(server.createCommandSourceStack(), s,data.commandValidator, data.perUser,false, data.isRuleApp, null));
     }
 
-    public void reAddCommands()
-    {
+    public void reAddCommands() {
         modules.values().forEach(host -> host.addAppCommands(s -> {}));
     }
     
-    public static void parseFunctionClasses()
-    {
+    public static void parseFunctionClasses() {
         ExpressionException.prepareForDoom(); // see fc-#1172
         // Language
         AnnotationParser.parseFunctionClass(Arithmetic.class);

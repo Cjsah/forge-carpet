@@ -21,10 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.*;
 
 @Mixin(Player.class)
-public abstract class Player_scarpetEventsMixin extends LivingEntity
-{
-    protected Player_scarpetEventsMixin(EntityType<? extends LivingEntity> type, Level world)
-    {
+public abstract class Player_scarpetEventsMixin extends LivingEntity {
+    protected Player_scarpetEventsMixin(EntityType<? extends LivingEntity> type, Level world) {
         super(type, world);
     }
 
@@ -32,43 +30,34 @@ public abstract class Player_scarpetEventsMixin extends LivingEntity
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"
     ))
-    private void playerTakingDamage(DamageSource source, float amount, CallbackInfo ci)
-    {
+    private void playerTakingDamage(DamageSource source, float amount, CallbackInfo ci) {
         // version of LivingEntity_scarpetEventsMixin::entityTakingDamage
         ((EntityInterface)this).getEventContainer().onEvent(EntityEventsGroup.Event.ON_DAMAGE, amount, source);
-        if (PLAYER_TAKES_DAMAGE.isNeeded())
-        {
+        if (PLAYER_TAKES_DAMAGE.isNeeded()) {
             PLAYER_TAKES_DAMAGE.onDamage(this, amount, source);
         }
-        if (source.getEntity() instanceof ServerPlayer && PLAYER_DEALS_DAMAGE.isNeeded())
-        {
+        if (source.getEntity() instanceof ServerPlayer && PLAYER_DEALS_DAMAGE.isNeeded()) {
             PLAYER_DEALS_DAMAGE.onDamage(this, amount, source);
         }
     }
 
     @Inject(method = "touch", at = @At("HEAD"))
-    private void onEntityCollision(Entity entity, CallbackInfo ci)
-    {
-        if (PLAYER_COLLIDES_WITH_ENTITY.isNeeded() && !level.isClientSide)
-        {
+    private void onEntityCollision(Entity entity, CallbackInfo ci) {
+        if (PLAYER_COLLIDES_WITH_ENTITY.isNeeded() && !level.isClientSide) {
             PLAYER_COLLIDES_WITH_ENTITY.onEntityHandAction((ServerPlayer)(Object)this, entity, null);
         }
     }
 
     @Inject(method = "interactOn", at = @At("HEAD"))
-    private void doInteract(Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir)
-    {
-        if (!level.isClientSide && PLAYER_INTERACTS_WITH_ENTITY.isNeeded())
-        {
+    private void doInteract(Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!level.isClientSide && PLAYER_INTERACTS_WITH_ENTITY.isNeeded()) {
             PLAYER_INTERACTS_WITH_ENTITY.onEntityHandAction((ServerPlayer) (Object)this, entity, hand);
         }
     }
 
     @Inject(method = "attack", at = @At("HEAD"))
-    private void onAttack(Entity target, CallbackInfo ci)
-    {
-        if (!level.isClientSide && PLAYER_ATTACKS_ENTITY.isNeeded() && target.isAttackable())
-        {
+    private void onAttack(Entity target, CallbackInfo ci) {
+        if (!level.isClientSide && PLAYER_ATTACKS_ENTITY.isNeeded() && target.isAttackable()) {
             PLAYER_ATTACKS_ENTITY.onEntityHandAction((ServerPlayer) (Object)this, target, null);
         }
     }

@@ -27,10 +27,8 @@ import java.util.function.BooleanSupplier;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.*;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerInterface
-{
-    public MinecraftServer_scarpetMixin(String string_1)
-    {
+public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerInterface {
+    public MinecraftServer_scarpetMixin(String string_1) {
         super(string_1);
     }
 
@@ -59,16 +57,14 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     @Shadow @Final private StructureManager structureManager;
 
     @Override
-    public void forceTick(BooleanSupplier isAhead)
-    {
+    public void forceTick(BooleanSupplier isAhead) {
         nextTickTime = lastOverloadWarning = Util.getMillis();
         tickServer(isAhead);
         while(pollTask()) {Thread.yield();}
     }
 
     @Override
-    public LevelStorageSource.LevelStorageAccess getCMSession()
-    {
+    public LevelStorageSource.LevelStorageAccess getCMSession() {
         return storageSource;
     }
 
@@ -78,8 +74,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     //}
 
     @Override
-    public Map<ResourceKey<Level>, ServerLevel> getCMWorlds()
-    {
+    public Map<ResourceKey<Level>, ServerLevel> getCMWorlds() {
         return levels;
     }
 
@@ -87,8 +82,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
             value = "CONSTANT",
             args = "stringValue=tallying"
     ))
-    public void tickTasks(BooleanSupplier booleanSupplier_1, CallbackInfo ci)
-    {
+    public void tickTasks(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
         if (!TickSpeed.process_entities)
             return;
         TICK.onTick();
@@ -97,8 +91,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     }
 
     @Override
-    public void reloadAfterReload(RegistryAccess newRegs)
-    {
+    public void reloadAfterReload(RegistryAccess newRegs) {
         resources.managers().updateRegistryTags(newRegs);
         getPlayerList().saveAll();
         getPlayerList().reloadResources();
@@ -107,8 +100,7 @@ public abstract class MinecraftServer_scarpetMixin extends ReentrantBlockableEve
     }
 
     @Override
-    public MinecraftServer.ReloadableResources getResourceManager()
-    {
+    public MinecraftServer.ReloadableResources getResourceManager() {
         return resources;
     }
 }

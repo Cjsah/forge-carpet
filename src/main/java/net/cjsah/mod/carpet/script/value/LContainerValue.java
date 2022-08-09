@@ -1,13 +1,11 @@
 package net.cjsah.mod.carpet.script.value;
 
-public class LContainerValue extends FrameworkValue
-{
+public class LContainerValue extends FrameworkValue {
     private ContainerValueInterface container;
     private Value address;
     public static final LContainerValue NULL_CONTAINER = new LContainerValue(null, null);
 
-    public LContainerValue(ContainerValueInterface c, Value v)
-    {
+    public LContainerValue(ContainerValueInterface c, Value v) {
         container = c;
         address = v;
     }

@@ -6,8 +6,7 @@ import net.minecraft.server.level.Ticket;
 import net.minecraft.util.SortedArraySet;
 import net.minecraft.world.level.ChunkPos;
 
-public interface ChunkTicketManagerInterface
-{
+public interface ChunkTicketManagerInterface {
     void changeSpawnChunks(ChunkPos pos, int distance);
 
     Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> getTicketsByPosition();

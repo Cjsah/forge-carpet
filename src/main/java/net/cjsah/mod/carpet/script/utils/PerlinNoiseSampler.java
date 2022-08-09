@@ -7,11 +7,7 @@ import java.util.Random;
 
 // extracted from import net.minecraft.util.math.noise.PerlinNoiseSampler
 public class PerlinNoiseSampler {
-    protected static final int[][] gradients3d = new int[][]{
-            {1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0},
-            {1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1},
-            {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1},
-            {1, 1, 0}, {0, -1, 1}, {-1, 1, 0}, {0, -1, -1}
+    protected static final int[][] gradients3d = new int[][]{ {1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1}, {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}, {1, 1, 0}, {0, -1, 1}, {-1, 1, 0}, {0, -1, -1}
     };
     protected static final int[][] gradients2d = new int[][]{{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
@@ -23,8 +19,7 @@ public class PerlinNoiseSampler {
     public static PerlinNoiseSampler instance = new PerlinNoiseSampler(new Random(0));
     public static Map<Long, PerlinNoiseSampler> samplers = new Long2ObjectOpenHashMap<>();
 
-    public static PerlinNoiseSampler getPerlin(long aLong)
-    {
+    public static PerlinNoiseSampler getPerlin(long aLong) {
         if (samplers.size() > 256)
             samplers.clear();
         return samplers.computeIfAbsent(aLong, seed -> new PerlinNoiseSampler(new Random(seed)));

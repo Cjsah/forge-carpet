@@ -49,8 +49,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface ScarpetFunction
-{
+public @interface ScarpetFunction {
     /**
      * <p>Used to define that this {@link ScarpetFunction} can accept an unlimited number of parameters</p>
      */

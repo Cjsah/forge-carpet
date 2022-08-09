@@ -18,11 +18,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntity_maxCollisionsMixin extends Entity
-{
+public abstract class LivingEntity_maxCollisionsMixin extends Entity {
 
-    public LivingEntity_maxCollisionsMixin(EntityType<?> entityType_1, Level world_1)
-    {
+    public LivingEntity_maxCollisionsMixin(EntityType<?> entityType_1, Level world_1) {
         super(entityType_1, world_1);
     }
 
@@ -30,14 +28,12 @@ public abstract class LivingEntity_maxCollisionsMixin extends Entity
 
     @Inject(method = "pushEntities", cancellable = true, at = @At("HEAD"))
     private void tickPushingReplacement(CallbackInfo ci) {
-        if (CarpetSettings.maxEntityCollisions == 0)
-        {
+        if (CarpetSettings.maxEntityCollisions == 0) {
             return;
         }
         List<Entity> entities;
         int maxEntityCramming =-1;
-        if (CarpetSettings.maxEntityCollisions > 0)
-        {
+        if (CarpetSettings.maxEntityCollisions > 0) {
             maxEntityCramming = this.level.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
             entities = ((WorldInterface) this.level).getOtherEntitiesLimited(
                     this,
@@ -45,8 +41,7 @@ public abstract class LivingEntity_maxCollisionsMixin extends Entity
                     EntitySelector.pushableBy(this),
                     Math.max(CarpetSettings.maxEntityCollisions, maxEntityCramming));
         }
-        else
-        {
+        else {
             entities = this.level.getEntities(this, this.getBoundingBox(), EntitySelector.pushableBy(this));
         }
 
@@ -65,17 +60,13 @@ public abstract class LivingEntity_maxCollisionsMixin extends Entity
                     this.hurt(DamageSource.CRAMMING, 6.0F);
                 }
             }
-            if (CarpetSettings.maxEntityCollisions > 0 && entities.size() > CarpetSettings.maxEntityCollisions)
-            {
-                for (Entity entity : entities.subList(0, CarpetSettings.maxEntityCollisions))
-                {
+            if (CarpetSettings.maxEntityCollisions > 0 && entities.size() > CarpetSettings.maxEntityCollisions) {
+                for (Entity entity : entities.subList(0, CarpetSettings.maxEntityCollisions)) {
                     this.doPush(entity);
                 }
             }
-            else
-            {
-                for (Entity entity : entities)
-                {
+            else {
+                for (Entity entity : entities) {
                     this.doPush(entity);
                 }
             }

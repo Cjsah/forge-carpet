@@ -2,21 +2,18 @@ package net.cjsah.mod.carpet.script.value;
 
 import java.util.List;
 
-public class FunctionUnpackedArgumentsValue extends ListValue
-{
+public class FunctionUnpackedArgumentsValue extends ListValue {
     public FunctionUnpackedArgumentsValue(List<Value> list) {
         super(list);
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new FunctionUnpackedArgumentsValue(items);
     }
 
     @Override
-    public Value deepcopy()
-    {
+    public Value deepcopy() {
         ListValue copy = (ListValue)super.deepcopy();
         return new FunctionUnpackedArgumentsValue(copy.items);
     }

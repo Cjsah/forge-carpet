@@ -21,10 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.IntSupplier;
 
 @Mixin(ThreadedLevelLightEngine.class)
-public abstract class ThreadedLevelLightEngine_scarpetChunkCreationMixin extends LevelLightEngine implements ServerLightingProviderInterface
-{
-    private ThreadedLevelLightEngine_scarpetChunkCreationMixin(final LightChunkGetter chunkProvider, final boolean hasBlockLight, final boolean hasSkyLight)
-    {
+public abstract class ThreadedLevelLightEngine_scarpetChunkCreationMixin extends LevelLightEngine implements ServerLightingProviderInterface {
+    private ThreadedLevelLightEngine_scarpetChunkCreationMixin(final LightChunkGetter chunkProvider, final boolean hasBlockLight, final boolean hasSkyLight) {
         super(chunkProvider, hasBlockLight, hasSkyLight);
     }
 
@@ -40,8 +38,7 @@ public abstract class ThreadedLevelLightEngine_scarpetChunkCreationMixin extends
     public abstract void invokeUpdateChunkStatus(ChunkPos pos);
 
     @Override
-    public void removeLightData(final ChunkAccess chunk)
-    {
+    public void removeLightData(final ChunkAccess chunk) {
         final ChunkPos pos = chunk.getPos();
         chunk.setLightCorrect(false);
 
@@ -54,8 +51,7 @@ public abstract class ThreadedLevelLightEngine_scarpetChunkCreationMixin extends
     }
 
     @Override
-    public CompletableFuture<Void> relight(final ChunkAccess chunk)
-    {
+    public CompletableFuture<Void> relight(final ChunkAccess chunk) {
         final ChunkPos pos = chunk.getPos();
 
         this.addTask(pos.x, pos.z, () -> 0, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {

@@ -21,8 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 @Mixin(ChunkGenerator.class)
-public abstract class ChunkGenerator_customMobSpawnsMixin
-{
+public abstract class ChunkGenerator_customMobSpawnsMixin {
     @Inject(
             method = "getMobsAt", locals = LocalCapture.CAPTURE_FAILHARD,
             at = @At(
@@ -31,11 +30,9 @@ public abstract class ChunkGenerator_customMobSpawnsMixin
             ), cancellable = true)
     private void checkCMSpawns(Holder<Biome> holder, StructureFeatureManager structureFeatureManager, MobCategory mobCategory, BlockPos blockPos,
                                  CallbackInfoReturnable<WeightedRandomList<MobSpawnSettings.SpawnerData>> cir,
-                                 Map<ConfiguredStructureFeature<?, ?>, LongSet> map, Iterator<?> var6, Map.Entry<ConfiguredStructureFeature<?, ?>, LongSet> entry)
-    {
+                                 Map<ConfiguredStructureFeature<?, ?>, LongSet> map, Iterator<?> var6, Map.Entry<ConfiguredStructureFeature<?, ?>, LongSet> entry) {
         WeightedRandomList<MobSpawnSettings.SpawnerData> res = SpawnOverrides.test(structureFeatureManager, entry.getValue(), mobCategory, entry.getKey(), blockPos);
-        if (res != null)
-        {
+        if (res != null) {
             cir.setReturnValue(res);
         }
     }

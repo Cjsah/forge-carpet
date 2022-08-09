@@ -9,8 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
 
-public interface CarpetExtension
-{
+public interface CarpetExtension {
     /**
      * When game started before world is loaded
      */

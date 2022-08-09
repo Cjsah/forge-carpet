@@ -28,15 +28,12 @@ import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.*;
 
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public class ServerGamePacketListenerImpl_scarpetEventsMixin
-{
+public class ServerGamePacketListenerImpl_scarpetEventsMixin {
     @Shadow public ServerPlayer player;
 
     @Inject(method = "handlePlayerInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setPlayerInput(FFZZ)V"))
-    private void checkMoves(ServerboundPlayerInputPacket p, CallbackInfo ci)
-    {
-        if (PLAYER_RIDES.isNeeded() && (p.getXxa() != 0.0F || p.getZza() != 0.0F || p.isJumping() || p.isShiftKeyDown()))
-        {
+    private void checkMoves(ServerboundPlayerInputPacket p, CallbackInfo ci) {
+        if (PLAYER_RIDES.isNeeded() && (p.getXxa() != 0.0F || p.getZza() != 0.0F || p.isJumping() || p.isShiftKeyDown())) {
             PLAYER_RIDES.onMountControls(player, p.getXxa(), p.getZza(), p.isJumping(), p.isShiftKeyDown());
         }
     }
@@ -47,8 +44,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             ordinal = 0,
             shift = At.Shift.BEFORE
     ))
-    private void onQItem(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci)
-    {
+    private void onQItem(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci) {
         PLAYER_DROPS_ITEM.onPlayerEvent(player);
     }
 
@@ -58,8 +54,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             ordinal = 0,
             shift = At.Shift.BEFORE
     ))
-    private void onHandSwap(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci)
-    {
+    private void onHandSwap(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci) {
         PLAYER_SWAPS_HANDS.onPlayerEvent(player);
     }
 
@@ -69,8 +64,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             ordinal = 1,
             shift = At.Shift.BEFORE
     ))
-    private void onCtrlQItem(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci)
-    {
+    private void onCtrlQItem(ServerboundPlayerActionPacket playerActionC2SPacket_1, CallbackInfo ci) {
         PLAYER_DROPS_STACK.onPlayerEvent(player);
     }
 
@@ -79,8 +73,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;jumpFromGround()V"
     ))
-    private void onJump(ServerboundMovePlayerPacket playerMoveC2SPacket_1, CallbackInfo ci)
-    {
+    private void onJump(ServerboundMovePlayerPacket playerMoveC2SPacket_1, CallbackInfo ci) {
         PLAYER_JUMPS.onPlayerEvent(player);
     }
 
@@ -89,8 +82,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayerGameMode;handleBlockBreakAction(Lnet/minecraft/core/BlockPos;Lnet/minecraft/network/protocol/game/ServerboundPlayerActionPacket$Action;Lnet/minecraft/core/Direction;I)V",
             shift = At.Shift.BEFORE
     ))
-    private void onClicked(ServerboundPlayerActionPacket packet, CallbackInfo ci)
-    {
+    private void onClicked(ServerboundPlayerActionPacket packet, CallbackInfo ci) {
         if (packet.getAction() == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK)
             PLAYER_CLICKS_BLOCK.onBlockAction(player, packet.getPos(), packet.getDirection());
     }
@@ -99,17 +91,14 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;releaseUsingItem()V"
     ))
-    private void onStopUsing(ServerPlayer serverPlayerEntity)
-    {
-        if (PLAYER_RELEASED_ITEM.isNeeded())
-        {
+    private void onStopUsing(ServerPlayer serverPlayerEntity) {
+        if (PLAYER_RELEASED_ITEM.isNeeded()) {
             InteractionHand hand = serverPlayerEntity.getUsedItemHand();
             ItemStack stack = serverPlayerEntity.getUseItem().copy();
             serverPlayerEntity.releaseUsingItem();
             PLAYER_RELEASED_ITEM.onItemAction(player, hand, stack);
         }
-        else
-        {
+        else {
             serverPlayerEntity.releaseUsingItem();
         }
     }
@@ -118,10 +107,8 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayerGameMode;useItemOn(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"
     ))
-    private void onBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci)
-    {
-        if (PLAYER_RIGHT_CLICKS_BLOCK.isNeeded())
-        {
+    private void onBlockInteracted(ServerboundUseItemOnPacket playerInteractBlockC2SPacket_1, CallbackInfo ci) {
+        if (PLAYER_RIGHT_CLICKS_BLOCK.isNeeded()) {
             InteractionHand hand = playerInteractBlockC2SPacket_1.getHand();
             BlockHitResult hitRes = playerInteractBlockC2SPacket_1.getHitResult();
             PLAYER_RIGHT_CLICKS_BLOCK.onBlockHit(player, hand, hitRes);
@@ -132,10 +119,8 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerPlayer;resetLastActionTime()V"
     ))
-    private void onItemClicked(ServerboundUseItemPacket playerInteractItemC2SPacket_1, CallbackInfo ci)
-    {
-        if (PLAYER_USES_ITEM.isNeeded())
-        {
+    private void onItemClicked(ServerboundUseItemPacket playerInteractItemC2SPacket_1, CallbackInfo ci) {
+        if (PLAYER_USES_ITEM.isNeeded()) {
             InteractionHand hand = playerInteractItemC2SPacket_1.getHand();
             PLAYER_USES_ITEM.onItemAction(player, hand, player.getItemInHand(hand).copy());
         }
@@ -146,8 +131,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;setShiftKeyDown(Z)V",
             ordinal = 0
     ))
-    private void onStartSneaking(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onStartSneaking(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         PLAYER_STARTS_SNEAKING.onPlayerEvent(player);
     }
 
@@ -156,8 +140,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;setShiftKeyDown(Z)V",
             ordinal = 1
     ))
-    private void onStopSneaking(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onStopSneaking(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         PLAYER_STOPS_SNEAKING.onPlayerEvent(player);
     }
 
@@ -166,8 +149,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;setSprinting(Z)V",
             ordinal = 0
     ))
-    private void onStartSprinting(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onStartSprinting(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         PLAYER_STARTS_SPRINTING.onPlayerEvent(player);
     }
 
@@ -176,8 +158,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;setSprinting(Z)V",
             ordinal = 1
     ))
-    private void onStopSprinting(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onStopSprinting(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         PLAYER_STOPS_SPRINTING.onPlayerEvent(player);
     }
 
@@ -186,8 +167,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;isSleeping()Z",
             shift = At.Shift.BEFORE
     ))
-    private void onWakeUp(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onWakeUp(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         //weird one - doesn't seem to work, maybe MP
         if (player.isSleeping())
             PLAYER_WAKES_UP.onPlayerEvent(player);
@@ -201,8 +181,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             target = "Lnet/minecraft/server/level/ServerPlayer;tryToStartFallFlying()Z",
             shift = At.Shift.BEFORE
     ))
-    private void onElytraEngage(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci)
-    {
+    private void onElytraEngage(ServerboundPlayerCommandPacket clientCommandC2SPacket_1, CallbackInfo ci) {
         PLAYER_DEPLOYS_ELYTRA.onPlayerEvent(player);
     }
 
@@ -210,8 +189,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;interact(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;"
     ))
-    private void onEntityInteract(PlayerInteractEntityC2SPacket playerInteractEntityC2SPacket_1, CallbackInfo ci)
-    {
+    private void onEntityInteract(PlayerInteractEntityC2SPacket playerInteractEntityC2SPacket_1, CallbackInfo ci) {
         PLAYER_INTERACTS_WITH_ENTITY.onEntityHandAction(player, playerInteractEntityC2SPacket_1.getEntity(player.getWorld()), playerInteractEntityC2SPacket_1.getHand());
     }*/
 
@@ -219,32 +197,26 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;attack(Lnet/minecraft/entity/Entity;)V"
     ))
-    private void onEntityAttack(PlayerInteractEntityC2SPacket playerInteractEntityC2SPacket_1, CallbackInfo ci)
-    {
+    private void onEntityAttack(PlayerInteractEntityC2SPacket playerInteractEntityC2SPacket_1, CallbackInfo ci) {
         //todo add hit and hand in the future
         PLAYER_ATTACKS_ENTITY.onEntityHandAction(player, playerInteractEntityC2SPacket_1.getEntity(player.getWorld()), null);
     }*/
 
     @Inject(method = "handleContainerButtonClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;resetLastActionTime()V"))
-    private void onItemBeingPickedFromInventory(ServerboundContainerButtonClickPacket packet, CallbackInfo ci)
-    {
+    private void onItemBeingPickedFromInventory(ServerboundContainerButtonClickPacket packet, CallbackInfo ci) {
         // crafts not int the crafting window
         //CarpetSettings.LOG.error("Player clicks button "+packet.getButtonId());
     }
     @Inject(method = "handlePlaceRecipe", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;resetLastActionTime()V"))
-    private void onRecipeSelectedInRecipeManager(ServerboundPlaceRecipePacket packet, CallbackInfo ci)
-    {
-        if (PLAYER_CHOOSES_RECIPE.isNeeded())
-        {
+    private void onRecipeSelectedInRecipeManager(ServerboundPlaceRecipePacket packet, CallbackInfo ci) {
+        if (PLAYER_CHOOSES_RECIPE.isNeeded()) {
             PLAYER_CHOOSES_RECIPE.onRecipeSelected(player, packet.getRecipe(), packet.isShiftDown());
         }
     }
 
     @Inject(method = "handleSetCarriedItem", at = @At("HEAD"))
-    private void onUpdatedSelectedSLot(ServerboundSetCarriedItemPacket packet, CallbackInfo ci)
-    {
-        if (PLAYER_SWITCHES_SLOT.isNeeded() && player.getServer() != null && player.getServer().isSameThread())
-        {
+    private void onUpdatedSelectedSLot(ServerboundSetCarriedItemPacket packet, CallbackInfo ci) {
+        if (PLAYER_SWITCHES_SLOT.isNeeded() && player.getServer() != null && player.getServer().isSameThread()) {
             PLAYER_SWITCHES_SLOT.onSlotSwitch(player, player.getInventory().selected, packet.getSlot());
         }
     }
@@ -254,10 +226,8 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             "Lnet/minecraft/server/level/ServerPlayer;resetLastActionTime()V",
             shift = At.Shift.BEFORE)
     )
-    private void onSwing(ServerboundSwingPacket packet, CallbackInfo ci)
-    {
-        if (PLAYER_SWINGS_HAND.isNeeded() && !player.swinging)
-        {
+    private void onSwing(ServerboundSwingPacket packet, CallbackInfo ci) {
+        if (PLAYER_SWINGS_HAND.isNeeded() && !player.swinging) {
             PLAYER_SWINGS_HAND.onHandAction(player, packet.getHand());
         }
     }
@@ -267,8 +237,7 @@ public class ServerGamePacketListenerImpl_scarpetEventsMixin
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void onChatMessage(TextFilter.FilteredText filteredText, CallbackInfo ci, String string) {
-        if (PLAYER_MESSAGE.isNeeded())
-        {
+        if (PLAYER_MESSAGE.isNeeded()) {
             PLAYER_MESSAGE.onPlayerMessage(player,string);
         }
     }

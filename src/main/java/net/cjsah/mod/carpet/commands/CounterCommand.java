@@ -15,13 +15,11 @@ import net.minecraft.world.item.DyeColor;
  * Class for the /counter command which allows to use hoppers pointing into wool
  */
 
-public class CounterCommand
-{
+public class CounterCommand {
     /**
      * The method used to register the command and make it available for the players to use.
      */
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = Commands.literal("counter").executes((context)
          -> listAllCounters(context.getSource(), false)).requires((player) ->
                 CarpetSettings.hopperCounters);
@@ -29,8 +27,7 @@ public class CounterCommand
         literalargumentbuilder.
                 then((Commands.literal("reset").executes( (p_198489_1_)->
                         resetCounter(p_198489_1_.getSource(), null))));
-        for (DyeColor enumDyeColor: DyeColor.values())
-        {
+        for (DyeColor enumDyeColor: DyeColor.values()) {
             String color = enumDyeColor.toString();
             literalargumentbuilder.
                     then((Commands.literal(color).executes( (p_198489_1_)-> displayCounter(p_198489_1_.getSource(), color, false))));
@@ -51,13 +48,11 @@ public class CounterCommand
      *                would make it slower than IRL
      */
 
-    private static int displayCounter(CommandSourceStack source, String color, boolean realtime)
-    {
+    private static int displayCounter(CommandSourceStack source, String color, boolean realtime) {
         HopperCounter counter = HopperCounter.getCounter(color);
         if (counter == null) throw new CommandRuntimeException(Messenger.s("Unknown wool color: "+color));
 
-        for (BaseComponent message: counter.format(source.getServer(), realtime, false))
-        {
+        for (BaseComponent message: counter.format(source.getServer(), realtime, false)) {
             source.sendSuccess(message, false);
         }
         return 1;
@@ -68,15 +63,12 @@ public class CounterCommand
      * it will reset all counters.
      * @param color The counter whose contents we want to reset
      */
-    private static int resetCounter(CommandSourceStack source, String color)
-    {
-        if (color == null)
-        {
+    private static int resetCounter(CommandSourceStack source, String color) {
+        if (color == null) {
             HopperCounter.resetAll(source.getServer(), false);
             Messenger.m(source, "w Restarted all counters");
         }
-        else
-        {
+        else {
             HopperCounter counter = HopperCounter.getCounter(color);
             if (counter == null) throw new CommandRuntimeException(Messenger.s("Unknown wool color"));
             counter.reset(source.getServer());
@@ -90,10 +82,8 @@ public class CounterCommand
      * @param realtime Whether or not to display it as in-game time or IRL time, which accounts for less than 20TPS which
      *                would make it slower than IRL
      */
-    private static int listAllCounters(CommandSourceStack source, boolean realtime)
-    {
-        for (BaseComponent message: HopperCounter.formatAll(source.getServer(), realtime))
-        {
+    private static int listAllCounters(CommandSourceStack source, boolean realtime) {
+        for (BaseComponent message: HopperCounter.formatAll(source.getServer(), realtime)) {
             source.sendSuccess(message, false);
         }
         return 1;

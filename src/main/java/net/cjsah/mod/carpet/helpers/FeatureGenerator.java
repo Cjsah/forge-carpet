@@ -48,56 +48,44 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Random;
 
-public class FeatureGenerator
-{
+public class FeatureGenerator {
     public static final Object boo = new Object();
-    synchronized public static Boolean plop(String featureName, ServerLevel world, BlockPos pos)
-    {
+    synchronized public static Boolean plop(String featureName, ServerLevel world, BlockPos pos) {
         Thing custom = featureMap.get(featureName);
-        if (custom != null)
-        {
+        if (custom != null) {
             return custom.plop(world, pos);
         }
         ResourceLocation id = new ResourceLocation(featureName);
         ConfiguredStructureFeature<?, ?> structureFeature = world.registryAccess().registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY).get(id);
-        if (structureFeature != null)
-        {
+        if (structureFeature != null) {
              return plopAnywhere( structureFeature, world, pos, world.getChunkSource().getGenerator(), false);
         }
 
         ConfiguredFeature<?, ?> configuredFeature = world.registryAccess().registryOrThrow(Registry.CONFIGURED_FEATURE_REGISTRY).get(id);
-        if (configuredFeature != null)
-        {
+        if (configuredFeature != null) {
             CarpetSettings.skipGenerationChecks.set(true);
-            try
-            {
+            try {
                 return configuredFeature.place(world, world.getChunkSource().getGenerator(), world.random, pos);
             }
-            finally
-            {
+            finally {
                 CarpetSettings.skipGenerationChecks.set(false);
             }
         }
         StructureFeature<?> structure = Registry.STRUCTURE_FEATURE.get(id);
-        if (structure != null)
-        {
+        if (structure != null) {
             ConfiguredStructureFeature<?,?> configuredStandard = getDefaultFeature(structure, world, pos);
             if (configuredStandard != null)
                 return plopAnywhere(configuredStandard, world, pos, world.getChunkSource().getGenerator(), false);
         }
         Feature<?> feature = Registry.FEATURE.get(id);
-        if (feature != null)
-        {
+        if (feature != null) {
             ConfiguredFeature<?,?> configuredStandard = getDefaultFeature(feature, world, pos, true);
-            if (configuredStandard != null)
-            {
+            if (configuredStandard != null) {
                 CarpetSettings.skipGenerationChecks.set(true);
-                try
-                {
+                try {
                     return configuredStandard.place(world, world.getChunkSource().getGenerator(), world.random, pos);
                 }
-                finally
-                {
+                finally {
                     CarpetSettings.skipGenerationChecks.set(false);
                 }
             }
@@ -105,8 +93,7 @@ public class FeatureGenerator
         return null;
     }
 
-    public static ConfiguredStructureFeature<?, ?> resolveConfiguredStructure(String name, ServerLevel world, BlockPos pos)
-    {
+    public static ConfiguredStructureFeature<?, ?> resolveConfiguredStructure(String name, ServerLevel world, BlockPos pos) {
         ResourceLocation id = new ResourceLocation(name);
         ConfiguredStructureFeature<?, ?> configuredStructureFeature =  world.registryAccess().registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY).get(id);
         if (configuredStructureFeature != null) return configuredStructureFeature;
@@ -115,79 +102,65 @@ public class FeatureGenerator
         return getDefaultFeature(structureFeature, world, pos);
     }
 
-    synchronized public static Boolean plopGrid(ConfiguredStructureFeature<?, ?> structureFeature, ServerLevel world, BlockPos pos)
-    {
+    synchronized public static Boolean plopGrid(ConfiguredStructureFeature<?, ?> structureFeature, ServerLevel world, BlockPos pos) {
         return plopAnywhere( structureFeature, world, pos, world.getChunkSource().getGenerator(), true);
     }
 
     @FunctionalInterface
-    private interface Thing
-    {
+    private interface Thing {
         Boolean plop(ServerLevel world, BlockPos pos);
     }
-    private static Thing simplePlop(ConfiguredFeature<?,?> feature)
-    {
+    private static Thing simplePlop(ConfiguredFeature<?,?> feature) {
         return (w, p) -> {
             CarpetSettings.skipGenerationChecks.set(true);
-            try
-            {
+            try {
                 return feature.place(w, w.getChunkSource().getGenerator(), w.random, p);
             }
-            finally
-            {
+            finally {
                 CarpetSettings.skipGenerationChecks.set(false);
             }
         };
     }
 
-    private static <FC extends FeatureConfiguration, F extends Feature<FC>> Thing simplePlop(F feature, FC config)
-    {
+    private static <FC extends FeatureConfiguration, F extends Feature<FC>> Thing simplePlop(F feature, FC config) {
         return simplePlop(new ConfiguredFeature<>(feature, config));
     }
 
-    private static Thing simpleTree(TreeConfiguration config)
-    {
+    private static Thing simpleTree(TreeConfiguration config) {
         //config.ignoreFluidCheck();
         return simplePlop(new ConfiguredFeature(Feature.TREE, config));
     }
 
-    private static Thing spawnCustomStructure(ConfiguredStructureFeature<?,?> structure)
-    {
+    private static Thing spawnCustomStructure(ConfiguredStructureFeature<?,?> structure) {
         return setupCustomStructure(structure,false);
     }
-    private static Thing setupCustomStructure(ConfiguredStructureFeature<?,?> structure, boolean wireOnly)
-        {
+    private static Thing setupCustomStructure(ConfiguredStructureFeature<?,?> structure, boolean wireOnly) {
         return (w, p) -> plopAnywhere(structure, w, p, w.getChunkSource().getGenerator(), wireOnly);
     }
 
-    public static Boolean spawn(String name, ServerLevel world, BlockPos pos)
-    {
+    public static Boolean spawn(String name, ServerLevel world, BlockPos pos) {
         if (featureMap.containsKey(name))
             return featureMap.get(name).plop(world, pos);
         return null;
     }
 
-    private static ConfiguredStructureFeature<?, ?> getDefaultFeature(StructureFeature<?> structure, ServerLevel world, BlockPos pos)
-    {
+    private static ConfiguredStructureFeature<?, ?> getDefaultFeature(StructureFeature<?> structure, ServerLevel world, BlockPos pos) {
         // would be nice to have a way to grab structures of this type for position
 
         Holder<Biome> existingBiome = world.getBiome(pos);
         ConfiguredStructureFeature<?, ?> result = null;
         for (var confstr :  world.registryAccess().registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY).entrySet().stream().
-                     filter(cS -> cS.getValue().feature == structure).map(Map.Entry::getValue).toList())
-        {
+                     filter(cS -> cS.getValue().feature == structure).map(Map.Entry::getValue).toList()) {
             result = confstr;
             if (confstr.biomes.contains(existingBiome)) return result;
         }
         return result;
     }
 
-    private static ConfiguredFeature<?, ?> getDefaultFeature(Feature<?> feature, ServerLevel world, BlockPos pos, boolean tryHard)
-    {
+    private static ConfiguredFeature<?, ?> getDefaultFeature(Feature<?> feature, ServerLevel world, BlockPos pos, boolean tryHard) {
         List<HolderSet<PlacedFeature>> configuredStepFeatures = world.getBiome(pos).value().getGenerationSettings().features();
         for (HolderSet<PlacedFeature> step: configuredStepFeatures)
-            for (Holder<PlacedFeature> provider: step)
-            {
+            for (Holder<PlacedFeature> provider: step) {
                 if (provider.value().feature().value().feature() == feature)
                     return provider.value().feature().value();
             }
@@ -197,8 +170,7 @@ public class FeatureGenerator
                 findFirst().map(Map.Entry::getValue).orElse(null);
     }
 
-    public static <T extends FeatureConfiguration> StructureStart shouldStructureStartAt(ServerLevel world, BlockPos pos, ConfiguredStructureFeature<T, ?> structure, boolean computeBox)
-    {
+    public static <T extends FeatureConfiguration> StructureStart shouldStructureStartAt(ServerLevel world, BlockPos pos, ConfiguredStructureFeature<T, ?> structure, boolean computeBox) {
         long seed = world.getSeed();
         ChunkGenerator generator = world.getChunkSource().getGenerator();
         ChunkGeneratorInterface cgi = (ChunkGeneratorInterface) generator;
@@ -214,8 +186,7 @@ public class FeatureGenerator
             if (structureBiomes.contains(genBiome) && structure.feature.canGenerate(
                     world.registryAccess(), generator, generator.getBiomeSource(), world.getStructureManager(),
                     seed, chunkPos, structure.config, world, structureBiomes::contains
-            ))
-            {
+            )) {
                 return StructureStart.INVALID_START;
             }
         }
@@ -296,16 +267,13 @@ public class FeatureGenerator
     }};
 
 
-    public static boolean plopAnywhere(ConfiguredStructureFeature<?, ?> structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly)
-    {
+    public static boolean plopAnywhere(ConfiguredStructureFeature<?, ?> structure, ServerLevel world, BlockPos pos, ChunkGenerator generator, boolean wireOnly) {
         if (world.isClientSide())
             return false;
         CarpetSettings.skipGenerationChecks.set(true);
-        try
-        {
+        try {
             StructureStart start = structure.generate(world.registryAccess(), generator, generator.getBiomeSource(), world.getStructureManager(), world.getSeed(), new ChunkPos(pos), 0, world, b -> true );
-            if (start == StructureStart.INVALID_START)
-            {
+            if (start == StructureStart.INVALID_START) {
                 return false;
             }
             Random rand = new Random(world.getRandom().nextInt());
@@ -317,8 +285,7 @@ public class FeatureGenerator
 
             BoundingBox box = start.getBoundingBox();
 
-            if (!wireOnly)
-            {
+            if (!wireOnly) {
                 Registry<ConfiguredStructureFeature<?, ?>> registry3 = world.registryAccess().registryOrThrow(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY);
                 world.setCurrentlyGenerating(() -> {
                     Objects.requireNonNull(structure);
@@ -330,25 +297,20 @@ public class FeatureGenerator
             int i = Math.max(box.getXSpan(),box.getZSpan())/16+1;
 
             //int i = getRadius();
-            for (int k1 = j - i; k1 <= j + i; ++k1)
-            {
-                for (int l1 = k - i; l1 <= k + i; ++l1)
-                {
+            for (int k1 = j - i; k1 <= j + i; ++k1) {
+                for (int l1 = k - i; l1 <= k + i; ++l1) {
                     if (k1 == j && l1 == k) continue;
-                    if (box.intersects(k1<<4, l1<<4, (k1<<4) + 15, (l1<<4) + 15))
-                    {
+                    if (box.intersects(k1<<4, l1<<4, (k1<<4) + 15, (l1<<4) + 15)) {
                         world.getChunk(k1, l1).addReferenceForFeature(structure, chId);
                     }
                 }
             }
         }
-        catch (Exception booboo)
-        {
+        catch (Exception booboo) {
             CarpetSettings.LOG.error("Unknown Exception while plopping structure: "+booboo, booboo);
             return false;
         }
-        finally
-        {
+        finally {
             CarpetSettings.skipGenerationChecks.set(false);
         }
         return true;

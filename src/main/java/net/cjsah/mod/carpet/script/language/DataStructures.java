@@ -27,60 +27,49 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DataStructures {
-    public static void apply(Expression expression)
-    {
-        expression.addFunction("l", lv ->
-        {
+    public static void apply(Expression expression) {
+        expression.addFunction("l", lv -> {
             if (lv.size() == 1 && lv.get(0) instanceof LazyListValue)
                 return ListValue.wrap(((LazyListValue) lv.get(0)).unroll());
             return new ListValue.ListConstructorValue(lv);
         });
 
-        expression.addFunction("join", (lv) ->
-        {
+        expression.addFunction("join", (lv) -> {
             if (lv.size() < 2)
                 throw new InternalExpressionException("'join' takes at least 2 arguments");
             String delimiter = lv.get(0).getString();
             List<Value> toJoin;
-            if (lv.size()==2 && lv.get(1) instanceof LazyListValue)
-            {
+            if (lv.size()==2 && lv.get(1) instanceof LazyListValue) {
                 toJoin = ((LazyListValue) lv.get(1)).unroll();
 
             }
-            else if (lv.size() == 2 && lv.get(1) instanceof ListValue)
-            {
+            else if (lv.size() == 2 && lv.get(1) instanceof ListValue) {
                 toJoin = new ArrayList<>(((ListValue)lv.get(1)).getItems());
             }
-            else
-            {
+            else {
                 toJoin = lv.subList(1,lv.size());
             }
             return new StringValue(toJoin.stream().map(Value::getString).collect(Collectors.joining(delimiter)));
         });
 
-        expression.addFunction("split", (lv) ->
-        {
+        expression.addFunction("split", (lv) -> {
             Value delimiter;
             Value hwat;
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 hwat = lv.get(0);
                 delimiter = null;
             }
-            else if (lv.size() == 2)
-            {
+            else if (lv.size() == 2) {
                 delimiter = lv.get(0);
                 hwat = lv.get(1);
             }
-            else
-            {
+            else {
                 throw new InternalExpressionException("'split' takes 1 or 2 arguments");
             }
             return hwat.split(delimiter);
         });
 
-        expression.addFunction("slice", (lv) ->
-        {
+        expression.addFunction("slice", (lv) -> {
 
             if (lv.size() != 2 && lv.size() != 3)
                 throw new InternalExpressionException("'slice' takes 2 or 3 arguments");
@@ -92,11 +81,9 @@ public class DataStructures {
             return hwat.slice(from, to);
         });
 
-        expression.addFunction("sort", (lv) ->
-        {
+        expression.addFunction("sort", (lv) -> {
             List<Value> toSort = lv;
-            if (lv.size()==1 && lv.get(0) instanceof ListValue)
-            {
+            if (lv.size()==1 && lv.get(0) instanceof ListValue) {
                 toSort = new ArrayList<>(((ListValue)lv.get(0)).getItems());
             }
             Collections.sort(toSort);
@@ -104,16 +91,14 @@ public class DataStructures {
         });
 
         // needs lazy cause sort function is reused
-        expression.addLazyFunction("sort_key", (c, t, lv) ->  //get working with iterators
-        {
+        expression.addLazyFunction("sort_key", (c, t, lv) -> { //get working with iterators
             if (lv.size() == 0)
                 throw new InternalExpressionException("First argument for 'sort_key' should be a List");
             Value v = lv.get(0).evalValue(c);
             if (!(v instanceof ListValue))
                 throw new InternalExpressionException("First argument for 'sort_key' should be a List");
             List<Value> toSort = new ArrayList<>(((ListValue) v).getItems());
-            if (lv.size()==1)
-            {
+            if (lv.size()==1) {
                 Collections.shuffle(toSort);
                 Value ret = ListValue.wrap(toSort);
                 return (_c, _t) -> ret;
@@ -134,8 +119,7 @@ public class DataStructures {
             return (cc, tt) -> ret;
         });
 
-        expression.addFunction("range", (lv) ->
-        {
+        expression.addFunction("range", (lv) -> {
             NumericValue from = Value.ZERO;
             NumericValue to;
             NumericValue step = Value.ONE;
@@ -143,12 +127,10 @@ public class DataStructures {
             if (argsize == 0 || argsize > 3)
                 throw new InternalExpressionException("'range' accepts from 1 to 3 arguments, not "+argsize);
             to = NumericValue.asNumber(lv.get(0));
-            if (lv.size() > 1)
-            {
+            if (lv.size() > 1) {
                 from = to;
                 to = NumericValue.asNumber(lv.get(1));
-                if (lv.size() > 2)
-                {
+                if (lv.size() > 2) {
                     step = NumericValue.asNumber(lv.get(2));
                 }
             }
@@ -157,8 +139,7 @@ public class DataStructures {
                     : LazyListValue.rangeDouble(from.getDouble(), to.getDouble(), step.getDouble());
         });
 
-        expression.addTypedContextFunction("m", -1, Context.MAPDEF, (c, t, lv) ->
-        {
+        expression.addTypedContextFunction("m", -1, Context.MAPDEF, (c, t, lv) -> {
             Value ret;
             if (lv.size() == 1 && lv.get(0) instanceof LazyListValue)
                 ret = new MapValue(((LazyListValue) lv.get(0)).unroll());
@@ -167,22 +148,19 @@ public class DataStructures {
             return ret;
         });
 
-        expression.addUnaryFunction("keys", v ->
-        {
+        expression.addUnaryFunction("keys", v -> {
             if (v instanceof MapValue)
                 return new ListValue(((MapValue) v).getMap().keySet());
             return Value.NULL;
         });
 
-        expression.addUnaryFunction("values", v ->
-        {
+        expression.addUnaryFunction("values", v -> {
             if (v instanceof MapValue)
                 return new ListValue(((MapValue) v).getMap().values());
             return Value.NULL;
         });
 
-        expression.addUnaryFunction("pairs", v ->
-        {
+        expression.addUnaryFunction("pairs", v -> {
             if (v instanceof MapValue)
                 return ListValue.wrap(((MapValue) v).getMap().entrySet().stream().map(
                         (p) -> ListValue.of(p.getKey(), p.getValue())
@@ -190,10 +168,8 @@ public class DataStructures {
             return Value.NULL;
         });
 
-        expression.addBinaryContextOperator(":", Operators.precedence.get("attribute~:"),true, true, false, (ctx, t, container, address) ->
-        {
-            if (container instanceof LContainerValue)
-            {
+        expression.addBinaryContextOperator(":", Operators.precedence.get("attribute~:"),true, true, false, (ctx, t, container, address) -> {
+            if (container instanceof LContainerValue) {
                 ContainerValueInterface outerContainer = ((LContainerValue) container).getContainer();
                 if (outerContainer == null) return LContainerValue.NULL_CONTAINER;
                 Value innerContainer = outerContainer.get(((LContainerValue) container).getAddress());
@@ -207,12 +183,10 @@ public class DataStructures {
         });
 
         // lazy cause conditional typing - questionable
-        expression.addLazyFunction("get", (c, t, lv) ->
-        {
+        expression.addLazyFunction("get", (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'get' requires parameters");
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 Value v = lv.get(0).evalValue(c, Context.LVALUE);
                 if (!(v  instanceof LContainerValue))
                     return LazyValue.NULL;
@@ -223,8 +197,7 @@ public class DataStructures {
                 return (cc, tt) -> ret;
             }
             Value container = lv.get(0).evalValue(c);
-            for (int i = 1; i < lv.size(); i++)
-            {
+            for (int i = 1; i < lv.size(); i++) {
                 if (!(container instanceof ContainerValueInterface)) return (cc, tt) -> Value.NULL;
                 container = ((ContainerValueInterface) container).get(lv.get(i).evalValue(c));
             }
@@ -235,12 +208,10 @@ public class DataStructures {
         });
 
         // same as `get`
-        expression.addLazyFunction("has", (c, t, lv) ->
-        {
+        expression.addLazyFunction("has", (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'has' requires parameters");
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 Value v = lv.get(0).evalValue(c, Context.LVALUE);
                 if (!(v  instanceof LContainerValue))
                     return LazyValue.NULL;
@@ -251,8 +222,7 @@ public class DataStructures {
                 return (cc, tt) -> ret;
             }
             Value container = lv.get(0).evalValue(c);
-            for (int i = 1; i < lv.size()-1; i++)
-            {
+            for (int i = 1; i < lv.size()-1; i++) {
                 if (!(container instanceof ContainerValueInterface)) return LazyValue.NULL;
                 container = ((ContainerValueInterface) container).get(lv.get(i).evalValue(c));
             }
@@ -263,18 +233,14 @@ public class DataStructures {
         });
 
         // same as `get`
-        expression.addLazyFunction("put", (c, t, lv) ->
-        {
-            if(lv.size()<2)
-            {
+        expression.addLazyFunction("put", (c, t, lv) -> {
+            if(lv.size()<2) {
                 throw new InternalExpressionException("'put' takes at least three arguments, a container, address, and values to insert at that index");
             }
             Value container = lv.get(0).evalValue(c, Context.LVALUE);
-            if (container instanceof LContainerValue)
-            {
+            if (container instanceof LContainerValue) {
                 ContainerValueInterface internalContainer = ((LContainerValue) container).getContainer();
-                if (internalContainer == null)
-                {
+                if (internalContainer == null) {
                     return LazyValue.NULL;
                 }
                 Value address = ((LContainerValue) container).getAddress();
@@ -285,12 +251,10 @@ public class DataStructures {
                 return (cc, tt) -> retVal;
 
             }
-            if(lv.size()<3)
-            {
+            if(lv.size()<3) {
                 throw new InternalExpressionException("'put' takes at least three arguments, a container, address, and values to insert at that index");
             }
-            if (!(container instanceof ContainerValueInterface))
-            {
+            if (!(container instanceof ContainerValueInterface)) {
                 return LazyValue.NULL;
             }
             Value where = lv.get(1).evalValue(c);
@@ -302,12 +266,10 @@ public class DataStructures {
         });
 
         // same as `get`
-        expression.addLazyFunction("delete", (c, t, lv) ->
-        {
+        expression.addLazyFunction("delete", (c, t, lv) -> {
             if (lv.size() == 0)
                 throw new InternalExpressionException("'delete' requires parameters");
-            if (lv.size() == 1)
-            {
+            if (lv.size() == 1) {
                 Value v = lv.get(0).evalValue(c, Context.LVALUE);
                 if (!(v  instanceof LContainerValue))
                     return LazyValue.NULL;
@@ -318,8 +280,7 @@ public class DataStructures {
                 return (cc, tt) -> ret;
             }
             Value container = lv.get(0).evalValue(c);
-            for (int i = 1; i < lv.size()-1; i++)
-            {
+            for (int i = 1; i < lv.size()-1; i++) {
                 if (!(container instanceof ContainerValueInterface)) return LazyValue.NULL;
                 container = ((ContainerValueInterface) container).get(lv.get(i).evalValue(c));
             }

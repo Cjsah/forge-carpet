@@ -13,10 +13,8 @@ import static net.cjsah.mod.carpet.commands.TickCommand.healthReport;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-public class ProfileCommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class ProfileCommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> literalargumentbuilder = literal("profile").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandProfile)).
                 executes( (c) -> healthReport(c.getSource(), 100)).

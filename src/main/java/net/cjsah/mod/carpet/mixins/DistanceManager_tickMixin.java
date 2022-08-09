@@ -9,13 +9,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DistanceManager.class)
-public class DistanceManager_tickMixin
-{
+public class DistanceManager_tickMixin {
     @Shadow private long ticketTickCounter;
 
     @Inject(method = "purgeStaleTickets", at = @At("HEAD"))
-    private void pauseTicketSystem(CallbackInfo ci)
-    {
+    private void pauseTicketSystem(CallbackInfo ci) {
         // pausing expiry of tickets
         // that will prevent also chunks from unloading, so require a deep frozen state
         if (!TickSpeed.process_entities && TickSpeed.deeplyFrozen()) ticketTickCounter--;

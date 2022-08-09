@@ -12,12 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.PLAYER_CONNECTS;
 
 @Mixin(PlayerList.class)
-public class PlayerList_coreMixin
-{
+public class PlayerList_coreMixin {
 
     @Inject(method = "placeNewPlayer", at = @At("RETURN"))
-    private void onPlayerConnected(Connection connection, ServerPlayer player, CallbackInfo ci)
-    {
+    private void onPlayerConnected(Connection connection, ServerPlayer player, CallbackInfo ci) {
         CarpetServer.onPlayerLoggedIn(player);
         PLAYER_CONNECTS.onPlayerEvent(player);
     }

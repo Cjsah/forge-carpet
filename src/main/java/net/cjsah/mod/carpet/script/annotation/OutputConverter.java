@@ -31,12 +31,10 @@ import java.util.function.Function;
  * @see #registerToValue(Class, Function)
  * @param <T> The type to convert from into a {@link LazyValue}
  */
-public final class OutputConverter<T>
-{
+public final class OutputConverter<T> {
     private static final Map<Class<?>, OutputConverter<?>> byResult = new HashMap<>();
     private static final OutputConverter<Value> VALUE = new OutputConverter<>(v -> (c, t) -> v);
-    static
-    {
+    static {
         register(LazyValue.class, Function.identity()); // Primitives are handled. Things are boxed in the process anyway, therefore
         register(Boolean.class, v -> (v ? LazyValue.TRUE : LazyValue.FALSE)); // would recommend boxed outputs, so you can use null
         register(Void.TYPE, v -> LazyValue.NULL);
@@ -57,8 +55,7 @@ public final class OutputConverter<T>
 
     private final Function<T, LazyValue> converter;
 
-    private OutputConverter(Function<T, LazyValue> converter)
-    {
+    private OutputConverter(Function<T, LazyValue> converter) {
         this.converter = converter;
     }
 
@@ -71,8 +68,7 @@ public final class OutputConverter<T>
      */
     @SuppressWarnings("unchecked") // OutputConverters are stored with their class, for sure since the map is private (&& class has same generic as
                                    // converter)
-    public static <T> OutputConverter<T> get(Class<T> returnType)
-    {
+    public static <T> OutputConverter<T> get(Class<T> returnType) {
         if (Value.class.isAssignableFrom(returnType))
             return (OutputConverter<T>) VALUE;
         returnType = (Class<T>) ClassUtils.primitiveToWrapper(returnType); // wrapper holds same generic as primitive: wrapped
@@ -88,8 +84,7 @@ public final class OutputConverter<T>
      * @param input The value to convert
      * @return The converted value
      */
-    public LazyValue convert(T input)
-    {
+    public LazyValue convert(T input) {
         return input == null ? LazyValue.NULL : converter.apply(input);
     }
 
@@ -101,8 +96,7 @@ public final class OutputConverter<T>
      * @param inputType The class of T
      * @param converter The function that converts the an instance of T to a {@link LazyValue}
      */
-    public static <T> void register(Class<T> inputType, Function<T, LazyValue> converter)
-    {
+    public static <T> void register(Class<T> inputType, Function<T, LazyValue> converter) {
         OutputConverter<T> instance = new OutputConverter<T>(converter);
         if (byResult.containsKey(inputType))
             throw new IllegalArgumentException(inputType + " already has a registered OutputConverter");
@@ -118,8 +112,7 @@ public final class OutputConverter<T>
      * @param inputType The class of T
      * @param converter The function that converts an instance of T to a {@link Value}
      */
-    public static <T> void registerToValue(Class<T> inputType, Function<T, Value> converter)
-    {
+    public static <T> void registerToValue(Class<T> inputType, Function<T, Value> converter) {
         OutputConverter<T> instance = new OutputConverter<>(converter.andThen(v -> (c, t) -> v));
         if (byResult.containsKey(inputType))
             throw new IllegalArgumentException(inputType + " already has a registered OutputConverter");

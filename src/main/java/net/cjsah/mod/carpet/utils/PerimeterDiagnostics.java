@@ -21,16 +21,13 @@ import net.minecraft.world.level.material.Material;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PerimeterDiagnostics
-{
-    public static class Result
-    {
+public class PerimeterDiagnostics {
+    public static class Result {
         public int liquid;
         public int ground;
         public int specific;
         public List<BlockPos> samples;
-        Result()
-        {
+        Result() {
             samples = new ArrayList<>();
         }
     }
@@ -38,16 +35,14 @@ public class PerimeterDiagnostics
     private ServerLevel worldServer;
     private MobCategory ctype;
     private Mob el;
-    private PerimeterDiagnostics(ServerLevel server, MobCategory ctype, Mob el)
-    {
+    private PerimeterDiagnostics(ServerLevel server, MobCategory ctype, Mob el) {
         this.sle = null;
         this.worldServer = server;
         this.ctype = ctype;
         this.el = el;
     }
 
-    public static Result countSpots(ServerLevel worldserver, BlockPos epos, Mob el)
-    {
+    public static Result countSpots(ServerLevel worldserver, BlockPos epos, Mob el) {
         BlockPos pos;
         //List<BlockPos> samples = new ArrayList<BlockPos>();
         //if (el != null) CarpetSettings.LOG.error(String.format("Got %s to check",el.toString()));
@@ -63,25 +58,20 @@ public class PerimeterDiagnostics
         boolean add_ground = false;
         MobCategory ctype = null;
 
-        if (el != null)
-        {
-            if (el instanceof WaterAnimal)
-            {
+        if (el != null) {
+            if (el instanceof WaterAnimal) {
                 add_water = true;
                 ctype = MobCategory.WATER_CREATURE;
             }
-            else if (el instanceof AgeableMob)
-            {
+            else if (el instanceof AgeableMob) {
                 add_ground = true;
                 ctype = MobCategory.CREATURE;
             }
-            else if (el instanceof Enemy)
-            {
+            else if (el instanceof Enemy) {
                 add_ground = true;
                 ctype = MobCategory.MONSTER;
             }
-            else if (el instanceof AmbientCreature)
-            {
+            else if (el instanceof AmbientCreature) {
                 ctype = MobCategory.AMBIENT;
             }
         }
@@ -90,23 +80,17 @@ public class PerimeterDiagnostics
         if (el != null) type = el.getType();
         int minY = worldserver.getMinBuildHeight();
         int maxY = worldserver.getMaxBuildHeight();
-        for (int x = -128; x <= 128; ++x)
-        {
-            for (int z = -128; z <= 128; ++z)
-            {
-                if (x*x + z*z > 128*128) // cut out a cyllinder first
-                {
+        for (int x = -128; x <= 128; ++x) {
+            for (int z = -128; z <= 128; ++z) {
+                if (x*x + z*z > 128*128) { // cut out a cyllinder first
                     continue;
                 }
-                for (int y= minY; y < maxY; ++y)
-                {
-                    if ((Math.abs(y-eY)>128) )
-                    {
+                for (int y= minY; y < maxY; ++y) {
+                    if ((Math.abs(y-eY)>128) ) {
                         continue;
                     }
                     int distsq = (x)*(x)+(eY-y)*(eY-y)+(z)*(z);
-                    if (distsq > 128*128 || distsq < 24*24)
-                    {
+                    if (distsq > 128*128 || distsq < 24*24) {
                         continue;
                     }
                     pos = new BlockPos(eX+x, y, eZ+z);
@@ -115,32 +99,24 @@ public class PerimeterDiagnostics
                     BlockState iblockstate_down = worldserver.getBlockState(pos.below());
                     BlockState iblockstate_up = worldserver.getBlockState(pos.above());
 
-                    if ( iblockstate.getMaterial() == Material.WATER && iblockstate_down.getMaterial() == Material.WATER && !iblockstate_up.isRedstoneConductor(worldserver, pos)) // isSimpleFUllBLock
-                    {
+                    if ( iblockstate.getMaterial() == Material.WATER && iblockstate_down.getMaterial() == Material.WATER && !iblockstate_up.isRedstoneConductor(worldserver, pos)) { // isSimpleFUllBLock
                         result.liquid++;
-                        if (add_water && diagnostic.check_entity_spawn(pos))
-                        {
+                        if (add_water && diagnostic.check_entity_spawn(pos)) {
                             result.specific++;
-                            if (result.samples.size() < 10)
-                            {
+                            if (result.samples.size() < 10) {
                                 result.samples.add(pos);
                             }
                         }
                     }
-                    else
-                    {
-                        if (iblockstate_down.isRedstoneConductor(worldserver, pos)) // isSimpleFUllBLock
-                        {
+                    else {
+                        if (iblockstate_down.isRedstoneConductor(worldserver, pos)) { // isSimpleFUllBLock
                             Block block = iblockstate_down.getBlock();
                             boolean flag = block != Blocks.BEDROCK && block != Blocks.BARRIER;
-                            if( flag && NaturalSpawner.isValidEmptySpawnBlock(worldserver, pos, iblockstate, iblockstate.getFluidState(), type) && NaturalSpawner.isValidEmptySpawnBlock(worldserver, pos.above(), iblockstate_up, iblockstate_up.getFluidState(), type))
-                            {
+                            if( flag && NaturalSpawner.isValidEmptySpawnBlock(worldserver, pos, iblockstate, iblockstate.getFluidState(), type) && NaturalSpawner.isValidEmptySpawnBlock(worldserver, pos.above(), iblockstate_up, iblockstate_up.getFluidState(), type)) {
                                 result.ground ++;
-                                if (add_ground && diagnostic.check_entity_spawn(pos))
-                                {
+                                if (add_ground && diagnostic.check_entity_spawn(pos)) {
                                     result.specific++;
-                                    if (result.samples.size() < 10)
-                                    {
+                                    if (result.samples.size() < 10) {
                                         result.samples.add(pos);
                                     }
                                 }
@@ -158,29 +134,23 @@ public class PerimeterDiagnostics
     }
 
 
-    private boolean check_entity_spawn(BlockPos pos)
-    {
-        if (sle == null || !worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap().contains(sle))
-        {
+    private boolean check_entity_spawn(BlockPos pos) {
+        if (sle == null || !worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap().contains(sle)) {
             sle = null;
-            for (MobSpawnSettings.SpawnerData sle: worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap())
-            {
-                if (el.getType() == sle.type)
-                {
+            for (MobSpawnSettings.SpawnerData sle: worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap()) {
+                if (el.getType() == sle.type) {
                     this.sle = sle;
                     break;
                 }
             }
-            if (sle == null || !worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap().contains(sle))
-            {
+            if (sle == null || !worldServer.getChunkSource().getGenerator().getMobsAt(worldServer.getBiome(pos), worldServer.structureFeatureManager(), ctype, pos).unwrap().contains(sle)) {
                 return false;
             }
         }
 
         SpawnPlacements.Type  spt = SpawnPlacements.getPlacementType(sle.type);
 
-        if (NaturalSpawner.isSpawnPositionOk(spt, worldServer, pos, sle.type))
-        {
+        if (NaturalSpawner.isSpawnPositionOk(spt, worldServer, pos, sle.type)) {
             el.moveTo((float)pos.getX() + 0.5F, (float)pos.getY(), (float)pos.getZ()+0.5F, 0.0F, 0.0F);
             return el.checkSpawnObstruction(worldServer) && el.checkSpawnRules(worldServer, MobSpawnType.NATURAL) &&
                     SpawnPlacements.checkSpawnRules(el.getType(),(ServerLevel)el.getCommandSenderWorld(), MobSpawnType.NATURAL, el.blockPosition(), el.getCommandSenderWorld().random) &&

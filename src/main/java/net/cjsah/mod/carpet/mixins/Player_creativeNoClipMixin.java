@@ -10,10 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Player.class)
-public abstract class Player_creativeNoClipMixin extends LivingEntity
-{
-    protected Player_creativeNoClipMixin(EntityType<? extends LivingEntity> type, Level world)
-    {
+public abstract class Player_creativeNoClipMixin extends LivingEntity {
+    protected Player_creativeNoClipMixin(EntityType<? extends LivingEntity> type, Level world) {
         super(type, world);
     }
 
@@ -21,8 +19,7 @@ public abstract class Player_creativeNoClipMixin extends LivingEntity
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isSpectator()Z")
     )
-    private boolean canClipTroughWorld(Player playerEntity)
-    {
+    private boolean canClipTroughWorld(Player playerEntity) {
         return playerEntity.isSpectator() || (CarpetSettings.creativeNoClip && playerEntity.isCreative() && playerEntity.getAbilities().flying);
 
     }
@@ -31,8 +28,7 @@ public abstract class Player_creativeNoClipMixin extends LivingEntity
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isSpectator()Z")
     )
-    private boolean collidesWithEntities(Player playerEntity)
-    {
+    private boolean collidesWithEntities(Player playerEntity) {
         return playerEntity.isSpectator() || (CarpetSettings.creativeNoClip && playerEntity.isCreative() && playerEntity.getAbilities().flying);
     }
 
@@ -40,8 +36,7 @@ public abstract class Player_creativeNoClipMixin extends LivingEntity
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isSpectator()Z")
     )
-    private boolean spectatorsDontPose(Player playerEntity)
-    {
+    private boolean spectatorsDontPose(Player playerEntity) {
         return playerEntity.isSpectator() || (CarpetSettings.creativeNoClip && playerEntity.isCreative() && playerEntity.getAbilities().flying);
     }
 }

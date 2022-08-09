@@ -28,18 +28,15 @@ import java.util.Optional;
  *
  * @param <R> The type of the internal {@link ValueConverter}, basically the generic type of the {@link Optional}
  */
-final class OptionalConverter<R> implements ValueConverter<Optional<R>>
-{
+final class OptionalConverter<R> implements ValueConverter<Optional<R>> {
     private final ValueConverter<R> typeConverter;
 
     @Override
-    public String getTypeName()
-    {
+    public String getTypeName() {
         return "optional " + typeConverter.getTypeName();
     }
 
-    private OptionalConverter(AnnotatedType type)
-    {
+    private OptionalConverter(AnnotatedType type) {
         typeConverter = ValueConverter.fromAnnotatedType(type);
     }
 
@@ -50,8 +47,7 @@ final class OptionalConverter<R> implements ValueConverter<Optional<R>>
      *           {@link #checkAndConvert(Iterator, Context, Context.Type)} and is only used as a fallback in types that don't support it.
      */
     @Override
-    public Optional<R> convert(Value value)
-    {
+    public Optional<R> convert(Value value) {
         if (value.isNull())
             return Optional.empty();
         R converted = typeConverter.convert(value);
@@ -61,8 +57,7 @@ final class OptionalConverter<R> implements ValueConverter<Optional<R>>
     }
 
     @Override
-    public Optional<R> checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT)
-    {
+    public Optional<R> checkAndConvert(Iterator<Value> valueIterator, Context context, Context.Type theLazyT) {
         if (!valueIterator.hasNext() || valueIterator.next().isNull())
             return Optional.empty();
         ((ListIterator<Value>) valueIterator).previous();
@@ -73,14 +68,12 @@ final class OptionalConverter<R> implements ValueConverter<Optional<R>>
     }
 
     @Override
-    public boolean consumesVariableArgs()
-    {
+    public boolean consumesVariableArgs() {
         return true;
     }
 
     @Override
-    public int valueConsumption()
-    {
+    public int valueConsumption() {
         return 0; // Optional parameters therefore require a minimum of 0
     }
 
@@ -98,8 +91,7 @@ final class OptionalConverter<R> implements ValueConverter<Optional<R>>
      * @param annotatedType The type to get generics information from
      * @return A new {@link OptionalConverter} for the data specified in the {@link AnnotatedType}
      */
-    static OptionalConverter<?> fromAnnotatedType(AnnotatedType annotatedType)
-    {
+    static OptionalConverter<?> fromAnnotatedType(AnnotatedType annotatedType) {
         AnnotatedParameterizedType paramType = (AnnotatedParameterizedType) annotatedType;
         AnnotatedType wrappedType = paramType.getAnnotatedActualTypeArguments()[0];
         return new OptionalConverter<>(wrappedType);

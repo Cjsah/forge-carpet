@@ -16,8 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractContainerMenu.class)
-public abstract class AbstractContainerMenu_ctrlQCraftingMixin
-{
+public abstract class AbstractContainerMenu_ctrlQCraftingMixin {
 
     @Shadow public abstract void clicked(int int_1, int int_2, ClickType slotActionType_1, Player playerEntity_1);
     
@@ -30,18 +29,13 @@ public abstract class AbstractContainerMenu_ctrlQCraftingMixin
     @Shadow public abstract ItemStack getCarried();
 
     @Inject( method = "doClick", at = @At(value = "HEAD"), cancellable = true)
-    private void onThrowClick(int slotId, int clickData, ClickType actionType, Player playerEntity, CallbackInfo ci)
-    {
-        if (actionType == ClickType.THROW && CarpetSettings.ctrlQCraftingFix && this.getCarried().isEmpty() && slotId >= 0)
-        {
+    private void onThrowClick(int slotId, int clickData, ClickType actionType, Player playerEntity, CallbackInfo ci) {
+        if (actionType == ClickType.THROW && CarpetSettings.ctrlQCraftingFix && this.getCarried().isEmpty() && slotId >= 0) {
             Slot slot_4 = slots.get(slotId);
-            if (/*slot_4 != null && */slot_4.hasItem() && slot_4.mayPickup(playerEntity))
-            {
-                if(slotId == 0 && clickData == 1)
-                {
+            if (/*slot_4 != null && */slot_4.hasItem() && slot_4.mayPickup(playerEntity)) {
+                if(slotId == 0 && clickData == 1) {
                     Item craftedItem = slot_4.getItem().getItem();
-                    while(slot_4.hasItem() && slot_4.getItem().getItem() == craftedItem)
-                    {
+                    while(slot_4.hasItem() && slot_4.getItem().getItem() == craftedItem) {
                         this.clicked(slotId, 0, ClickType.THROW, playerEntity);
                     }
                     this.broadcastChanges();

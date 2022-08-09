@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Mixin(targets = "net.minecraft.commands.arguments.blocks.BlockPredicateArgument$TagPredicate")
-public class TagPredicate_scarpetMixin implements BlockPredicateInterface
-{
+public class TagPredicate_scarpetMixin implements BlockPredicateInterface {
     @Shadow @Final private TagKey<Block> tag;
 
     @Shadow @Final private Map<String, String> vagueProperties;
@@ -24,20 +23,17 @@ public class TagPredicate_scarpetMixin implements BlockPredicateInterface
     @Shadow @Final /*@Nullable*/ private CompoundTag nbt;
 
     @Override
-    public BlockState getCMBlockState()
-    {
+    public BlockState getCMBlockState() {
         return null;
     }
 
     @Override
-    public TagKey<Block> getCMBlockTagKey()
-    {
+    public TagKey<Block> getCMBlockTagKey() {
         return tag;
     }
 
     @Override
-    public Map<Value, Value> getCMProperties()
-    {
+    public Map<Value, Value> getCMProperties() {
         return vagueProperties.entrySet().stream().collect(Collectors.toMap(
                 e -> new StringValue(e.getKey()),
                 e -> new StringValue(e.getValue())
@@ -45,8 +41,7 @@ public class TagPredicate_scarpetMixin implements BlockPredicateInterface
     }
 
     @Override
-    public CompoundTag getCMDataTag()
-    {
+    public CompoundTag getCMDataTag() {
         return nbt;
     }
 }

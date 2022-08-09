@@ -29,16 +29,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class HUDController
-{
+public class HUDController {
     private static List<Consumer<MinecraftServer>> HUDListeners = new ArrayList<>();
 
     /**
      * Adds listener to be called when HUD is updated for logging information
      * @param listener - a method to be called when new HUD inforation are collected
      */
-    public static void register(Consumer<MinecraftServer> listener)
-    {
+    public static void register(Consumer<MinecraftServer> listener) {
         HUDListeners.add(listener);
     }
 
@@ -53,21 +51,17 @@ public class HUDController
         scarpet_footers.clear();
     }
 
-    public static void addMessage(ServerPlayer player, BaseComponent hudMessage)
-    {
+    public static void addMessage(ServerPlayer player, BaseComponent hudMessage) {
         if (player == null) return;
-        if (!player_huds.containsKey(player))
-        {
+        if (!player_huds.containsKey(player)) {
             player_huds.put(player, new ArrayList<>());
         }
-        else
-        {
+        else {
             player_huds.get(player).add(new TextComponent("\n"));
         }
         player_huds.get(player).add(hudMessage);
     }
-    public static void clear_player(Player player)
-    {
+    public static void clear_player(Player player) {
         FriendlyByteBuf packetData = new FriendlyByteBuf(Unpooled.buffer()).writeComponent(new TextComponent("")).writeComponent(new TextComponent(""));
         ClientboundTabListPacket packet = new ClientboundTabListPacket(packetData);
         //((PlayerListHeaderS2CPacketMixin)packet).setHeader(new LiteralText(""));
@@ -76,8 +70,7 @@ public class HUDController
     }
 
 
-    public static void update_hud(MinecraftServer server, List<ServerPlayer> force)
-    {
+    public static void update_hud(MinecraftServer server, List<ServerPlayer> force) {
         if (((server.getTickCount() % 20 != 0) && force == null) || CarpetServer.minecraft_server == null)
             return;
 
@@ -94,8 +87,7 @@ public class HUDController
         if (LoggerRegistry.__mobcaps)
             LoggerRegistry.getLogger("mobcaps").log((option, player) -> {
                 ResourceKey<Level> dim = player.level.dimension(); //getDimType
-                switch (option)
-                {
+                switch (option) {
                     case "overworld":
                         dim = Level.OVERWORLD; // OW
                         break;
@@ -120,8 +112,7 @@ public class HUDController
 
         Set<ServerPlayer> targets = new HashSet<>(player_huds.keySet());
         if (force!= null) targets.addAll(force);
-        for (ServerPlayer player: targets)
-        {
+        for (ServerPlayer player: targets) {
             FriendlyByteBuf packetData = new FriendlyByteBuf(Unpooled.buffer()).
                     writeComponent(scarpet_headers.getOrDefault(player.getScoreboardName(), new TextComponent(""))).
                     writeComponent(Messenger.c(player_huds.getOrDefault(player, Collections.emptyList()).toArray(new Object[0])));
@@ -133,8 +124,7 @@ public class HUDController
             player.connection.send(packet);
         }
     }
-    private static BaseComponent [] send_tps_display(MinecraftServer server)
-    {
+    private static BaseComponent [] send_tps_display(MinecraftServer server) {
         double MSPT = Mth.average(server.tickTimes) * 1.0E-6D;
         double TPS = 1000.0D / Math.max((TickSpeed.time_warp_start_time != 0)?0.0:TickSpeed.mspt, MSPT);
         String color = Messenger.heatmap_color(MSPT,TickSpeed.mspt);
@@ -143,8 +133,7 @@ public class HUDController
                 "g  MSPT: ", String.format(Locale.US,"%s %.1f", color, MSPT))};
     }
 
-    private static BaseComponent [] send_counter_info(MinecraftServer server, String color)
-    {
+    private static BaseComponent [] send_counter_info(MinecraftServer server, String color) {
         List <BaseComponent> res = new ArrayList<>();
         Arrays.asList(color.split(",")).forEach(c ->{
             HopperCounter counter = HopperCounter.getCounter(c);
@@ -152,8 +141,7 @@ public class HUDController
         });
         return res.toArray(new BaseComponent[0]);
     }
-    private static BaseComponent [] packetCounter()
-    {
+    private static BaseComponent [] packetCounter() {
         BaseComponent [] ret =  new BaseComponent[]{
                 Messenger.c("w I/" + PacketCounter.totalIn + " O/" + PacketCounter.totalOut),
         };

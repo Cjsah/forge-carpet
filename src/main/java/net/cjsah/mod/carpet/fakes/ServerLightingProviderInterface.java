@@ -5,8 +5,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface ServerLightingProviderInterface
-{
+public interface ServerLightingProviderInterface {
     void invokeUpdateChunkStatus(ChunkPos pos);
 
     void removeLightData(ChunkAccess chunk);

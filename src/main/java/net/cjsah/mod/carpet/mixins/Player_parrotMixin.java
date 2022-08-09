@@ -18,8 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
-public abstract class Player_parrotMixin extends LivingEntity
-{
+public abstract class Player_parrotMixin extends LivingEntity {
     @Shadow @Final public Abilities abilities;
     
     @Shadow protected abstract void removeEntitiesOnShoulder();
@@ -34,60 +33,49 @@ public abstract class Player_parrotMixin extends LivingEntity
 
     @Shadow protected abstract void respawnEntityOnShoulder(CompoundTag entityNbt);
 
-    protected Player_parrotMixin(EntityType<? extends LivingEntity> entityType_1, Level world_1)
-    {
+    protected Player_parrotMixin(EntityType<? extends LivingEntity> entityType_1, Level world_1) {
         super(entityType_1, world_1);
     }
     
     @Redirect(method = "aiStep", at = @At(value = "INVOKE",
               target = "Lnet/minecraft/world/entity/player/Player;removeEntitiesOnShoulder()V"))
-    private void cancelDropShoulderEntities1(Player playerEntity)
-    {
+    private void cancelDropShoulderEntities1(Player playerEntity) {
     
     }
     
     @Inject(method = "aiStep", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 1,
             target = "Lnet/minecraft/world/entity/player/Player;playShoulderEntityAmbientSound(Lnet/minecraft/nbt/CompoundTag;)V"))
-    private void onTickMovement(CallbackInfo ci)
-    {
+    private void onTickMovement(CallbackInfo ci) {
         boolean parrots_will_drop = !CarpetSettings.persistentParrots || this.abilities.invulnerable;
-        if (!this.level.isClientSide && ((parrots_will_drop && this.fallDistance > 0.5F) || this.isInWater() || this.abilities.flying || isSleeping()))
-        {
+        if (!this.level.isClientSide && ((parrots_will_drop && this.fallDistance > 0.5F) || this.isInWater() || this.abilities.flying || isSleeping())) {
             this.removeEntitiesOnShoulder();
         }
     }
     
     @Redirect(method = "hurt", at = @At(value = "INVOKE",
               target = "Lnet/minecraft/world/entity/player/Player;removeEntitiesOnShoulder()V"))
-    private void cancelDropShoulderEntities2(Player playerEntity)
-    {
+    private void cancelDropShoulderEntities2(Player playerEntity) {
     
     }
     
-    protected void dismount_left()
-    {
+    protected void dismount_left() {
         respawnEntityOnShoulder(this.getShoulderEntityLeft());
         this.setShoulderEntityLeft(new CompoundTag());
     }
     
-    protected void dismount_right()
-    {
+    protected void dismount_right() {
         respawnEntityOnShoulder(this.getShoulderEntityRight());
         this.setShoulderEntityRight(new CompoundTag());
     }
     
     @Inject(method = "hurt", at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
             target = "Lnet/minecraft/world/entity/player/Player;removeEntitiesOnShoulder()V"))
-    private void onDamage(DamageSource damageSource_1, float float_1, CallbackInfoReturnable<Boolean> cir)
-    {
-        if (CarpetSettings.persistentParrots && !this.isShiftKeyDown())
-        {
-            if (this.random.nextFloat() < ((float_1)/15.0) )
-            {
+    private void onDamage(DamageSource damageSource_1, float float_1, CallbackInfoReturnable<Boolean> cir) {
+        if (CarpetSettings.persistentParrots && !this.isShiftKeyDown()) {
+            if (this.random.nextFloat() < ((float_1)/15.0) ) {
                 this.dismount_left();
             }
-            if (this.random.nextFloat() < ((float_1)/15.0) )
-            {
+            if (this.random.nextFloat() < ((float_1)/15.0) ) {
                 this.dismount_right();
             }
         }

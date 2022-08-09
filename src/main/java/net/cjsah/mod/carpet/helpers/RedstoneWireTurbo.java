@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RedstoneWireTurbo
-{
+public class RedstoneWireTurbo {
     /*
      * This is Helper class for RedstoneWireBlock.  It implements a minimially-invasive
      * bolt-on accelerator that performs a breadth-first search through redstone wire blocks
@@ -701,8 +700,7 @@ public class RedstoneWireTurbo
      * order to continue processing both the first and second wire in the order of distance from the initial
      * trigger.
      */
-    private BlockState scheduleReentrantNeighborChanged(final Level worldIn, final BlockPos pos, final BlockState newState, final BlockPos source)
-    {
+    private BlockState scheduleReentrantNeighborChanged(final Level worldIn, final BlockPos pos, final BlockState newState, final BlockPos source) {
         if (source != null) {
             // If the cause of the redstone wire update is known, we can use that to help determine
             // direction of information flow.
@@ -762,8 +760,7 @@ public class RedstoneWireTurbo
      * few other methods in RedstoneWireBlock.  This sets off the breadth-first 
      * walk through all redstone dust connected to the initial position triggered.
      */
-    public BlockState updateSurroundingRedstone(final Level worldIn, final BlockPos pos, final BlockState state, final BlockPos source)
-    {
+    public BlockState updateSurroundingRedstone(final Level worldIn, final BlockPos pos, final BlockState state, final BlockPos source) {
         // Check this block's neighbors and see if its power level needs to change
         // Use the calculateCurrentChanges method in RedstoneWireBlock since we have no
         // cached block states at this point.
@@ -832,8 +829,7 @@ public class RedstoneWireTurbo
      * the UpdateNode's neighbor array to find the redstone states of neighbors
      * that might power it.
      */
-    private BlockState calculateCurrentChanges(final Level worldIn, final UpdateNode upd)
-    {
+    private BlockState calculateCurrentChanges(final Level worldIn, final UpdateNode upd) {
         BlockState state = upd.currentState;
         final int i = state.getValue(RedStoneWireBlock.POWER);
         int j = 0;

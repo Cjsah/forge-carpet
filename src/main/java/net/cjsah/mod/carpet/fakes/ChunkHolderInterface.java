@@ -9,7 +9,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface ChunkHolderInterface
-{
+public interface ChunkHolderInterface {
     CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> setDefaultProtoChunk(ChunkPos chpos, BlockableEventLoop<Runnable> executor, ServerLevel world);
 }

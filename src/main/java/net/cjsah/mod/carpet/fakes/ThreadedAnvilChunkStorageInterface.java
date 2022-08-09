@@ -6,8 +6,7 @@ import net.minecraft.world.level.ChunkPos;
 import java.util.List;
 import java.util.Map;
 
-public interface ThreadedAnvilChunkStorageInterface
-{
+public interface ThreadedAnvilChunkStorageInterface {
     Map<String, Integer> regenerateChunkRegion(List<ChunkPos> requestedChunks);
 
     void relightChunk(ChunkPos pos);

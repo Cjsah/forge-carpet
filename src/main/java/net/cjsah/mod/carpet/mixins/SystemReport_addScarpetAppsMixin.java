@@ -12,8 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Mixin(SystemReport.class)
-public abstract class SystemReport_addScarpetAppsMixin
-{
+public abstract class SystemReport_addScarpetAppsMixin {
     @Shadow public abstract void setDetail(String name, Supplier<String> valueSupplier);
 
     @Inject(method = "<init>", at = @At("RETURN"))

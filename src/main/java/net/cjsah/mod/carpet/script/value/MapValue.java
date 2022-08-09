@@ -15,54 +15,44 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MapValue extends AbstractListValue implements ContainerValueInterface
-{
+public class MapValue extends AbstractListValue implements ContainerValueInterface {
     private final Map<Value, Value> map;
 
-    private MapValue()
-    {
+    private MapValue() {
         map = new HashMap<>();
     }
 
-    public MapValue(List<Value> kvPairs)
-    {
+    public MapValue(List<Value> kvPairs) {
         this();
-        for (Value v : kvPairs)
-        {
+        for (Value v : kvPairs) {
             put(v);
         }
     }
 
-    public MapValue(Set<Value> keySet)
-    {
+    public MapValue(Set<Value> keySet) {
         this();
-        for (Value v : keySet)
-        {
+        for (Value v : keySet) {
             map.put(v, Value.NULL);
         }
     }
 
     @Override
-    public Iterator<Value> iterator()
-    {
+    public Iterator<Value> iterator() {
         return new ArrayList<>(map.keySet()).iterator();
     }
 
     @Override
-    public List<Value> unpack()
-    {
+    public List<Value> unpack() {
         return map.entrySet().stream().map(e -> ListValue.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
     @Override
-    public String getString()
-    {
+    public String getString() {
         return "{"+map.entrySet().stream().map((p) -> p.getKey().getString()+": "+p.getValue().getString()).collect(Collectors.joining(", "))+"}";
     }
 
     @Override
-    public String getPrettyString()
-    {
+    public String getPrettyString() {
         if (map.size()<6)
             return "{"+map.entrySet().stream().map((p) -> p.getKey().getPrettyString()+": "+p.getValue().getPrettyString()).collect(Collectors.joining(", "))+"}";
         List<Value> keys = new ArrayList<>(map.keySet());
@@ -74,139 +64,114 @@ public class MapValue extends AbstractListValue implements ContainerValueInterfa
     }
 
     @Override
-    public boolean getBoolean()
-    {
+    public boolean getBoolean() {
         return !map.isEmpty();
     }
 
     @Override
-    public Value clone()
-    {
+    public Value clone() {
         return new MapValue(map);
     }
 
     @Override
-    public Value deepcopy()
-    {
+    public Value deepcopy() {
         Map<Value, Value> copyMap = new HashMap<>();
         map.forEach((key, value) -> copyMap.put(key.deepcopy(), value.deepcopy()));
         return new MapValue(copyMap);
     }
 
-    private MapValue(Map<Value,Value> other)
-    {
+    private MapValue(Map<Value,Value> other) {
         map = other;
     }
 
-    public static MapValue wrap(Map<Value,Value> other)
-    {
+    public static MapValue wrap(Map<Value,Value> other) {
         return new MapValue(other);
     }
 
     @Override
-    public Value add(Value o)
-    {
+    public Value add(Value o) {
         Map<Value, Value> newItems = new HashMap<>(map);
-        if (o instanceof MapValue)
-        {
+        if (o instanceof MapValue) {
             newItems.putAll(((MapValue) o).map);
         }
-        else if (o instanceof AbstractListValue)
-        {
+        else if (o instanceof AbstractListValue) {
             Iterator<Value> it = ((AbstractListValue) o).iterator();
-            while (it.hasNext())
-            {
+            while (it.hasNext()) {
                 newItems.put(it.next(), Value.NULL);
             }
         }
-        else
-        {
+        else {
             newItems.put(o, Value.NULL);
         }
         return MapValue.wrap(newItems);
     }
 
     @Override
-    public Value subtract(Value v)
-    {
+    public Value subtract(Value v) {
         throw new InternalExpressionException("Cannot subtract from a map value");
     }
 
     @Override
-    public Value multiply(Value v)
-    {
+    public Value multiply(Value v) {
         throw new InternalExpressionException("Cannot multiply with a map value");
     }
 
     @Override
-    public Value divide(Value v)
-    {
+    public Value divide(Value v) {
         throw new InternalExpressionException("Cannot divide a map value");
     }
 
-    public void put(Value v)
-    {
-        if (!(v instanceof ListValue))
-        {
+    public void put(Value v) {
+        if (!(v instanceof ListValue)) {
             map.put(v, Value.NULL);
             return;
         }
         ListValue pair = (ListValue)v;
-        if (pair.getItems().size() != 2)
-        {
+        if (pair.getItems().size() != 2) {
             throw new InternalExpressionException("Map constructor requires elements that have two items");
         }
         map.put(pair.getItems().get(0), pair.getItems().get(1));
     }
 
     @Override
-    public void append(Value v)
-    {
+    public void append(Value v) {
         map.put(v, Value.NULL);
     }
 
     @Override
-    public int compareTo(Value o)
-    {
+    public int compareTo(Value o) {
         throw new InternalExpressionException("Cannot compare with a map value");
     }
 
     @Override
-    public boolean equals(final Object o)
-    {
-        if (o instanceof MapValue)
-        {
+    public boolean equals(final Object o) {
+        if (o instanceof MapValue) {
             return map.equals(((MapValue) o).map);
         }
         return false;
     }
 
-    public Map<Value, Value> getMap()
-    {
+    public Map<Value, Value> getMap() {
         return map;
     }
 
-    public void extend(List<Value> subList)
-    {
+    public void extend(List<Value> subList) {
         for (Value v: subList) put(v);
     }
 
     @Override
-    public int length()
-    {
+    public int length() {
         return map.size();
     }
 
     @Override
-    public Value in(Value value1)
-    {
+    public Value in(Value value1) {
         if (map.containsKey(value1)) return value1;
         return Value.NULL;
     }
 
     @Override
-    public Value slice(long from, Long to)
-    {
+    public Value slice(long from, Long to) {
         throw new InternalExpressionException("Cannot slice a map value");
     }
 
@@ -216,55 +181,46 @@ public class MapValue extends AbstractListValue implements ContainerValueInterfa
     }
 
     @Override
-    public double readDoubleNumber()
-    {
+    public double readDoubleNumber() {
         return (double)map.size();
     }
 
     @Override
-    public Value get(Value v2)
-    {
+    public Value get(Value v2) {
         return map.getOrDefault(v2, Value.NULL);
     }
 
     @Override
-    public boolean has(Value where)
-    {
+    public boolean has(Value where) {
         return map.containsKey(where);
     }
 
     @Override
-    public boolean delete(Value where)
-    {
+    public boolean delete(Value where) {
         Value ret = map.remove(where);
         return ret != null;
     }
 
     @Override
-    public boolean put(Value key, Value value)
-    {
+    public boolean put(Value key, Value value) {
         Value ret = map.put(key, value);
         return ret != null;
     }
 
     @Override
-    public String getTypeString()
-    {
+    public String getTypeString() {
         return "map";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return map.hashCode();
     }
 
     @Override
-    public Tag toTag(boolean force)
-    {
+    public Tag toTag(boolean force) {
         CompoundTag tag = new CompoundTag() ;
-        map.forEach( (k, v) ->
-        {
+        map.forEach( (k, v) -> {
             if (!force && !(k instanceof StringValue)) throw new NBTSerializableValue.IncompatibleTypeException(k);
             tag.put(k.getString(), v.toTag(force));
         });
@@ -272,8 +228,7 @@ public class MapValue extends AbstractListValue implements ContainerValueInterfa
     }
 
     @Override
-    public JsonElement toJson()
-    {
+    public JsonElement toJson() {
         JsonObject jsonMap = new JsonObject();
         List<Value> keys = new ArrayList<>(map.keySet());
         Collections.sort(keys);

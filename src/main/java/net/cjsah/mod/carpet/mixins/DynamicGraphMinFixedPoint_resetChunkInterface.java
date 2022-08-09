@@ -5,8 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(DynamicGraphMinFixedPoint.class)
-public interface DynamicGraphMinFixedPoint_resetChunkInterface
-{
+public interface DynamicGraphMinFixedPoint_resetChunkInterface {
     @Invoker("checkEdge")
     void cmInvokeUpdateLevel(long sourceId, long id, int level, boolean decrease);
 

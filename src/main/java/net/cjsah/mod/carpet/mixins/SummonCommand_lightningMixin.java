@@ -15,17 +15,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(SummonCommand.class)
-public class SummonCommand_lightningMixin
-{
+public class SummonCommand_lightningMixin {
     @Redirect(method = "spawnEntity", at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;blockPosition()Lnet/minecraft/core/BlockPos;"
     ))
-    private static BlockPos addRiders(Entity entity)
-    {
+    private static BlockPos addRiders(Entity entity) {
         // [CM] SummonNaturalLightning - if statement around
-        if (CarpetSettings.summonNaturalLightning && entity instanceof LightningBolt && !entity.getCommandSenderWorld().isClientSide)
-        {
+        if (CarpetSettings.summonNaturalLightning && entity instanceof LightningBolt && !entity.getCommandSenderWorld().isClientSide) {
             ServerLevel world = (ServerLevel) entity.getCommandSenderWorld();
             BlockPos at = entity.blockPosition();
             DifficultyInstance localDifficulty_1 =  world.getCurrentDifficultyAt(at);

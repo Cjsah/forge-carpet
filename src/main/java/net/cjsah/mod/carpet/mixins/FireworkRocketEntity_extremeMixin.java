@@ -9,14 +9,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Random;
 
 @Mixin(FireworkRocketEntity.class)
-public class FireworkRocketEntity_extremeMixin
-{
+public class FireworkRocketEntity_extremeMixin {
     @Redirect(method = "<init>(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/item/ItemStack;)V", expect = 2, at = @At(
             value = "INVOKE",
             target = "Ljava/util/Random;nextGaussian()D"
     ))
-    private double nextGauBian(Random random)
-    {
+    private double nextGauBian(Random random) {
         return RandomTools.nextGauBian(random);
     }
 }

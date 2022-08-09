@@ -105,10 +105,8 @@ import java.util.stream.Collectors;
 
 import static net.minecraft.commands.Commands.argument;
 
-public abstract class CommandArgument
-{
-    public static CommandSyntaxException error(String text)
-    {
+public abstract class CommandArgument {
+    public static CommandSyntaxException error(String text) {
         return new SimpleCommandExceptionType(new TextComponent(text)).create();
     }
 
@@ -219,12 +217,10 @@ public abstract class CommandArgument
                     (c, p) -> {
                         ResourceOrTagLocationArgument.Result<Biome> result = ResourceOrTagLocationArgument.getBiome(c, p);
                         Either<ResourceKey<Biome>, TagKey<Biome>> res = result.unwrap();
-                        if (res.left().isPresent())
-                        {
+                        if (res.left().isPresent()) {
                             return ValueConversions.of(res.left().get());
                         }
-                        if (res.right().isPresent())
-                        {
+                        if (res.right().isPresent()) {
                             return ValueConversions.of(res.right().get());
                         }
                         return Value.NULL;
@@ -280,12 +276,10 @@ public abstract class CommandArgument
 
     public static final CommandArgument DEFAULT = baseTypes.get(0);
 
-    public static CommandArgument getTypeForArgument(String argument, CarpetScriptHost host)
-    {
+    public static CommandArgument getTypeForArgument(String argument, CarpetScriptHost host) {
         String[] components = argument.split("_");
         CommandArgument arg;
-        for (int i = 0; i < components.length; i++)
-        {
+        for (int i = 0; i < components.length; i++) {
             String candidate = String.join("_", Arrays.asList(components).subList(i, components.length));
             arg = host.appArgTypes.get(candidate);
             if (arg != null) return arg;
@@ -295,8 +289,7 @@ public abstract class CommandArgument
         return DEFAULT;
     }
 
-    public static RequiredArgumentBuilder<CommandSourceStack, ?> argumentNode(String param, CarpetScriptHost host) throws CommandSyntaxException
-    {
+    public static RequiredArgumentBuilder<CommandSourceStack, ?> argumentNode(String param, CarpetScriptHost host) throws CommandSyntaxException {
         CommandArgument arg = getTypeForArgument(param, host);
         if (arg.suggestionProvider != null) return argument(param, arg.getArgumentType()).suggests(arg.suggestionProvider);
         if (!arg.needsMatching) return argument(param, arg.getArgumentType());
@@ -318,8 +311,7 @@ public abstract class CommandArgument
     protected CommandArgument(
             String suffix,
             Collection<String> examples,
-            boolean suggestFromExamples)
-    {
+            boolean suggestFromExamples) {
         this.suffix = suffix;
         this.examples = examples;
         this.needsMatching = suggestFromExamples;
@@ -328,20 +320,17 @@ public abstract class CommandArgument
     protected abstract ArgumentType<?> getArgumentType() throws CommandSyntaxException;
 
 
-    public static Value getValue(CommandContext<CommandSourceStack> context, String param, CarpetScriptHost host) throws CommandSyntaxException
-    {
+    public static Value getValue(CommandContext<CommandSourceStack> context, String param, CarpetScriptHost host) throws CommandSyntaxException {
         return getTypeForArgument(param, host).getValueFromContext(context, param);
     }
 
     protected abstract Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException;
 
-    public String getTypeSuffix()
-    {
+    public String getTypeSuffix() {
         return suffix;
     }
 
-    public static CommandArgument buildFromConfig(String suffix, Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-    {
+    public static CommandArgument buildFromConfig(String suffix, Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
         if (!config.containsKey("type"))
             throw CommandArgument.error("Custom type "+suffix+" should at least specify the type");
         String baseType = config.get("type").getString();
@@ -353,15 +342,12 @@ public abstract class CommandArgument
         return variant;
     }
 
-    protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-    {
+    protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
         caseSensitive = config.getOrDefault("case_sensitive", Value.TRUE).getBoolean();
-        if (config.containsKey("suggester"))
-        {
+        if (config.containsKey("suggester")) {
             customSuggester = FunctionArgument.fromCommandSpec(host, config.get("suggester"));
         }
-        if (config.containsKey("suggest"))
-        {
+        if (config.containsKey("suggest")) {
             if (config.containsKey("suggester")) throw error("Attempted to provide 'suggest' list while 'suggester' is present"+" for custom type "+suffix);
             Value suggestionValue = config.get("suggest");
             if (!(suggestionValue instanceof ListValue)) throw error("Argument suggestions needs to be a list"+" for custom type "+suffix);
@@ -376,30 +362,24 @@ public abstract class CommandArgument
             CommandContext<CommandSourceStack> context,
             SuggestionsBuilder suggestionsBuilder,
             CarpetScriptHost host
-    ) throws CommandSyntaxException
-    {
+    ) throws CommandSyntaxException {
         String prefix = suggestionsBuilder.getRemaining();
         if (!caseSensitive) prefix = prefix.toLowerCase(Locale.ROOT);
         suggestFor(context, prefix, host).forEach(suggestionsBuilder::suggest);
         return suggestionsBuilder.buildFuture();
     }
 
-    protected List<String> suggestFor(CommandContext<CommandSourceStack> context, String prefix, CarpetScriptHost host) throws CommandSyntaxException
-    {
+    protected List<String> suggestFor(CommandContext<CommandSourceStack> context, String prefix, CarpetScriptHost host) throws CommandSyntaxException {
         return getOptions(context, host).stream().filter(s -> optionMatchesPrefix(prefix, s)).collect(Collectors.toList());
     }
 
-    protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException
-    {
-        if (customSuggester != null)
-        {
+    protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException {
+        if (customSuggester != null) {
             CarpetProfiler.ProfilerToken currentSection = CarpetProfiler.start_section(null, "Scarpet command", CarpetProfiler.TYPE.GENERAL);
             Map<Value, Value> params = new HashMap<>();
-            for(ParsedCommandNode<CommandSourceStack> pnode : context.getNodes())
-            {
+            for(ParsedCommandNode<CommandSourceStack> pnode : context.getNodes()) {
                 CommandNode<CommandSourceStack> node = pnode.getNode();
-                if (node instanceof ArgumentCommandNode)
-                {
+                if (node instanceof ArgumentCommandNode) {
                     params.put(StringValue.of(node.getName()), CommandArgument.getValue(context, node.getName(), host));
                 }
             }
@@ -419,15 +399,12 @@ public abstract class CommandArgument
         return Collections.singletonList("... "+getTypeSuffix());
     }
 
-    protected boolean optionMatchesPrefix(String prefix, String option)
-    {
-        if (!caseSensitive)
-        {
+    protected boolean optionMatchesPrefix(String prefix, String option) {
+        if (!caseSensitive) {
             //prefix = prefix.toLowerCase(Locale.ROOT);
             option = option.toLowerCase(Locale.ROOT);
         }
-        for(int i = 0; !option.startsWith(prefix, i); ++i)
-        {
+        for(int i = 0; !option.startsWith(prefix, i); ++i) {
             i = option.indexOf('_', i);
             if (i < 0) return false;
         }
@@ -436,38 +413,31 @@ public abstract class CommandArgument
 
     protected abstract Supplier<CommandArgument> factory();
 
-    private static class StringArgument extends CommandArgument
-    {
+    private static class StringArgument extends CommandArgument {
         Set<String> validOptions = Collections.emptySet();
-        private StringArgument()
-        {
+        private StringArgument() {
             super("string", StringArgumentType.StringType.QUOTABLE_PHRASE.getExamples(), true);
         }
 
         @Override
-        public ArgumentType<?> getArgumentType()
-        {
+        public ArgumentType<?> getArgumentType() {
             return StringArgumentType.string();
         }
 
         @Override
-        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             String choseValue = StringArgumentType.getString(context, param);
             if (!caseSensitive) choseValue = choseValue.toLowerCase(Locale.ROOT);
-            if (!validOptions.isEmpty() && !validOptions.contains(choseValue))
-            {
+            if (!validOptions.isEmpty() && !validOptions.contains(choseValue)) {
                 throw new SimpleCommandExceptionType(new TextComponent("Incorrect value for "+param+": "+choseValue+" for custom type "+suffix)).create();
             }
             return StringValue.of(choseValue);
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
-            if (config.containsKey("options"))
-            {
+            if (config.containsKey("options")) {
                 Value optionsValue = config.get("options");
                 if (!(optionsValue instanceof ListValue)) throw error("Custom string type requires options passed as a list"+" for custom type "+suffix);
                 validOptions = ((ListValue) optionsValue).getItems().stream()
@@ -477,8 +447,7 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException {
             return validOptions.isEmpty()?super.getOptions(context, host):validOptions;
         }
 
@@ -486,8 +455,7 @@ public abstract class CommandArgument
         protected Supplier<CommandArgument> factory() { return StringArgument::new; }
     }
 
-    private static class WordArgument extends StringArgument
-    {
+    private static class WordArgument extends StringArgument {
         private WordArgument() { super(); suffix = "term"; examples = StringArgumentType.StringType.SINGLE_WORD.getExamples(); }
         @Override
         public ArgumentType<?> getArgumentType() { return StringArgumentType.word(); }
@@ -495,8 +463,7 @@ public abstract class CommandArgument
         protected Supplier<CommandArgument> factory() { return WordArgument::new; }
     }
 
-    private static class GreedyStringArgument extends StringArgument
-    {
+    private static class GreedyStringArgument extends StringArgument {
         private GreedyStringArgument() { super();suffix = "text"; examples = StringArgumentType.StringType.GREEDY_PHRASE.getExamples(); }
         @Override
         public ArgumentType<?> getArgumentType() { return StringArgumentType.greedyString(); }
@@ -504,24 +471,20 @@ public abstract class CommandArgument
         protected Supplier<CommandArgument> factory() { return GreedyStringArgument::new; }
     }
 
-    private static class BlockPosArgument extends CommandArgument
-    {
+    private static class BlockPosArgument extends CommandArgument {
         private boolean mustBeLoaded = false;
 
-        private BlockPosArgument()
-        {
+        private BlockPosArgument() {
             super("pos", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos().getExamples(), false);
         }
 
         @Override
-        public ArgumentType<?> getArgumentType()
-        {
+        public ArgumentType<?> getArgumentType() {
             return net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos();
         }
 
         @Override
-        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             BlockPos pos = mustBeLoaded
                     ? net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(context, param)
                     : net.minecraft.commands.arguments.coordinates.BlockPosArgument.getSpawnablePos(context, param);
@@ -529,81 +492,67 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             mustBeLoaded = config.getOrDefault("loaded", Value.FALSE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return BlockPosArgument::new;
         }
     }
 
-    private static class LocationArgument extends CommandArgument
-    {
+    private static class LocationArgument extends CommandArgument {
         boolean blockCentered;
 
-        private LocationArgument()
-        {
+        private LocationArgument() {
             super("location", Vec3Argument.vec3().getExamples(), false);
             blockCentered = true;
         }
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
+        protected ArgumentType<?> getArgumentType() {
             return Vec3Argument.vec3(blockCentered);
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             return ValueConversions.of(Vec3Argument.getVec3(context, param));
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             blockCentered = config.getOrDefault("block_centered", Value.TRUE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return LocationArgument::new;
         }
     }
 
-    private static class EntityArgument extends CommandArgument
-    {
+    private static class EntityArgument extends CommandArgument {
         boolean onlyFans;
         boolean single;
 
-        private EntityArgument()
-        {
+        private EntityArgument() {
             super("entities", net.minecraft.commands.arguments.EntityArgument.entities().getExamples(), false);
             onlyFans = false;
             single = false;
         }
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
-            if (onlyFans)
-            {
+        protected ArgumentType<?> getArgumentType() {
+            if (onlyFans) {
                 return single?net.minecraft.commands.arguments.EntityArgument.player():net.minecraft.commands.arguments.EntityArgument.players();
             }
-            else
-            {
+            else {
                 return single?net.minecraft.commands.arguments.EntityArgument.entity():net.minecraft.commands.arguments.EntityArgument.entities();
             }
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             Collection<? extends Entity> founds = net.minecraft.commands.arguments.EntityArgument.getOptionalEntities(context, param);
             if (!single) return ListValue.wrap(founds.stream().map(EntityValue::new).collect(Collectors.toList()));
             if (founds.size() == 0) return Value.NULL;
@@ -612,38 +561,32 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             onlyFans = config.getOrDefault("players", Value.FALSE).getBoolean();
             single = config.getOrDefault("single", Value.FALSE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return EntityArgument::new;
         }
     }
 
-    private static class PlayerProfileArgument extends CommandArgument
-    {
+    private static class PlayerProfileArgument extends CommandArgument {
         boolean single;
 
-        private PlayerProfileArgument()
-        {
+        private PlayerProfileArgument() {
             super("players", GameProfileArgument.gameProfile().getExamples(), false);
             single = false;
         }
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
+        protected ArgumentType<?> getArgumentType() {
             return GameProfileArgument.gameProfile();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             Collection<GameProfile> profiles = GameProfileArgument.getGameProfiles(context, param);
             if (!single) return ListValue.wrap(profiles.stream().map(p -> StringValue.of(p.getName())).collect(Collectors.toList()));
             int size = profiles.size();
@@ -653,38 +596,32 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             single = config.getOrDefault("single", Value.FALSE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return PlayerProfileArgument::new;
         }
     }
 
-    private static class ScoreholderArgument extends CommandArgument
-    {
+    private static class ScoreholderArgument extends CommandArgument {
         boolean single;
 
-        private ScoreholderArgument()
-        {
+        private ScoreholderArgument() {
             super("scoreholder", ScoreHolderArgument.scoreHolder().getExamples(), false);
             single = false;
             suggestionProvider = ScoreHolderArgument.SUGGEST_SCORE_HOLDERS;
         }
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
+        protected ArgumentType<?> getArgumentType() {
             return single?ScoreHolderArgument.scoreHolder():ScoreHolderArgument.scoreHolders();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             Collection<String> holders = ScoreHolderArgument.getNames(context, param);
             if (!single) return ListValue.wrap(holders.stream().map(StringValue::of).collect(Collectors.toList()));
             int size = holders.size();
@@ -694,36 +631,30 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             single = config.getOrDefault("single", Value.FALSE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return PlayerProfileArgument::new;
         }
     }
 
-    private static class TagArgument extends CommandArgument
-    {
+    private static class TagArgument extends CommandArgument {
         boolean mapRequired;
-        private TagArgument()
-        {
+        private TagArgument() {
             super("tag", CompoundTagArgument.compoundTag().getExamples(), false);
             mapRequired = true;
         }
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
+        protected ArgumentType<?> getArgumentType() {
             return mapRequired?CompoundTagArgument.compoundTag(): NbtTagArgument.nbtTag();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             if (mapRequired)
                 return new NBTSerializableValue(CompoundTagArgument.getCompoundTag(context, param));
             else
@@ -731,57 +662,47 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
             mapRequired = !config.getOrDefault("allow_element", Value.FALSE).getBoolean();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return TagArgument::new;
         }
     }
 
-    private static class CustomIdentifierArgument extends CommandArgument
-    {
+    private static class CustomIdentifierArgument extends CommandArgument {
         Set<ResourceLocation> validOptions = Collections.emptySet();
 
-        protected CustomIdentifierArgument()
-        {
+        protected CustomIdentifierArgument() {
             super("identifier", Collections.emptyList(), true);
         }
 
         @Override
-        protected ArgumentType<?> getArgumentType()
-        {
+        protected ArgumentType<?> getArgumentType() {
             return ResourceLocationArgument.id();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             ResourceLocation choseValue = ResourceLocationArgument.getId(context, param);
-            if (!validOptions.isEmpty() && !validOptions.contains(choseValue))
-            {
+            if (!validOptions.isEmpty() && !validOptions.contains(choseValue)) {
                 throw new SimpleCommandExceptionType(new TextComponent("Incorrect value for "+param+": "+choseValue+" for custom type "+suffix)).create();
             }
             return ValueConversions.of(choseValue);
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return CustomIdentifierArgument::new;
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
-            if (config.containsKey("options"))
-            {
+            if (config.containsKey("options")) {
                 Value optionsValue = config.get("options");
                 if (!(optionsValue instanceof ListValue)) throw error("Custom sting type requires options passed as a list"+" for custom type "+suffix);
                 validOptions = ((ListValue) optionsValue).getItems().stream().map(v -> new ResourceLocation(v.getString())).collect(Collectors.toSet());
@@ -789,22 +710,17 @@ public abstract class CommandArgument
         }
     }
 
-    private static class FloatArgument extends CommandArgument
-    {
+    private static class FloatArgument extends CommandArgument {
         private Double min = null;
         private Double max = null;
-        private FloatArgument()
-        {
+        private FloatArgument() {
             super("float", DoubleArgumentType.doubleArg().getExamples(), true);
         }
 
         @Override
-        public ArgumentType<?> getArgumentType()
-        {
-            if (min != null)
-            {
-                if (max != null)
-                {
+        public ArgumentType<?> getArgumentType() {
+            if (min != null) {
+                if (max != null) {
                     return DoubleArgumentType.doubleArg(min, max);
                 }
                 return DoubleArgumentType.doubleArg(min);
@@ -813,49 +729,39 @@ public abstract class CommandArgument
         }
 
         @Override
-        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             return new NumericValue(DoubleArgumentType.getDouble(context, param));
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
-            if (config.containsKey("min"))
-            {
+            if (config.containsKey("min")) {
                 min = NumericValue.asNumber(config.get("min"), "min").getDouble();
             }
-            if (config.containsKey("max"))
-            {
+            if (config.containsKey("max")) {
                 max = NumericValue.asNumber(config.get("max"), "max").getDouble();
             }
             if (max != null && min == null) throw error("Double types cannot be only upper-bounded"+" for custom type "+suffix);
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return FloatArgument::new;
         }
     }
 
-    private static class IntArgument extends CommandArgument
-    {
+    private static class IntArgument extends CommandArgument {
         private Long min = null;
         private Long max = null;
-        private IntArgument()
-        {
+        private IntArgument() {
             super("int", LongArgumentType.longArg().getExamples(), true);
         }
 
         @Override
-        public ArgumentType<?> getArgumentType()
-        {
-            if (min != null)
-            {
-                if (max != null)
-                {
+        public ArgumentType<?> getArgumentType() {
+            if (min != null) {
+                if (max != null) {
                     return LongArgumentType.longArg(min, max);
                 }
                 return LongArgumentType.longArg(min);
@@ -864,34 +770,28 @@ public abstract class CommandArgument
         }
 
         @Override
-        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        public Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             return new NumericValue(LongArgumentType.getLong(context, param));
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
-            if (config.containsKey("min"))
-            {
+            if (config.containsKey("min")) {
                 min = NumericValue.asNumber(config.get("min"), "min").getLong();
             }
-            if (config.containsKey("max"))
-            {
+            if (config.containsKey("max")) {
                 max = NumericValue.asNumber(config.get("max"), "max").getLong();
             }
             if (max != null && min == null) throw error("Double types cannot be only upper-bounded"+" for custom type "+suffix);
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return IntArgument::new;
         }
     }
-    private static class SlotArgument extends CommandArgument
-    {
+    private static class SlotArgument extends CommandArgument {
         private static record ContainerIds(IntSet numericalIds, Set<String> commandIds) {}
         private String restrict;
         private static final Map<String, ContainerIds> RESTRICTED_CONTAINERS = new HashMap<String, ContainerIds>(){{
@@ -902,14 +802,12 @@ public abstract class CommandArgument
             for(i = 0; i < 41; i++) get("player").commandIds().add("container." + i);
             for(i = 0; i < 9; i++) get("player").commandIds().add("hotbar." + i);
             for(i = 0; i < 27; i++) get("player").commandIds().add("inventory." + i);
-            for (String place : Arrays.asList("weapon", "weapon.mainhand", "weapon.offhand"))
-            {
+            for (String place : Arrays.asList("weapon", "weapon.mainhand", "weapon.offhand")) {
                 get("player").commandIds().add(place);
                 get("equipment").commandIds().add(place);
                 get("weapon").commandIds().add(place);
             }
-            for (String place : Arrays.asList("armor.feet","armor.legs", "armor.chest","armor.head"))
-            {
+            for (String place : Arrays.asList("armor.feet","armor.legs", "armor.chest","armor.head")) {
                 get("player").commandIds().add(place);
                 get("equipment").commandIds().add(place);
                 get("armor").commandIds().add(place);
@@ -938,34 +836,28 @@ public abstract class CommandArgument
             get("horse").commandIds().add("horse.armor");
         }};
 
-        protected SlotArgument()
-        {
+        protected SlotArgument() {
             super("slot", net.minecraft.commands.arguments.SlotArgument.slot().getExamples(), false);
         }
 
         @Override
-        protected ArgumentType<?> getArgumentType() throws CommandSyntaxException
-        {
+        protected ArgumentType<?> getArgumentType() throws CommandSyntaxException {
             return net.minecraft.commands.arguments.SlotArgument.slot();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             int slot = net.minecraft.commands.arguments.SlotArgument.getSlot(context, param);
-            if (restrict != null && !RESTRICTED_CONTAINERS.get(restrict).numericalIds().contains(slot))
-            {
+            if (restrict != null && !RESTRICTED_CONTAINERS.get(restrict).numericalIds().contains(slot)) {
                 throw new SimpleCommandExceptionType(new TextComponent("Incorrect slot restricted to "+restrict+" for custom type "+suffix)).create();
             }
             return ValueConversions.ofVanillaSlotResult(slot);
         }
 
         @Override
-        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected void configure(Map<String, Value> config, CarpetScriptHost host) throws CommandSyntaxException {
             super.configure(config, host);
-            if (config.containsKey("restrict"))
-            {
+            if (config.containsKey("restrict")) {
                 restrict = config.get("restrict").getString().toLowerCase(Locale.ROOT);
                 needsMatching = true;
                 if (!RESTRICTED_CONTAINERS.containsKey(restrict))
@@ -974,32 +866,27 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException
-        {
+        protected Collection<String> getOptions(CommandContext<CommandSourceStack> context, CarpetScriptHost host) throws CommandSyntaxException {
             return restrict==null?super.getOptions(context, host):RESTRICTED_CONTAINERS.get(restrict).commandIds();
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return SlotArgument::new;
         }
     }
 
     @FunctionalInterface
-    private interface ValueExtractor
-    {
+    private interface ValueExtractor {
         Value apply(CommandContext<CommandSourceStack> ctx, String param) throws CommandSyntaxException;
     }
 
     @FunctionalInterface
-    private interface ArgumentProvider
-    {
+    private interface ArgumentProvider {
         ArgumentType<?> get() throws CommandSyntaxException;
     }
 
-    public static class VanillaUnconfigurableArgument extends  CommandArgument
-    {
+    public static class VanillaUnconfigurableArgument extends  CommandArgument {
         private final ArgumentProvider argumentTypeSupplier;
         private final ValueExtractor valueExtractor;
         private final boolean providesExamples;
@@ -1008,15 +895,12 @@ public abstract class CommandArgument
                 ArgumentProvider argumentTypeSupplier,
                 ValueExtractor  valueExtractor,
                 boolean suggestFromExamples
-                )
-        {
+                ) {
             super(suffix, null, suggestFromExamples);
-            try
-            {
+            try {
                 this.examples = argumentTypeSupplier.get().getExamples();
             }
-            catch (CommandSyntaxException e)
-            {
+            catch (CommandSyntaxException e) {
                 this.examples = Collections.emptyList();
             }
             this.providesExamples = suggestFromExamples;
@@ -1028,8 +912,7 @@ public abstract class CommandArgument
                 ArgumentProvider argumentTypeSupplier,
                 ValueExtractor  valueExtractor,
                 SuggestionProvider<CommandSourceStack> suggester
-        )
-        {
+        ) {
             super(suffix, Collections.emptyList(), false);
             this.suggestionProvider = suggester;
             this.providesExamples = false;
@@ -1038,20 +921,17 @@ public abstract class CommandArgument
         }
 
         @Override
-        protected ArgumentType<?> getArgumentType() throws CommandSyntaxException
-        {
+        protected ArgumentType<?> getArgumentType() throws CommandSyntaxException {
             return argumentTypeSupplier.get();
         }
 
         @Override
-        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException
-        {
+        protected Value getValueFromContext(CommandContext<CommandSourceStack> context, String param) throws CommandSyntaxException {
             return valueExtractor.apply(context, param);
         }
 
         @Override
-        protected Supplier<CommandArgument> factory()
-        {
+        protected Supplier<CommandArgument> factory() {
             return () -> new VanillaUnconfigurableArgument(getTypeSuffix(), argumentTypeSupplier, valueExtractor, providesExamples);
         }
     }

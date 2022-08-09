@@ -39,8 +39,7 @@ import java.util.stream.Collectors;
 
 public class SystemInfo {
     private static final Map<String, Function<CarpetContext,Value>> options = new HashMap<String, Function<CarpetContext,Value>>(){{
-        put("app_name", c ->
-        {
+        put("app_name", c -> {
             String name = c.host.getName();
             return name == null?Value.NULL:new StringValue(name);
         });
@@ -106,24 +105,21 @@ public class SystemInfo {
         put("server_whitelisted", c -> BooleanValue.of(c.s.getServer().isEnforceWhitelist()));
         put("server_whitelist", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getWhiteListNames())
-            {
+            for (String s: c.s.getServer().getPlayerList().getWhiteListNames()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_players", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getBans().getUserList())
-            {
+            for (String s: c.s.getServer().getPlayerList().getBans().getUserList()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
         });
         put("server_banned_ips", c -> {
             MapValue whitelist = new MapValue(Collections.emptyList());
-            for (String s: c.s.getServer().getPlayerList().getIpBans().getUserList())
-            {
+            for (String s: c.s.getServer().getPlayerList().getIpBans().getUserList()) {
                 whitelist.append(StringValue.of(s));
             }
             return whitelist;
@@ -142,8 +138,7 @@ public class SystemInfo {
             int currentReportedTick = c.s.getServer().getTickCount()-1;
             List<Value> ticks = new ArrayList<>(100);
             final long[] tickArray = c.s.getServer().tickTimes;
-            for (int i=currentReportedTick+100; i > currentReportedTick; i--)
-            {
+            for (int i=currentReportedTick+100; i > currentReportedTick; i--) {
                 ticks.add(new NumericValue(((double)tickArray[i % 100])/1000000.0));
             }
             return ListValue.wrap(ticks);
@@ -155,8 +150,7 @@ public class SystemInfo {
         put("java_cpu_count", c -> new NumericValue(Runtime.getRuntime().availableProcessors()));
         put("java_version", c -> StringValue.of(System.getProperty("java.version")));
         put("java_bits", c -> {
-            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"})
-            {
+            for (String property : new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"}) {
                 String value = System.getProperty(property);
                 if (value != null && value.contains("64"))
                     return new NumericValue(64);
@@ -214,12 +208,10 @@ public class SystemInfo {
         put("scarpet_version", c -> StringValue.of(CarpetSettings.carpetVersion));
 
     }};
-    public static Value get(String what, CarpetContext cc)
-    {
+    public static Value get(String what, CarpetContext cc) {
         return options.getOrDefault(what, c -> null).apply(cc);
     }
-    public static Value getAll()
-    {
+    public static Value getAll() {
         return ListValue.wrap(options.keySet().stream().map(StringValue::of).collect(Collectors.toList()));
     }
 

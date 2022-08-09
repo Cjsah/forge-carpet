@@ -9,17 +9,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class DistanceCalculator
-{
+public class DistanceCalculator {
     public static final HashMap<String, Vec3> START_POINT_STORAGE = new HashMap<>();
 
-    public static boolean hasStartingPoint(CommandSourceStack source)
-    {
+    public static boolean hasStartingPoint(CommandSourceStack source) {
         return START_POINT_STORAGE.containsKey(source.getTextName());
     }
 
-    public static List<BaseComponent> findDistanceBetweenTwoPoints(Vec3 pos1, Vec3 pos2)
-    {
+    public static List<BaseComponent> findDistanceBetweenTwoPoints(Vec3 pos1, Vec3 pos2) {
         double dx = Mth.abs((float)pos1.x-(float)pos2.x);
         double dy = Mth.abs((float)pos1.y-(float)pos2.y);
         double dz = Mth.abs((float)pos1.z-(float)pos2.z);
@@ -36,23 +33,19 @@ public class DistanceCalculator
         return res;
     }
 
-    public static int distance(CommandSourceStack source, Vec3 pos1, Vec3 pos2)
-    {
+    public static int distance(CommandSourceStack source, Vec3 pos1, Vec3 pos2) {
         Messenger.send(source, findDistanceBetweenTwoPoints(pos1, pos2));
         return 1;
     }
 
-    public static int setStart(CommandSourceStack source, Vec3 pos)
-    {
+    public static int setStart(CommandSourceStack source, Vec3 pos) {
         START_POINT_STORAGE.put(source.getTextName(), pos);
         Messenger.m(source,"gi Initial point set to: ", Messenger.tp("g",pos));
         return 1;
     }
 
-    public static int setEnd(CommandSourceStack source, Vec3 pos)
-    {
-        if ( !hasStartingPoint(source) )
-        {
+    public static int setEnd(CommandSourceStack source, Vec3 pos) {
+        if ( !hasStartingPoint(source) ) {
             START_POINT_STORAGE.put(source.getTextName(), pos);
             Messenger.m(source,"gi There was no initial point for "+source.getTextName());
             Messenger.m(source,"gi Initial point set to: ", Messenger.tp("g",pos));

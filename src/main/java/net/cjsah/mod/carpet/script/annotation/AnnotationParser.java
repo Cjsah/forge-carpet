@@ -71,8 +71,7 @@ import java.util.stream.Collectors;
  * @see Param.Params#registerStrictConverter(Class, boolean, ValueConverter)
  * @see Param.Params#registerCustomConverterFactory(java.util.function.BiFunction)
  */
-public final class AnnotationParser
-{
+public final class AnnotationParser {
     static final int UNDEFINED_PARAMS = -2;
     private static final List<ParsedFunction> functionList = new ArrayList<>();
 
@@ -101,24 +100,20 @@ public final class AnnotationParser
      * @param <T>   The generic type of the class to parse.
      * @param clazz The class to parse
      */
-    public static <T> void parseFunctionClass(Class<T> clazz)
-    {
+    public static <T> void parseFunctionClass(Class<T> clazz) {
         if (Modifier.isAbstract(clazz.getModifiers()))
             throw new IllegalArgumentException("Function class must be concrete! Class: " + clazz.getSimpleName());
         T instance;
-        try
-        {
+        try {
             instance = clazz.getConstructor().newInstance();
         }
-        catch (ReflectiveOperationException e)
-        {
+        catch (ReflectiveOperationException e) {
             throw new IllegalArgumentException(
                     "Couldn't create instance of given " + clazz + ". Make sure default constructor is available", e);
         }
 
         Method[] methodz = clazz.getDeclaredMethods();
-        for (Method method : methodz)
-        {
+        for (Method method : methodz) {
             if (!method.isAnnotationPresent(ScarpetFunction.class))
                 continue;
 
@@ -136,14 +131,12 @@ public final class AnnotationParser
      * 
      * @param expr The expression to add every function to
      */
-    public static void apply(Expression expr)
-    {
+    public static void apply(Expression expr) {
         for (ParsedFunction function : functionList)
             expr.addLazyFunction(function.name, function.scarpetParamCount, function);
     }
 
-    private static class ParsedFunction implements TriFunction<Context, Context.Type, List<LazyValue>, LazyValue>, UsageProvider
-    {
+    private static class ParsedFunction implements TriFunction<Context, Context.Type, List<LazyValue>, LazyValue>, UsageProvider {
         private final String name;
         private final boolean isMethodVarArgs;
         private final int methodParamCount;
@@ -159,16 +152,14 @@ public final class AnnotationParser
         private final int scarpetParamCount;
         private final Context.Type contextType;
 
-        private ParsedFunction(final Method method, final Object instance)
-        {
+        private ParsedFunction(final Method method, final Object instance) {
             this.name = method.getName();
             this.isMethodVarArgs = method.isVarArgs();
             this.methodParamCount = method.getParameterCount();
 
             Parameter[] methodParameters = method.getParameters();
             this.valueConverters = new ValueConverter[isMethodVarArgs ? methodParamCount - 1 : methodParamCount];
-            for (int i = 0; i < this.methodParamCount; i++)
-            {
+            for (int i = 0; i < this.methodParamCount; i++) {
                 Parameter param = methodParameters[i];
                 if (!isMethodVarArgs || i != this.methodParamCount - 1) // Varargs converter is separate
                     this.valueConverters[i] = ValueConverter.fromAnnotatedType(param.getAnnotatedType());
@@ -184,8 +175,7 @@ public final class AnnotationParser
             this.isEffectivelyVarArgs = isMethodVarArgs || Arrays.stream(valueConverters).anyMatch(ValueConverter::consumesVariableArgs);
             this.minParams = Arrays.stream(valueConverters).mapToInt(ValueConverter::valueConsumption).sum(); // Note: In !varargs, this is params
             int maxParams = this.minParams; // Unlimited == Integer.MAX_VALUE
-            if (this.isEffectivelyVarArgs)
-            {
+            if (this.isEffectivelyVarArgs) {
                 maxParams = method.getAnnotation(ScarpetFunction.class).maxParams();
                 if (maxParams == UNDEFINED_PARAMS)
                     throw new IllegalArgumentException("No maximum number of params specified for " + name + ", use ScarpetFunction.UNLIMITED_PARAMS for unlimited. "
@@ -207,13 +197,11 @@ public final class AnnotationParser
             // (checking access at invoke vs create).
             // Note: there is also MethodHandle#invoke and #invokeWithArguments, but those run #asType at every invocation, which is quite slow, so we
             // are basically running it here.
-            try
-            {
+            try {
                 MethodHandle tempHandle = MethodHandles.publicLookup().unreflect(method).asFixedArity().asSpreader(Object[].class, this.methodParamCount);
                 tempHandle = tempHandle.asType(tempHandle.type().changeReturnType(Object.class));
                 this.handle = Modifier.isStatic(method.getModifiers()) ? tempHandle : tempHandle.bindTo(instance);
-            } catch (IllegalAccessException e)
-            {
+            } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(e);
             }
 
@@ -222,11 +210,9 @@ public final class AnnotationParser
         }
 
         @Override
-        public LazyValue apply(Context context, Context.Type t, List<LazyValue> lazyValues)
-        {
+        public LazyValue apply(Context context, Context.Type t, List<LazyValue> lazyValues) {
             List<Value> lv = AbstractLazyFunction.unpackLazy(lazyValues, context, contextType);
-            if (isEffectivelyVarArgs)
-            {
+            if (isEffectivelyVarArgs) {
                 if (lv.size() < minParams)
                     throw new InternalExpressionException("Function '" + name + "' expected at least " + minParams + " arguments, got " + lv.size() + ". " 
                             + getUsage());
@@ -235,12 +221,10 @@ public final class AnnotationParser
                             + getUsage());
             }
             Object[] params = getMethodParams(lv, context, t);
-            try
-            {
+            try {
                 return outputConverter.convert(handle.invokeExact(params));
             }
-            catch (Throwable e)
-            {
+            catch (Throwable e) {
                 if (e instanceof RuntimeException)
                     throw (RuntimeException) e;
                 throw (Error) e; // Stack overflow or something. Methods are guaranteed not to throw checked exceptions
@@ -248,38 +232,31 @@ public final class AnnotationParser
         }
 
         // Hot code: Must be optimized
-        private Object[] getMethodParams(final List<Value> lv, final Context context, Context.Type theLazyT)
-        {
+        private Object[] getMethodParams(final List<Value> lv, final Context context, Context.Type theLazyT) {
             Object[] params = new Object[methodParamCount];
             ListIterator<Value> lvIterator = lv.listIterator();
 
             int regularArgs = isMethodVarArgs ? methodParamCount - 1 : methodParamCount;
-            for (int i = 0; i < regularArgs; i++)
-            {
+            for (int i = 0; i < regularArgs; i++) {
                 params[i] = valueConverters[i].checkAndConvert(lvIterator, context, theLazyT);
                 if (params[i] == null)
                     throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
             }
-            if (isMethodVarArgs)
-            {
+            if (isMethodVarArgs) {
                 int remaining = lv.size() - lvIterator.nextIndex();
                 Object[] varArgs;
-                if (varArgsConverter.consumesVariableArgs())
-                {
+                if (varArgsConverter.consumesVariableArgs()) {
                     List<Object> varArgsList = new ArrayList<>(); // fastutil's is extremely slow in toArray, and we use that
-                    while (lvIterator.hasNext())
-                    {
+                    while (lvIterator.hasNext()) {
                         Object obj = varArgsConverter.checkAndConvert(lvIterator, context, theLazyT);
                         if (obj == null)
                             throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
                         varArgsList.add(obj);
                     }
                     varArgs = varArgsList.toArray((Object[])Array.newInstance(varArgsType, 0));
-                } else
-                {
+                } else {
                     varArgs = (Object[]) Array.newInstance(varArgsType, remaining / varArgsConverter.valueConsumption());
-                    for (int i = 0; lvIterator.hasNext(); i++)
-                    {
+                    for (int i = 0; lvIterator.hasNext(); i++) {
                         varArgs[i] = varArgsConverter.checkAndConvert(lvIterator, context, theLazyT);
                         if (varArgs[i] == null)
                             throw new InternalExpressionException("Incorrect argument passsed to '" + name + "' function.\n" + getUsage());
@@ -291,20 +268,17 @@ public final class AnnotationParser
         }
 
         @Override
-        public String getUsage()
-        {
+        public String getUsage() {
             // Possibility: More descriptive messages using param.getName()? Would need changing gradle setup to keep those
             StringBuilder builder = new StringBuilder("Usage: '");
             builder.append(name);
             builder.append('(');
             builder.append(Arrays.stream(valueConverters).map(ValueConverter::getTypeName).filter(Objects::nonNull).collect(Collectors.joining(", ")));
-            if (varArgsConverter != null)
-            {
+            if (varArgsConverter != null) {
                 builder.append(", ");
                 builder.append(varArgsConverter.getTypeName());
                 builder.append("s...)");
-            } else
-            {
+            } else {
                 builder.append(')');
             }
             builder.append("'");

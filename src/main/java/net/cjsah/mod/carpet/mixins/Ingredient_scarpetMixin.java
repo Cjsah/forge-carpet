@@ -13,13 +13,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Mixin(Ingredient.class)
-public class Ingredient_scarpetMixin implements IngredientInterface
-{
+public class Ingredient_scarpetMixin implements IngredientInterface {
     @Shadow @Final private Ingredient.Value[] values;
 
     @Override
-    public List<Collection<ItemStack>> getRecipeStacks()
-    {
+    public List<Collection<ItemStack>> getRecipeStacks() {
         List<Collection<ItemStack>> res = Arrays.stream(values).map(Ingredient.Value::getItems).collect(Collectors.toList());
         return res;
     }

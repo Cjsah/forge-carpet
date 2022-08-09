@@ -12,11 +12,9 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FillCommand.class)
-public abstract class FillCommandMixin
-{
+public abstract class FillCommandMixin {
     @ModifyConstant(method = "fillBlocks", constant = @Constant(intValue = 32768))
-    private static int fillLimit(int original)
-    {
+    private static int fillLimit(int original) {
         return CarpetSettings.fillLimit;
     }
 
@@ -24,8 +22,7 @@ public abstract class FillCommandMixin
             value = "INVOKE",
             target = "Lnet/minecraft/server/level/ServerLevel;blockUpdated(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V"
     ))
-    private static void conditionalUpdating(ServerLevel serverWorld, BlockPos blockPos_1, Block block_1)
-    {
+    private static void conditionalUpdating(ServerLevel serverWorld, BlockPos blockPos_1, Block block_1) {
         if (CarpetSettings.fillUpdates) serverWorld.blockUpdated(blockPos_1, block_1);
     }
 }

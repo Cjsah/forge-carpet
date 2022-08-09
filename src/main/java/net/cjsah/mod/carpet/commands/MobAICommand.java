@@ -14,17 +14,14 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
-public class MobAICommand
-{
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
-    {
+public class MobAICommand {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> command = literal("track").
                 requires((player) -> SettingsManager.canUseCommand(player, CarpetSettings.commandTrackAI)).
                 then(argument("entity type", EntitySummonArgument.id()).
 
                         suggests( (c, b) -> suggest(MobAI.availbleTypes(), b)).
-                        then(literal("clear").executes( (c) ->
-                                {
+                        then(literal("clear").executes( (c) -> {
                                     MobAI.clearTracking(Registry.ENTITY_TYPE.get(EntitySummonArgument.getSummonableEntity(c, "entity type")));
                                     return 1;
                                 }

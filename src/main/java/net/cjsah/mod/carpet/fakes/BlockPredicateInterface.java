@@ -8,8 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
 
-public interface BlockPredicateInterface
-{
+public interface BlockPredicateInterface {
     BlockState getCMBlockState();
     TagKey<Block> getCMBlockTagKey();
     Map<Value, Value> getCMProperties();
