@@ -60,7 +60,7 @@ import static net.cjsah.mod.carpet.script.CarpetEventServer.Event.CHUNK_LOADED;
 public abstract class ChunkMap_scarpetChunkCreationMixin implements ThreadedAnvilChunkStorageInterface {
     @Shadow
     @Final
-    private ServerLevel level;
+    ServerLevel level;
 
     @Shadow
     @Final
