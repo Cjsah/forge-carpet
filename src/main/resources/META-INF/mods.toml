@@ -31,7 +31,7 @@ displayName="Forge-Carpet"
 # 模组的图标 (只能在模组的跟目录中) (#选填)
 logoFile="icon.png"
 # 制作人员信息 (#选填)
-credits="Thanks for this example mod goes to Java"
+#credits="Thanks for this example mod goes to Java"
 # 模组的作者 (#选填)
 authors="Cjsah"
 # 模组的描述 ('''可以多行!''') (#必填)
