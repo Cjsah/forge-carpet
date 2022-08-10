@@ -30,7 +30,7 @@ def ENV = System.getenv()
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 mixin {
-    add sourceSets.main, "mixins.refmap.json"
+    add sourceSets.main, "carpet.refmap.json"
 }
 
 minecraft {
