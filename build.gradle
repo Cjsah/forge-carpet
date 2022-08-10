@@ -1,3 +1,6 @@
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+
 //file:noinspection GroovyAssignabilityCheck
 buildscript {
     repositories {
@@ -14,7 +17,6 @@ buildscript {
 }
 
 plugins {
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'maven-publish'
 }
 
@@ -75,7 +77,10 @@ minecraft {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude 'custom.refmap.json'
+}
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
@@ -112,20 +117,35 @@ publishing {
     }
 }
 
-curseforge {
-    def envApiKey = ENV.CURSEFORGE_TOKEN
-    apiKey = envApiKey == null ? 'nope' : envApiKey
-    project {
-        id = project.curse_id
-        releaseType = project.curse_type
-        changelog = project.curse_changelog
-        project.curse_versions.split(", ").each {
-            String gameVersion -> addGameVersion gameVersion
+print(readFileToJson("custom.refmap"))
+
+print(readFile("carpet.refmap.json"))
+JsonObject readFile(name){
+    File file = new File(name)
+    try (FileReader reader = new FileReader(file)){
+        String line = null
+        StringBuilder sb = new StringBuilder()
+        while ((line = reader.readLine()) != null){
+            sb.append(line)
         }
-//        mainArtifact(file("${project.buildDir}/libs/${archivesBaseName}-${version}.jar"))
-//        mainArtifact.displayName = "$project.mod_name v$version for $project.mc_version"
-        mainArtifact(jar) {
-            displayName = "$project.name v$project.mod_version for mc$project.mc_version"
-        }
+        return new Gson().fromJson(sb.toString(), JsonObject.class)
+    } catch (Exception e) {
+        e.printStackTrace()
     }
+    return null
+}
+
+JsonObject readFileToJson(name){
+    File file = new File("${rootDir}/src/main/resources/${name}.json")
+    try (FileReader reader = new FileReader(file)){
+        String line = null
+        StringBuilder sb = new StringBuilder()
+        while ((line = reader.readLine()) != null){
+            sb.append(line)
+        }
+        return new Gson().fromJson(sb.toString(), JsonObject.class)
+    } catch (Exception e) {
+        e.printStackTrace()
+    }
+    return null
 }

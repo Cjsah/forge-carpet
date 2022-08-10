@@ -1,0 +1,14 @@
+{
+  "mappings": {
+    "net/cjsah/mod/carpet/mixins/ReloadCommand_reloadAppsMixin": {
+      "lambda$register$2": "Lnet/minecraft/server/commands/ReloadCommand;m_138228_(Lcom/mojang/brigadier/context/CommandContext;)I"
+    }
+  },
+  "data": {
+    "searge": {
+      "net/cjsah/mod/carpet/mixins/ReloadCommand_reloadAppsMixin": {
+        "lambda$register$2": "Lnet/minecraft/server/commands/ReloadCommand;m_138228_(Lcom/mojang/brigadier/context/CommandContext;)I"
+      }
+    }
+  }
+}
