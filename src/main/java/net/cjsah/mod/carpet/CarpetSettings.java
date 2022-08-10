@@ -33,7 +33,7 @@ import static net.cjsah.mod.carpet.settings.RuleCategory.*;
 
 @SuppressWarnings("CanBeFinal")
 public class CarpetSettings {
-    public static final String carpetVersion = "1.4.69+v220331";
+    public static final String carpetVersion = "0.2.0";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
