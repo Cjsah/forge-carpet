@@ -1,5 +1,6 @@
 {
   "PieceGeneratorSupplier": "coremods/PieceGeneratorSupplier.js",
   "Level": "coremods/Level.js",
-  "PistonHandler": "coremods/PistonStructureResolver.js"
+  "PistonHandler": "coremods/PistonStructureResolver.js",
+  "SkeletonTrapGoal": "coremods/SkeletonTrapGoal.js"
 }

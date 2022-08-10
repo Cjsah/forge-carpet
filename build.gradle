@@ -1,6 +1,3 @@
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-
 //file:noinspection GroovyAssignabilityCheck
 buildscript {
     repositories {
@@ -31,9 +28,9 @@ def ENV = System.getenv()
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-mixin {
-    add sourceSets.main, "carpet.refmap.json"
-}
+//mixin {
+//    add sourceSets.main, "carpet.refmap.json"
+//}
 
 minecraft {
     mappings channel: channel, version: channel_version
@@ -115,11 +112,4 @@ publishing {
             url "file:///${project.projectDir}/mcmodsrepo"
         }
     }
-}
-
-print(readFileToJson("custom.refmap"))
-
-JsonObject readFileToJson(name){
-    def bytes = file("src/main/resources/custom.refmap.json").readBytes()
-    return new Gson().fromJson(new String(bytes), JsonObject.class)
 }

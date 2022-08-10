@@ -134,7 +134,6 @@
     "DefaultDispenseItemBehavior_extremeBehavioursMixin",
     "Containers_extremeMixin",
     "FishingHook_extremeMixin",
-    "SkeletonTrapGoal_extremeMixin",
     "FireworkRocketEntity_extremeMixin",
     "Blaze_extremeMixin",
     "BlazeAttackGoal_extremeMixin",

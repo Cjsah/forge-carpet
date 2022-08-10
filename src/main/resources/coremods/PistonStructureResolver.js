@@ -5,9 +5,7 @@ var Opcodes = Java.type('org.objectweb.asm.Opcodes');
 
 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
-var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
 var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
-var IntInsnNode = Java.type('org.objectweb.asm.tree.IntInsnNode');
 var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
 var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
 

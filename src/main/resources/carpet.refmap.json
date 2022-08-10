@@ -1,8 +1,15 @@
 {
   "mappings": {
+    "net/cjsah/mod/carpet/mixins/ChunkMap_scarpetChunkCreationMixin": {
+      "lambda$protoChunkToFullChunk$30": "Lnet/minecraft/server/level/ChunkMap;m_202985_(Lnet/minecraft/server/level/ChunkHolder;Lcom/mojang/datafixers/util/Either;)Lcom/mojang/datafixers/util/Either;"
+    },
+    "net/cjsah/mod/carpet/mixins/PerfCommand_permissionMixin": {
+      "lambda$register$0": "Lnet/minecraft/server/commands/PerfCommand;m_180461_(Lnet/minecraft/commands/CommandSourceStack;)Z"
+    },
     "net/cjsah/mod/carpet/mixins/ReloadCommand_reloadAppsMixin": {
       "lambda$register$2": "Lnet/minecraft/server/commands/ReloadCommand;m_138228_(Lcom/mojang/brigadier/context/CommandContext;)I"
     },
+
     "net/cjsah/mod/carpet/mixins/Entity_scarpetEventsMixin": {
       "changeDimension(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;": "Lnet/minecraft/world/entity/Entity;m_5489_(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;",
       "setPosRaw": "Lnet/minecraft/world/entity/Entity;m_20343_(DDD)V",
@@ -693,6 +700,12 @@
   },
   "data": {
     "searge": {
+      "net/cjsah/mod/carpet/mixins/ChunkMap_scarpetChunkCreationMixin": {
+        "lambda$protoChunkToFullChunk$30": "Lnet/minecraft/server/level/ChunkMap;m_202985_(Lnet/minecraft/server/level/ChunkHolder;Lcom/mojang/datafixers/util/Either;)Lcom/mojang/datafixers/util/Either;"
+      },
+      "net/cjsah/mod/carpet/mixins/PerfCommand_permissionMixin": {
+        "lambda$register$0": "Lnet/minecraft/server/commands/PerfCommand;m_180461_(Lnet/minecraft/commands/CommandSourceStack;)Z"
+      },
       "net/cjsah/mod/carpet/mixins/ReloadCommand_reloadAppsMixin": {
         "lambda$register$2": "Lnet/minecraft/server/commands/ReloadCommand;m_138228_(Lcom/mojang/brigadier/context/CommandContext;)I"
       },
