@@ -119,33 +119,7 @@ publishing {
 
 print(readFileToJson("custom.refmap"))
 
-print(readFile("carpet.refmap.json"))
-JsonObject readFile(name){
-    File file = new File(name)
-    try (FileReader reader = new FileReader(file)){
-        String line = null
-        StringBuilder sb = new StringBuilder()
-        while ((line = reader.readLine()) != null){
-            sb.append(line)
-        }
-        return new Gson().fromJson(sb.toString(), JsonObject.class)
-    } catch (Exception e) {
-        e.printStackTrace()
-    }
-    return null
-}
-
 JsonObject readFileToJson(name){
-    File file = new File("${rootDir}/src/main/resources/${name}.json")
-    try (FileReader reader = new FileReader(file)){
-        String line = null
-        StringBuilder sb = new StringBuilder()
-        while ((line = reader.readLine()) != null){
-            sb.append(line)
-        }
-        return new Gson().fromJson(sb.toString(), JsonObject.class)
-    } catch (Exception e) {
-        e.printStackTrace()
-    }
-    return null
+    def bytes = file("src/main/resources/custom.refmap.json").readBytes()
+    return new Gson().fromJson(new String(bytes), JsonObject.class)
 }
