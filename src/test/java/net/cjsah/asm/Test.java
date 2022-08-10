@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 public class Test {
     public static void main(String[] args) throws IOException {
         boolean asmCode = true;
-        String className = "net.cjsah.asm.Test2";
+        String className = "net.cjsah.mod.carpet.Test2";
         int parsingOptions = ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG;
         Printer printer = asmCode ? new ASMifier() : new Textifier();
         PrintWriter printWriter = new PrintWriter(System.out, true);

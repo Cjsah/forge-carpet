@@ -1,20 +1,55 @@
+# 这是一个 mods.toml 文件. 它包含模组加载有关的数据
+# 有几个字段是必填的 (#必填),还有一些是选填的 (#选填)
+# 整体格式为标准的TOML v0.5.0
+# 请注意, 此文件中有几个 TOML 列表
+# 在此处查找更多有关 toml 格式的信息: https://github.com/toml-lang/toml
+
+# 要加载的 mod loader 类型的名称 - 对于常规 FML Mod, 它应该是 javafml (#必填)
 modLoader="javafml"
+# 与 mod loader 匹配的版本范围 - 对于常规 FML Mod，它将是 forge 版本范围 (#必填)
 loaderVersion="[40,)"
+# 你模组的许可证 (#必填)
+# 在 https://choosealicense.com/ 中可以选择您的许可证. 保留所有权利是默认的许可证
 license="MIT"
+# 当这个模组出现问题时, 人们可以反馈的 URL (#选填)
+#issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/"
+# 模组列表 - 这里允许的数量由单个模组加载器决定 (#必填)
 [[mods]]
+# 模组的id (#必填)
 modId="carpet"
+# 模组的版本号 - 可以使用 ${} 变量或硬编码 (#必填)
+# ${file.jarVersion} 将使用 JAR 中 Implementation-Version 的值
+# 查看相关的 build.gradle 脚本，了解如何在构建过程中完全自动填充
 version="${file.jarVersion}"
+# 模组的显示名称 (#必填)
 displayName="Forge-Carpet"
-logoFile="carpet/icon.png"
+# 用于查询此模组更新的链接 (#选填)
+# 请参阅 JSON 规范 https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
+#updateJSONURL="https://change.me.example.invalid/updates.json"
+# 此模组的主页链接, 显示在模组 UI 中 (#选填)
+#displayURL="https://change.me.to.your.mods.homepage.example.invalid/"
+# 模组的图标 (只能在模组的跟目录中) (#选填)
+logoFile="icon.png"
+# 制作人员信息 (#选填)
+credits="Thanks for this example mod goes to Java"
+# 模组的作者 (#选填)
 authors="Cjsah"
+# 模组的描述 ('''可以多行!''') (#必填)
 description='''
-把 Fabric Mod: Carpet 中的 /player 功能移植到 forge 中
+把 fabric-carpet 中的功能移植到 forge 中
+Porting the functionality of fabric-carpet to forge
 '''
+# 依赖项 - 使用 "." 指示特定模组的依赖关系 (#选填)
 [[dependencies.carpet]]
+    # 依赖的模组id (#必填)
     modId="forge"
+    # 此依赖是否必须存在 - 如果不必须存在，须指定下面的 ordering 选项 (#必填)
     mandatory=true
+    # 依赖的版本范围 (#必填)
     versionRange="[39,)"
+    # 依赖项的排序关系 - 如果关系不是必须存在的, 则需要 BEFORE 或 AFTER (#必填)
     ordering="NONE"
+    # 此依赖适用的端 - BOTH、CLIENT 或 SERVER (#必填)
     side="BOTH"
 [[dependencies.carpet]]
     modId="minecraft"

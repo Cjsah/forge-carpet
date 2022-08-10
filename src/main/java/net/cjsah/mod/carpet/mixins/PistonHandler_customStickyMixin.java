@@ -37,102 +37,11 @@ public abstract class PistonHandler_customStickyMixin {
      */
     @Shadow @Final private Level level;
     @Shadow @Final private Direction pushDirection;
-    @Shadow protected abstract boolean addBlockLine(BlockPos blockPos_1, Direction direction_1);
-    @Shadow protected abstract boolean addBranchingBlocks(BlockPos pos);
+    @Shadow
+    public abstract boolean addBlockLine(BlockPos blockPos_1, Direction direction_1);
+    @Shadow
+    public abstract boolean addBranchingBlocks(BlockPos pos);
 
-    // collects information about sticking block when backtracking.
-    private BlockPos currentPos;
-    private BlockState currentState;
-    @Redirect(method = "addBlockLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", ordinal = 0))
-    private BlockState redirectGetBlockState_1_A(Level world, BlockPos pos) {
-        return currentState = world.getBlockState(pos);
-    }
-    @Redirect(method = "addBlockLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", ordinal = 1))
-    private BlockState redirectGetBlockState_1_B(Level world, BlockPos pos) {
-        currentPos = pos;
-        return currentState = world.getBlockState(pos);
-    }
-
-    /**
-     * Makes backwards stickiness work with sticky non-slimeblocks as well (chests, chains).
-     * @author 2No2Name, gnembon
-     */
-    @Redirect(method = "addBlockLine", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;isStickyBlock()Z",
-            ordinal = 0 )
-    )
-    private boolean redirectIsStickyBlock(BlockState blockState) {
-        // applies to both MBE chests as well as sticky chains
-        return blockCanBePulled(blockState) || blockState.isStickyBlock();
-    }
-
-    /**
-     * Returns true if there is a modification making this blockState sticky on the given face. Vanilla stickyness of SLIME_BLOCK is not affected.
-     * @param blockState BlockState to determine the stickyness of
-     * @return boolean whether block is not SLIME_BLOCK and is sticky in the given direction
-     * @author 2No2Name
-     */
-    private boolean blockCanBePulled(BlockState blockState) {
-        if (CarpetSettings.movableBlockEntities) {
-            Block block = blockState.getBlock();
-            if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST)
-                //Make chests be sticky on the side to
-                return getDirectionToOtherChestHalf(blockState) == pushDirection.getOpposite();
-            //example how you could make sticky pistons have a sticky side:
-            //if(block == Blocks.STICKY_PISTON)
-            //    return blockState.get(FacingBlock.FACING) == motionDirection;
-        }
-        if (CarpetSettings.doChainStone && blockState.getBlock() == Blocks.CHAIN) {
-            return isChainOnAxis(currentState, pushDirection);
-        }
-
-
-        return false;
-    }
-
-    /**
-     * Determines if we should continue to drag blocks in a line (going opposite to the direction of a push)
-     * @param previous: block that is already dragged
-     * @param next: canidate block to decide if needs to be dragged along as well.
-     * @return true if we should keep dragging blocks behind
-     */
-    @Redirect(method = "addBlockLine", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;canStickTo(Lnet/minecraft/world/level/block/state/BlockState;)Z")
-    )
-    private boolean isDraggingPreviousBlockBehind(BlockState previous, BlockState next) {
-        if (CarpetSettings.doChainStone) {
-            if (previous.getBlock() == Blocks.CHAIN && isChainOnAxis(previous, pushDirection)) {
-                if ( (next.getBlock() == Blocks.CHAIN && isChainOnAxis(next, pushDirection))
-                        || CarpetSettings.chainStoneStickToAll
-                        || isEndRodOnAxis(next, pushDirection.getAxis())
-                        || Block.canSupportCenter(level, currentPos, pushDirection)) {
-                    return true;
-                }
-            }
-        }
-        return previous.canStickTo(next);
-    }
-
-
-    /**
-     * Handles blocks besides the slimeblock that are sticky. Currently only supports blocks that are sticky on one side.
-     * This runs in U style structures with something in the middle on retraction.
-     * @author 2No2Name
-     */
-    @Inject(method = "addBlockLine", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(
-            value = "INVOKE",
-            target = "Ljava/util/List;get(I)Ljava/lang/Object;",
-            shift = At.Shift.AFTER
-    ))
-    private void stickToStickySide(BlockPos blockPos_1, Direction direction, CallbackInfoReturnable<Boolean> cir, BlockState blockState_1, int int_1, BlockState blockState_2, int int_2, int int_4, BlockPos blockPos_3) {
-        if (CarpetSettings.movableBlockEntities) {
-            if (!stickToStickySide(blockPos_3)) {
-                cir.setReturnValue(false);
-            }
-        }
-    }
     @Shadow @Final private List<BlockPos> toPush;
     @Inject(method = "resolve", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     /**
@@ -180,29 +89,6 @@ public abstract class PistonHandler_customStickyMixin {
 
         return stickyDirection == null || this.addBlockLine(blockPos_1.relative(stickyDirection), stickyDirection);  //offset
     }
-
-
-    /**
-     * This never seems to run
-     * @author gnembon
-     */
-    @Inject(method = "addBlockLine", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at= @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;isStickyBlock()Z",
-            ordinal = 1,
-            shift = At.Shift.BEFORE
-            )
-    )
-    private void redirectIsStickyBlock(BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> cir,
-                                       BlockState blockState, int i, BlockState blockState2, int j, int l, BlockPos blockPos2, int m, int n, BlockPos blockPos3) {
-        if (CarpetSettings.doChainStone) {
-            BlockState chainState = level.getBlockState(blockPos3);
-            if (chainState.getBlock() == Blocks.CHAIN && !isChainOnAxis(chainState, pushDirection) && !addBranchingBlocks(blockPos3)) {
-                cir.setReturnValue(false);
-            }
-        }
-    }
-
 
     /**
      * Custom movement of blocks stuck to the sides of blocks other than slimeblocks like chains

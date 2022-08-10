@@ -152,7 +152,7 @@ public class CarpetScriptServer {
                 return new FileModule(scriptPath.get());
 
             if (FMLEnvironment.dist == Dist.CLIENT) {
-                Path globalFolder = FMLPaths.CONFIGDIR.get().resolve("carpet/scripts");
+                Path globalFolder = FMLPaths.CONFIGDIR.get().resolve("assets/carpet/scripts");
                 if (!Files.exists(globalFolder)) 
                     Files.createDirectories(globalFolder);
                 scriptPath = Files.walk(globalFolder)
@@ -198,7 +198,7 @@ public class CarpetScriptServer {
                 .forEach(f -> moduleNames.add(f.getFileName().toString().replaceFirst("\\.sc$","").toLowerCase(Locale.ROOT)));
 
             if (includeBuiltIns && (FMLEnvironment.dist == Dist.CLIENT)) {
-                Path globalScripts = FMLPaths.CONFIGDIR.get().resolve("carpet/scripts");
+                Path globalScripts = FMLPaths.CONFIGDIR.get().resolve("assets/carpet/scripts");
                 if (!Files.exists(globalScripts))
                     Files.createDirectories(globalScripts);
                 Files.walk(globalScripts, FileVisitOption.FOLLOW_LINKS)

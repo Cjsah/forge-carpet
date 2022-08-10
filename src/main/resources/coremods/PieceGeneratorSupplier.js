@@ -74,4 +74,3 @@ function getInstruction(/*org.objectweb.asm.tree.InsnList*/ insnList, /*int*/ op
     }
     return null;
 }
-

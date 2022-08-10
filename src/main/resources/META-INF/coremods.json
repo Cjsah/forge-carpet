@@ -1,4 +1,5 @@
 {
   "PieceGeneratorSupplier": "coremods/PieceGeneratorSupplier.js",
-  "Level": "coremods/Level.js"
+  "Level": "coremods/Level.js",
+  "PistonHandler": "coremods/PistonStructureResolver.js"
 }
