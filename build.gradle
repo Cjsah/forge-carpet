@@ -24,7 +24,9 @@ apply plugin: 'org.spongepowered.mixin'
 archivesBaseName = mod_name
 group = maven_group
 version = 'mc' + mc_version + '-' + mod_version
-def ENV = System.getenv()
+if (build_number != 'undefined') {
+    version += "+build.${build_number}"
+}
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -107,9 +109,14 @@ publishing {
             artifact jar
         }
     }
-    repositories {
-        maven {
-            url "file:///${project.projectDir}/mcmodsrepo"
+    def ENV = System.getenv()
+    if (ENV.MAVEN_URL) {
+        repositories.maven {
+            url ENV.MAVEN_URL
+            credentials {
+                username ENV.MAVEN_USERNAME
+                password ENV.MAVEN_PASSWORD
+            }
         }
     }
 }
