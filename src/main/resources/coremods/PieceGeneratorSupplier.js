@@ -9,6 +9,27 @@ var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
 var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
 var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
 
+function getFirstInsn(/*org.objectweb.asm.tree.InsnList*/ insnList) {
+    for (var i = 0; i < insnList.size(); i++) {
+        var ain = insnList.get(i);
+        if (ain.getOpcode() != -1) {
+            return ain;
+        }
+    }
+    return null;
+}
+
+function getInsn(/*org.objectweb.asm.tree.InsnList*/ insnList, /*int*/ opCode, /*int*/ index) {
+    var i = 0;
+    for (var j = 0; j < insnList.size(); j++) {
+        var ain = insnList.get(j);
+        if (ain.getOpcode() == opCode && i++ == index) {
+            return ain;
+        }
+    }
+    return null;
+}
+
 function initializeCoreMod() {
     return {
         'plop': {
@@ -22,7 +43,7 @@ function initializeCoreMod() {
                 var /*org.objectweb.asm.tree.InsnList*/ instructions = methodNode.instructions;
                 var label = new LabelNode();
                 instructions.insertBefore(
-                    getInstruction(instructions, Opcodes.ALOAD, 0),
+                    getFirstInsn(instructions),
                     ASM.listOf(
                         new FieldInsnNode(
                             Opcodes.GETSTATIC,
@@ -62,15 +83,4 @@ function initializeCoreMod() {
             }
         }
     }
-}
-
-function getInstruction(/*org.objectweb.asm.tree.InsnList*/ insnList, /*int*/ opCode, /*int*/ index) {
-    var i = 0;
-    for (var j = 0; j < insnList.size(); j++) {
-        var ain = insnList.get(j);
-        if (ain.getOpcode() == opCode && i++ == index) {
-            return ain;
-        }
-    }
-    return null;
 }

@@ -3,15 +3,25 @@
 var ASM = Java.type('net.minecraftforge.coremod.api.ASMAPI');
 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
 
+var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
+
+var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
-var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
 var IntInsnNode = Java.type('org.objectweb.asm.tree.IntInsnNode');
 var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
-var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
+var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
 
-var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
+function getFirstInsn(/*org.objectweb.asm.tree.InsnList*/ insnList) {
+    for (var i = 0; i < insnList.size(); i++) {
+        var ain = insnList.get(i);
+        if (ain.getOpcode() != -1) {
+            return ain;
+        }
+    }
+    return null;
+}
 
 function initializeCoreMod() {
     return {
@@ -26,7 +36,7 @@ function initializeCoreMod() {
                 var /*org.objectweb.asm.tree.InsnList*/ instructions = methodNode.instructions;
                 var label = new LabelNode();
                 instructions.insertBefore(
-                    ASM.findFirstInstruction(methodNode, Opcodes.ALOAD),
+                    getFirstInsn(instructions),
                     ASM.listOf(
                         new VarInsnNode(
                             Opcodes.ILOAD,
